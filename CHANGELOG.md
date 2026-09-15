@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- Subscription names and dates are now validated: names are trimmed and
+  limited to 80 characters, and due dates must be real `YYYY-MM-DD` dates.
+
 - Passing another user's category to subscription creation or conversion no
   longer attaches it. `createSubscription` and
   `convertTransactionToSubscription` now reject a foreign `categoryId` with
