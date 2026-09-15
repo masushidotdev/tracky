@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- The bank-connection callback page can no longer be framed by another site,
+  and all backend routes send `nosniff`. Nothing changes on screen.
+
 - Passing another user's category to subscription creation or conversion no
   longer attaches it. `createSubscription` and
   `convertTransactionToSubscription` now reject a foreign `categoryId` with
