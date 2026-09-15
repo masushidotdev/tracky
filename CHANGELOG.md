@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- Subscription names and dates are now validated: names are trimmed and
+  limited to 80 characters, and due dates must be real `YYYY-MM-DD` dates.
+
 - The bank-connection callback page can no longer be framed by another site,
   and all backend routes send `nosniff`. Nothing changes on screen.
 
