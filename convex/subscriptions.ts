@@ -24,6 +24,23 @@ async function assertOwnedAccount(ctx: MutationCtx, accountId: Id<'financialAcco
   return account;
 }
 
+async function assertOwnedCategory(
+  ctx: MutationCtx,
+  categoryId: Id<'categories'> | undefined,
+  userId: string,
+) {
+  if (!categoryId) {
+    return undefined;
+  }
+
+  const category = await ctx.db.get('categories', categoryId);
+  if (!category || category.userId !== userId) {
+    throw new ConvexError('Category not found');
+  }
+
+  return category._id;
+}
+
 function withDerivedNextDueDate(subscription: Doc<'subscriptions'>) {
   if (subscription.nextDueDate) {
     return subscription;
@@ -236,6 +253,7 @@ export const createSubscription = mutation({
     if (args.accountId) {
       await assertOwnedAccount(ctx, args.accountId, user.id);
     }
+    const categoryId = await assertOwnedCategory(ctx, args.categoryId, user.id);
 
     const subscription = await ctx.db.insert('subscriptions', {
       userId: user.id,
@@ -254,7 +272,7 @@ export const createSubscription = mutation({
       trialPeriodDays: args.trialPeriodDays,
       status: 'active',
       source: 'manual',
-      categoryId: args.categoryId,
+      categoryId,
       metadata: args.metadata,
       createdAtMs: now,
       updatedAtMs: now,
@@ -283,7 +301,12 @@ export const convertTransactionToSubscription = mutation({
     }
 
     const now = Date.now();
-    const categoryId = args.categoryId ?? transaction.categoryId;
+    // Only the client-supplied id is attacker-controlled; the stored one was
+    // validated at write time, so re-checking it could only break legacy rows.
+    const requestedCategoryId = args.categoryId
+      ? await assertOwnedCategory(ctx, args.categoryId, user.id)
+      : undefined;
+    const categoryId = requestedCategoryId ?? transaction.categoryId;
     const existingSubscription = transaction.subscriptionId
       ? await ctx.db.get('subscriptions', transaction.subscriptionId)
       : await findMatchingSubscription(ctx, transaction);
