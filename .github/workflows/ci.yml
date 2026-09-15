@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run lint
+      - name: Secret scan
+        run: |
+          if git grep -nE '-----BEGIN( [A-Z]+)? PRIVATE KEY-----|sk-(live|test)-[A-Za-z0-9]{10,}|ghp_[A-Za-z0-9]{20,}|IT[0-9]{2}[A-Z][0-9]{22}' -- . ':!package-lock.json'; then
+            echo 'secret scan found matches' >&2
+            exit 1
+          fi
+          if git ls-files | grep -E '(\.env\.local$|\.pem$|\.key$|\.p12$|\.pfx$|^diagnostics/)'; then
+            echo 'secret-bearing files are tracked' >&2
+            exit 1
+          fi

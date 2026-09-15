@@ -1,0 +1,305 @@
+---
+title: Tutorial pratico del Piano
+description: Come si usa davvero il Piano zero-based, dalle prime assegnazioni ai target per le spese annuali, con le domande che ci si pone strada facendo.
+section: Controllo spese
+order: 81
+locale: it
+updatedAt: 2026-08-04
+keywords: [tutorial, piano, zero-based, scoperto, carte, rate, target, spese annuali, da assegnare, auto-assign, mese di anticipo]
+related: [plan-and-subscriptions, dashboard-and-totals, transactions]
+---
+
+# Tutorial pratico del Piano
+
+Questa guida è il seguito pratico di [Piano, categorie e sottoscrizioni](/app/docs/plan-and-subscriptions).
+Là trovi cosa fa ogni comando; qui trovi **in che ordine usarli** e perché.
+
+## L'idea in una frase
+
+Il Piano non ti chiede quanto vorresti spendere: ti chiede di **dare un lavoro ai soldi che hai già**.
+Ogni euro presente sui conti del piano viene assegnato a un bucket finché *Da assegnare* non arriva a zero.
+Non è una previsione, è una decisione presa sul denaro esistente.
+
+## Parti dal giorno in cui il Piano diventa reale
+
+Ogni Piano ha un giorno iniziale. Un nuovo Piano parte normalmente dal giorno in cui lo crei: i movimenti
+precedenti restano dentro i saldi attuali dei conti, ma non creano *Attività* o scoperti. Il primo mese
+descrive quindi solo le decisioni che potevi davvero prendere dopo la nascita del Piano.
+
+Se hai importato lo storico o scelto l'origine sbagliata, apri il selettore del piano e usa **Ricomincia da
+qui…**. Scegli il primo giorno da conteggiare. Tracky conserva gruppi, bucket, target e assegnazioni del
+Piano, ma ne ricostruisce lo storico e smette di considerare scoperto ciò che hai speso prima.
+
+Il Piano parte comunque dai **saldi liquidi reali di oggi**, non da un saldo iniziale ricostruito. La data
+scelta decide quali movimenti spiegano l'attività dei bucket; non inventa denaro che non si trova più nei
+conti.
+
+## Da assegnare negativo: tre cause diverse
+
+L'etichetta sopra il numero cambia a seconda del motivo, perché le soluzioni sono diverse.
+
+**I conti liquidi sono in rosso.** Il fido è capacità presa a prestito, non denaro da assegnare. L'avviso in
+cima mostra importo, fido residuo, variazione rispetto al mese scorso e, dopo che hai scelto una data, il
+passo mensile verso lo zero. Non creare un bucket di rientro: ogni euro delle prossime entrate che non
+assegni resta già sul conto e riduce il saldo negativo.
+
+**Hai assegnato più di quanto hai.** Riduci un'assegnazione, oppure sposta denaro da un bucket a un altro
+dal pannello dei dettagli: il totale non cambia, cambia solo chi tiene i soldi.
+
+**Le categorie trattengono più della liquidità.** Succede dopo uno scoperto di cassa del mese precedente,
+che riduce il *Da assegnare* del mese nuovo invece di restare nella categoria.
+
+## Scoperto liquido e scoperto a credito
+
+I due importi mostrati su una riga in rosso richiedono azioni diverse.
+
+Lo **scoperto liquido** indica che il denaro è già uscito da un conto liquido. Sposta il Disponibile di un
+altro bucket per coprirlo. Se non lo fai, l'ammanco riduce *Da assegnare* invece di essere riportato come
+saldo negativo del bucket.
+
+Lo **scoperto a credito** indica invece un acquisto fatto con una carta senza abbastanza denaro nel bucket
+di spesa. La liquidità non è ancora uscita, ma il debito della carta è aumentato. Finanzia il bucket di
+pagamento della carta, così i soldi saranno pronti quando pagherai l'estratto.
+
+## I target: la parte che cambia tutto
+
+Un target dichiara **quanto dovrebbe ricevere un bucket e entro quando**. Serve a due cose: dirti quanto ti
+manca questo mese, e ordinare le priorità quando i soldi non bastano.
+
+Un target **Personalizzato** ripetibile può avere un intervallo di N mesi o anni. Puoi usarlo ogni tre mesi
+per una scadenza trimestrale, per esempio, oppure ogni due anni per un rinnovo che non rientra nelle cadenze
+mensile o annuale.
+
+### Spese ricorrenti mensili
+
+Spesa, ristoranti, trasporti, benzina. Cadenza **Mensile**, comportamento **Rabbocca fino a**.
+Così quello che avanza riduce il fabbisogno del mese dopo e il target si comporta come un tetto.
+Se invece vuoi che il non speso si accumuli — un fondo per i regali, per esempio — usa **Metti da parte altri**.
+
+### Spese annuali: usa la cadenza annuale, non la divisione a mano
+
+Questa è la domanda che si fanno tutti: *l'assicurazione costa 600 € una volta l'anno, metto un target
+mensile da 50 €?*
+
+Aritmeticamente funziona, ma è un numero morto: chiede sempre 50 € qualunque cosa succeda. Se salti un mese
+arrivi corto alla scadenza e non te ne accorgi. Se inizi a ottobre per una scadenza di marzo, 50 € al mese
+non bastano.
+
+**Meglio la cadenza Annuale con la data di scadenza, e il comportamento *Rabbocca fino a*.**
+Tracky calcola il fabbisogno di questo mese come:
+
+```
+(importo pieno − quanto hai già accantonato) ÷ mesi che mancano alla scadenza
+```
+
+Il conto si rifà ogni mese. Salti agosto? A settembre ti chiede automaticamente di più. Parti a metà anno?
+Divide sul tempo che resta davvero. E man mano che il bucket si riempie, il fabbisogno scende da solo.
+
+**Attenzione al comportamento.** Con *Metti da parte altri* la sottrazione di quanto hai già messo da parte
+**non** avviene: il fabbisogno diventa `importo pieno ÷ mesi rimanenti`, quindi cresce mese dopo mese mentre
+il fondo si riempie, e finiresti per accantonare molto più del premio. Su 600 € con scadenza a marzo, a
+luglio entrambi chiedono 66,67 €; a ottobre, con 200 € già da parte, *Rabbocca fino a* chiede ancora
+66,67 € mentre *Metti da parte altri* ne chiede 100. Per le spese annuali usa sempre *Rabbocca fino a*.
+
+È il concetto che YNAB chiama **true expense**: una spesa annuale smette di essere una sorpresa e diventa
+una rata mensile che ti fai da solo. Vale per assicurazioni, bollo, revisione, tasse, abbonamenti annuali.
+
+### Spese ripartite nell'anno: rate condominiali e simili
+
+Le rate di condominio non somigliano né alla spesa del supermercato né all'assicurazione. Sono **più
+pagamenti distribuiti nell'anno** — tipicamente quattro rate trimestrali — con in più conguagli e quote
+integrative che non puoi prevedere al centesimo, ma con un **totale annuo abbastanza stabile**.
+
+Qui la cadenza annuale è la scelta sbagliata, anche se la spesa è annuale nel totale. Il fondo si svuota a
+ogni rata, quindi quanto hai accantonato scende, e con la formula annuale la richiesta mensile **risalirebbe**
+proprio dopo ogni pagamento: combatterebbe contro sé stessa.
+
+Usa **Mensile** con **Metti da parte altri…** e l'importo pari al totale annuo diviso dodici. Il fondo cresce
+nei mesi senza rata e si svuota parzialmente a ogni scadenza, che è esattamente quello che vuoi.
+
+**Attenzione al ribaltamento.** Con la cadenza mensile i due comportamenti fanno il contrario di quello che
+fanno con l'annuale: *Metti da parte altri* chiede l'importo pieno **ogni mese a prescindere da quanto hai già
+messo via**, quindi accumula; *Rabbocca fino a* si ferma appena il bucket raggiunge la soglia, quindi mette un
+tetto. Per un accantonamento vuoi il primo, per un tetto di spesa il secondo. La regola vera non è la parola
+"annuale" ma **come sono distribuiti i pagamenti**: un solo pagamento a una data nota vuole l'annuale con
+*Rabbocca*, più pagamenti sparsi nell'anno vogliono il mensile con *Metti da parte altri*.
+
+Sull'importo, guarda il consuntivo vero e non la rata nominale: quattro rate da 428,89 fanno 1.715, ma con
+conguagli e integrative il totale reale può arrivare a 1.833. Dividi quello, arrotondando per eccesso, così
+gli extra non ti colgono scoperto.
+
+### Due spese simili con cadenze diverse
+
+Due assicurazioni — l'auto addebitata ogni mese, la moto pagata una volta l'anno — vogliono **due categorie**,
+e non è una scomodità dell'interfaccia: il target vive sul bucket, e un bucket ha un solo target. Cadenze
+diverse significano target diversi, quindi bucket diversi, quindi categorie diverse.
+
+Metti l'auto su un bucket con target mensile *Rabbocca fino a*, e la moto su un bucket con target annuale
+*Rabbocca fino a* e la data di rinnovo. Così vedi separatamente quanto spendi ogni mese e quanto stai
+accantonando per la scadenza — che è esattamente l'informazione per cui vale la pena tenerle distinte.
+
+Vale anche quando la spesa è "la stessa cosa" ma il bucket la mescolerebbe: tenere le rate condominiali
+dentro *Housing* rende illeggibile il *Disponibile* di quel bucket, perché non distingui più il fondo che sta
+maturando dal margine per le altre spese di casa. Una categoria dedicata — in inglese *Service charges* è il
+termine corrente — e quel numero torna a dire una cosa sola.
+
+### Mettere in pausa un target
+
+Un mese in cui quella spesa non ha senso — le vacanze a gennaio — si mette in pausa il target invece di
+cancellarlo. Esce dai sotto-finanziati del mese senza perdere la configurazione.
+
+## Cost to Be Me
+
+Somma tutti i target del mese e la confronta con le **entrate previste** che hai inserito. È il costo di un
+mese pienamente finanziato della tua vita.
+
+Se non imposti le entrate previste, la card mostra solo il totale dei target e non ti dice nulla. Con quel
+numero dentro risponde alla domanda vera: *il mio tenore di vita sta dentro le mie entrate?* Se il totale dei
+target supera le entrate, nessuna assegnazione lo risolverà — il problema è a monte.
+
+**Le entrate previste sono un valore del piano, non del mese.** Lo inserisci una volta e resta lì mentre
+navighi fra i mesi: descrive un mese tipo, non luglio o agosto in particolare. Per questo va riempito con
+l'entrata **ricorrente e affidabile** — lo stipendio netto — e non con una somma una tantum, che confrontata
+con target che tornano ogni mese darebbe un paragone falso. Se le tue entrate variano, usa il **minimo su cui
+puoi contare**, non la media: sottostimare ti lascia soldi in più da assegnare, sovrastimare ti fa pianificare
+denaro che non arriva.
+
+Un incasso straordinario — un rimborso fiscale, un arretrato, un regalo — non va qui. Quando arriva davvero, il
+Piano lo vede come entrata e finisce in *Da assegnare*: gli dai un lavoro in quel momento. È la differenza fra
+pianificare il denaro che hai e pianificare quello che speri.
+
+## Auto-Assign
+
+<Figure
+  src="/docs/plan/plan-auto-assign.jpg"
+  alt="Il dialogo Auto-Assign con la scelta della strategia e dei bucket"
+  caption="Ogni strategia mostra l'anteprima prima di scrivere: nessuna assegnazione avviene alla cieca."
+/>
+
+Sei strategie, tutte con anteprima obbligatoria prima della conferma:
+
+**Sotto-finanziato** è quella che userai quasi sempre. Distribuisce il denaro disponibile dando la
+precedenza a ciò che è già in rosso, poi ai target con scadenza vicina, poi al resto. È il modo giusto di
+usare pochi soldi.
+
+**Assegnato il mese scorso** e **Speso il mese scorso** replicano il mese precedente: utili quando la tua
+vita è stabile e vuoi partire in fretta.
+
+**Media assegnata** guarda più mesi indietro e smussa i picchi.
+
+**Azzera assegnato** e **Azzera disponibile** servono a ricominciare: la prima riporta a zero le
+assegnazioni del mese, la seconda svuota anche il riporto.
+
+Lascia i bucket tutti deselezionati per applicare la strategia a tutti quelli visibili, oppure selezionane
+alcuni per intervenire solo su quelli.
+
+## Non pianificato, e perché è una buona notizia
+
+La riga *Non pianificato* raccoglie l'attività delle categorie che nessun bucket copre. Non è un errore: è il
+punto in cui scopri che il piano non descrive ancora tutta la tua vita.
+
+Quando ne vedi una, usa **Assegna categoria** su quella riga: puoi metterla dentro un bucket esistente o
+darle un bucket suo. Da quel momento quella spesa ha una riga propria.
+
+Le categorie che crei da Impostazioni entrano nel piano da sole, quindi il caso si presenta soprattutto per
+categorie vecchie o create prima del piano.
+
+## Bucket carta e rateali: prepara il pagamento una volta
+
+Ogni carta inclusa nel Piano ha un proprio bucket di pagamento protetto. Quando un acquisto con carta è
+coperto dal denaro nel bucket di spesa, Tracky mostra quell'importo come **Spesa coperta** e lo rende
+disponibile per il futuro pagamento della carta. Nei dettagli dell'Attività trovi gli acquisti coperti
+separati dai pagamenti dell'estratto.
+
+Quando compare l'addebito dell'estratto sul conto di regolamento, apri il bucket carta e scegli **Registra
+pagamento estratto**. Seleziona l'addebito e conferma. Tracky crea il movimento mancante sulla carta e collega
+le due parti. Gli acquisti originari restano le spese; pagare l'estratto usa soltanto il denaro che avevi
+riservato per coprirli.
+
+Anche ogni normale piano rateale attivo ha un bucket protetto con la rata del mese. Un prestito associato a una
+tua categoria usa invece quella categoria, senza una seconda riga nel gruppo Rate. Così il fabbisogno di
+liquidità resta visibile anche se l'acquisto finanziato è avvenuto prima o fuori dal Piano. Quando rateizzi il debito
+di una carta, il residuo delle rate viene sottratto dal fabbisogno del bucket carta: finanzi le rate, non lo
+stesso capitale due volte.
+
+I bucket carta e rateali usano per impostazione predefinita tutto il fabbisogno calcolato. Aggiungi un target
+se vuoi seguire un ritmo diverso, per esempio dare 400 € al mese alla carta.
+
+## Piano oppure Obiettivi: quale dei due accantona
+
+Il Piano e gli Obiettivi permettono entrambi di mettere denaro da parte, quindi è facile ritrovarsi a farlo
+due volte per la stessa cosa e vedere due numeri diversi che ti dicono quanto manca.
+
+Gli Obiettivi non sono ridondanti: alimentano la proiezione di Flusso di cassa e il *safe to spend* della
+Dashboard, funzioni che il Piano non offre. A sovrapporsi è solo l'accantonamento mensile verso uno scopo.
+
+La regola non riguarda quale funzione preferisci, ma **che tipo di spesa è**:
+
+Una **spesa ricorrente** — rate condominiali, assicurazioni, bollo — torna ogni anno ed è parte di quanto
+costa un mese della tua vita. Va nel **Piano**, come bucket con target, così entra in Cost to Be Me. Se la
+lasci solo negli Obiettivi, quel numero ti dirà che il tuo mese costa meno di quanto costa davvero.
+
+Un **obiettivo una tantum** — un regalo, un viaggio, il fondo emergenza — lo raggiungi e lo spendi. Non è un
+costo mensile ricorrente: va negli **Obiettivi**.
+
+Se un salvadanaio contiene già i risparmi per un bucket ordinario del Piano, collegalo dal pannello dei dettagli del
+bucket. Tracky mostra l'importo come **Già accantonato** e chiede soltanto la parte restante del target. Non è
+una nuova assegnazione e viene riletto ogni mese invece di essere riportato di nuovo, così lo stesso risparmio
+non raddoppia in silenzio.
+
+**Una cosa da sapere se usi i pocket o i salvadanai della banca.** Il Piano legge la liquidità dai **saldi
+dichiarati dai conti**. Alcune banche dichiarano il saldo principale **al netto** dei pocket: in quel caso
+il denaro spostato lì resta fuori dalla liquidità del Piano anche se colleghi il salvadanaio corrispondente.
+Il collegamento può coprire il target del bucket, ma non trasforma il pocket in denaro da assegnare.
+
+## Il mese di anticipo
+
+È l'obiettivo del metodo, e vale la pena nominarlo esplicitamente perché tutto il resto ci porta.
+
+Finché assegni denaro che arriva *durante* il mese, vivi in rincorsa: le spese precedono le decisioni. Quando
+riesci a coprire un mese intero con i soldi guadagnati nel mese precedente, il primo del mese ti siedi,
+assegni tutto, e per trenta giorni non devi più chiederti se puoi permetterti qualcosa — l'hai già deciso.
+
+Non è un traguardo che si raggiunge in una volta. Ogni euro che avanza a fine mese e non spendi è un passo.
+
+## Domande frequenti
+
+**Come scelgo cadenza e comportamento, in breve?**
+Guarda come sono distribuiti i pagamenti, non come si chiama la spesa. La spendi ogni mese e vuoi un tetto:
+**Mensile + Rabbocca fino a**. La paghi una volta l'anno a una data nota: **Annuale + Rabbocca fino a**, con
+la scadenza. La paghi a rate sparse nell'anno con un totale stabile: **Mensile + Metti da parte altri**, per
+il totale annuo diviso dodici. È un obiettivo una tantum che poi finisce: **Personalizzato + Raggiungi un
+saldo di**.
+
+**Devo assegnare per forza fino a zero?**
+È l'obiettivo, non un obbligo. Un *Da assegnare* positivo significa che hai soldi senza un lavoro: prima o
+poi se ne andranno da soli in qualcosa che non hai scelto.
+
+**Cosa succede se spendo più di quanto ho assegnato a una categoria?**
+Il bucket va in rosso. Per uno scoperto liquido sposta denaro da un altro bucket; altrimenti l'ammanco riduce
+*Da assegnare*. Per uno scoperto a credito finanzia il bucket di pagamento della carta, così potrai saldare
+il debito. Il saldo negativo della categoria non viene riportato nel mese successivo.
+
+**Il denaro non speso resta nella categoria?**
+Sì, se il *Disponibile* è positivo passa al mese dopo. È così che si costruiscono i fondi per le spese
+annuali.
+
+**Perché lo stipendio non compare in una categoria?**
+Le entrate non sono attività di categoria: finanziano il piano. Le trovi in *Da assegnare* e nella sua
+scomposizione, mai come spesa negativa in un bucket.
+
+**Quanto deve valere Movimenti non spiegati?**
+Zero. Le entrate e ogni altra componente sono conteggiate direttamente. Un valore diverso da zero indica un
+movimento del conto non ancora attribuito correttamente, non un guadagno o una spesa in più.
+
+**Ho cambiato la categoria di una vecchia transazione: il piano si aggiorna?**
+Sì. Gli ultimi due mesi si ricalcolano sempre dal vivo, e le modifiche a mesi più vecchi invalidano la cache
+da sole. *Ricalcola piano* resta come rete di sicurezza, non è il percorso normale.
+
+**Posso avere più di un piano?**
+Il primo è per tutti. I piani aggiuntivi sono una funzione Pro — utili per separare perimetri diversi, per
+esempio conti personali e conti di un'attività, o una seconda valuta.
+
+**Nascondere una categoria toglie i suoi soldi dal piano?**
+No. Nascondere cambia solo cosa vedi: il *Disponibile* di quel bucket continua a contare nei totali e nel
+*Da assegnare*. Lo ritrovi con la vista *Categorie nascoste*.

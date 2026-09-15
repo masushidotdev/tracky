@@ -1,0 +1,88 @@
+---
+title: Settings, plan, and privacy
+description: Review your profile and plan, choose notification delivery, manage Analyst memories, and request an export or deletion.
+section: Settings
+order: 140
+locale: en
+updatedAt: 2026-08-04
+keywords: [settings, privacy, Free, Pro, notification preferences, Telegram, Analyst memories, data export, account deletion]
+related: [analyst-notifications-automations, csv-import, manual-accounts, security-and-glossary]
+---
+
+# Settings, plan, and privacy
+
+Open **Settings** to review account-level preferences and privacy controls. Changes here do not move money or authorize bank payments.
+
+## How Settings is organised
+
+Settings opens on **General** and carries four more pages across the top:
+
+- **Bank connections** - the banks you have linked, their status, and the button
+  that adds another. Choosing it opens a window where you pick your bank and are
+  sent to it to authenticate; nothing is connected until you come back.
+- **Accounts** - every account, linked or manual: rename, hide, turn sync off,
+  correct a manual balance.
+- **Credit** - credit cards, their statement cycles, and the loans and instalment
+  contracts you track.
+- **Import history** - the CSV imports you have run and what each one produced.
+
+The account list in the sidebar is for reading your money; these pages are for
+administering it. Adding an account is still one click from the sidebar.
+
+## Profile
+
+The Profile card shows the name, email address, and locale associated with your signed-in profile. It is read-only: there are no profile-editing controls on this page.
+
+## Free and Pro plans
+
+The Plan card shows your current tier and daily Analyst allowance:
+
+- **Free:** 20 Analyst messages per day.
+- **Pro:** 100 Analyst messages per day and access to long-term FIRE projections.
+
+Connected and manual accounts, [CSV import](/app/docs/csv-import), Dashboard and Safe to spend, Cash Flow and bill reminders, and money boxes remain available on both tiers.
+
+<Callout title="Billing is not available yet">
+  Settings reports your current access, but you cannot buy, upgrade, downgrade, or manage billing in Tracky yet. The
+  Pro action is marked as coming soon.
+</Callout>
+
+## Notification preferences
+
+**Bill reminder lead days** tell Tracky how far before a planned expense occurrence to create a reminder. The default is **3 days**; `0` means the due date itself. You can select up to four values from 0 to 30. With multiple values, Tracky uses the smallest selected threshold reached by the occurrence, so `7` and `3` can produce reminders as each window is reached.
+
+In-app bill reminders need no delivery opt-in when at least one lead day is selected. **Email** and **Telegram** delivery are both off by default. Their switches currently apply to bill reminders, upcoming subscription or installment payments, and low projected-balance warnings. Telegram delivery also requires a verified link.
+
+See [Analyst, notifications, and automations](/app/docs/analyst-notifications-automations) for recurrence, paid-occurrence, and delivery details.
+
+## Telegram link
+
+Generate the one-time `/link` command, then send it privately to the configured bot. It expires after ten minutes and can be used once. Never share the command. You can unlink the current chat from the same card.
+
+## Analyst memories
+
+Memories are facts, preferences, or goals the Analyst can save—with your approval—and retrieve in later relevant conversations. The list shows the stored text and its kind.
+
+Use the trash action and confirm to delete one memory. Deletion removes that saved item from future memory retrieval; it does not delete the conversation where it originated.
+
+## Export your data
+
+Request a version 3 JSON export to receive the Tracky records associated with your user:
+
+- accounts and balance snapshots; transactions, categories, and category rules;
+- plans, groups, buckets, category mappings, assignments, targets, subscriptions, planned expenses and occurrence payments;
+- money boxes and contributions; credit facilities and planned transfers;
+- notifications, Analyst memory text and kinds, and user settings.
+
+This includes balances and transactions maintained through [manual accounts](/app/docs/manual-accounts) or [CSV import](/app/docs/csv-import). Analyst memory embeddings are not included.
+
+Only one export can be queued or running at a time. After an export completes, wait 24 hours before requesting another. Its download link expires seven days after the request.
+
+## Request account deletion
+
+Confirming **Request deletion** records the request time and marks it as pending. Repeating the action does not create another request.
+
+<Callout title="Request only">
+  This control does not yet erase Tracky records, disconnect accounts, or close your sign-in profile automatically. It
+  records a deletion request for follow-up; the page does not currently provide a cancel action.
+</Callout>

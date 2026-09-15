@@ -1,0 +1,59 @@
+---
+title: Salvadanai, spese ed entrate programmate
+description: Pianifica scadenze, riconcilia pagamenti, collega i risparmi ai bucket del Piano e converti quelli idonei in conto.
+section: Flusso di cassa
+order: 100
+locale: it
+updatedAt: 2026-08-04
+keywords: [salvadanaio, bucket piano, conversione conto, spesa programmata, entrata, contributo, riconciliazione]
+related: [planning, goals, plan-and-subscriptions, transactions]
+---
+
+# Salvadanai, spese ed entrate programmate
+
+Una voce programmata descrive nome, importo, valuta, data, direzione, conto opzionale, categoria opzionale e ricorrenza opzionale. Modificala da Flusso di cassa per cambiare questi dettagli, compresa l'assegnazione o la rimozione della categoria. Lo stato visibile può essere **Pianificata**, **In finanziamento**, **Pagata** o **Annullata**. Per una ricorrenza, ogni scadenza può essere pagata, collegata a una transazione o riaperta separatamente.
+
+## Riconciliare una scadenza
+
+Quando arriva il movimento reale, usa **Collega transazione**. Tracky cerca candidati compatibili e memorizza il pagamento; la scadenza non pesa più sul flusso di cassa futuro. Puoi segnarla pagata senza transazione quando il pagamento è avvenuto fuori dai conti tracciati, oppure riaprirla in caso di errore.
+
+## Salvadanai
+
+Un salvadanaio è virtuale: registra un target, l'importo accantonato, la data obiettivo e un eventuale conto associato, ma l'importo accantonato non è un secondo saldo bancario. Un contributo può essere rapido o collegato a una transazione.
+
+Da un trasferimento spaiato in uscita usa **Associa money box** per registrare l'importo come contributo e mostrare il nome della money box come destinazione. **Cambia money box** sposta lo stesso contributo senza duplicarlo. Dal menu della money box, **Vedi movimenti e contributi** apre la cronologia completa. Archiviare conserva lo storico ma rimuove l'obiettivo dagli elementi attivi.
+
+## Convertire un salvadanaio in conto
+
+Da **Obiettivi**, una money box contrassegnata come denaro conservato fuori dal saldo del conto associato può diventare un conto manuale corrente o di risparmio. Contributi e prelievi collegati a transazioni diventano trasferimenti; la parte spiegata soltanto dai contributi manuali diventa il saldo iniziale.
+
+La conversione elimina la money box e i contributi inseriti a mano, rimuove tutti i riferimenti e non può essere annullata. Se la money box ha un conto associato, il nuovo conto entra anche in ogni Piano della stessa valuta che includeva già quel conto ospitante, così la conversione conserva la liquidità del Piano; gli altri Piani restano invariati. Una money box il cui denaro è ancora incluso nel saldo di un altro conto non è idonea, perché un secondo conto conterebbe due volte lo stesso denaro.
+
+## Usare il risparmio in un bucket del Piano
+
+Apri un bucket ordinario del Piano e scegli **Salvadanaio collegato** per associargli i risparmi già destinati allo stesso scopo. Tracky mostra l'importo idoneo come **Già accantonato** e lo include nel Disponibile attuale del bucket. Il target chiede quindi soltanto ciò che manca, evitando di risparmiare lo stesso euro prima nel salvadanaio e poi di nuovo con le assegnazioni del Piano.
+
+Un salvadanaio può prefinanziare un solo bucket; i bucket di pagamento delle carte e quelli rateali non possono usare questo collegamento. Il salvadanaio contribuisce solo se è attivo, usa la valuta del Piano e appartiene a un conto incluso in quel Piano. Se una di queste condizioni cambia, Tracky conserva il collegamento ma conteggia temporaneamente zero.
+
+L'importo accantonato non è un'assegnazione. Tracky rilegge il saldo attuale del salvadanaio ogni mese e non riporta la riserva come se fosse un nuovo risparmio del mese successivo. Altrimenti lo stesso denaro invariato verrebbe aggiunto una volta al mese.
+
+<CalculationBreakdown title="Piano di finanziamento del salvadanaio">
+  `rimanente = max(target − accantonato, 0)`.
+
+`mesi rimanenti` conta i mesi di calendario inclusivi fra oggi e data target, con minimo 1. `quota mensile richiesta = rimanente / mesi rimanenti`, arrotondata per eccesso alla più piccola unità della valuta.
+
+`progresso = accantonato / target × 100`, mantenuto fra 0% e 100%. L'accantonamento atteso distribuisce il target sui mesi totali inclusivi e arrotonda verso l'alto.
+
+Stato: **coperta** se il rimanente è zero; **in ritardo** se l'accantonato è sotto l'atteso; **in scadenza** se restano al massimo 30 giorni; altrimenti **in linea**.
+
+</CalculationBreakdown>
+
+## Trasferimenti pianificati
+
+Un trasferimento futuro crea una parte in uscita e una in entrata alla stessa data e valuta. Puoi modificarne conti, data e importo, segnarlo completato o cancellarlo. Se la sorgente è una linea di credito, Flusso di cassa distingue la capacità di credito dalla liquidità sul conto destinatario.
+
+<Callout title="Accantonamento virtuale">
+  Registrare un contributo non riduce automaticamente il saldo bancario. Se sposti davvero denaro, registra anche il
+  trasferimento o collega il movimento reale. Collegare il salvadanaio al Piano evita una seconda richiesta di
+  finanziamento; non crea liquidità.
+</Callout>

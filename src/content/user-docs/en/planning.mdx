@@ -1,0 +1,66 @@
+---
+title: Cash Flow projection
+description: Read cycles, balances, recurring commitments, scheduled movements, unassigned accounts, and the first negative date.
+section: Cash Flow
+order: 90
+locale: en
+updatedAt: 2026-08-04
+keywords: [cash flow, projected balance, scheduled transaction, safe to spend, first negative date, cycle]
+related: [money-boxes-and-planned-items, credit-cards-and-statements, dashboard-and-totals]
+---
+
+# Cash Flow projection
+
+Cash Flow builds a liquidity calendar. It starts from the latest known cash balances, adds commitments in the cycle, and calculates the balance after each date. It is not a statistical forecast of behavior; it is the result of known items.
+
+## The cycle
+
+Preferences set frequency, count, and a start date or day of month. Navigate previous, current, and next cycles. The cycle changes the displayed window, not the original item dates.
+
+## Row sources
+
+Cash Flow combines planned expenses and income, active subscriptions, installments, card statements, planned transfers, and one-off scheduled transactions recorded in the ledger. The ledger mirrors only the next unpaid occurrence of each recurring planned item; Cash Flow continues to list every occurrence in the selected cycle. A planned rule keeps its optional memo across those occurrences, and the Cash Flow edit dialog exposes the payee and memo separately. Money-box funding needs are shown separately and do not change an account balance by themselves. A reconciled or paid occurrence remains identifiable but must not be applied twice.
+
+A scheduled ledger movement is applied to the projection on its future date even though it has not moved today's account balance. Scheduled outflows also count as commitments in **Safe to spend**; scheduled inflows remain expected income and do not increase the main Safe-to-spend figure before they arrive.
+
+<CalculationBreakdown title="Account series">
+  `balance after row = balance before + inflow − outflow`.
+
+For an account with overdraft, projected availability receives the same movement. The first value below zero sets that account's first negative date.
+
+If balance is absent or item currency differs, the row can remain visible while its series is marked not projected.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Aggregate series">
+  Only opening balances for cash accounts in the selected primary currency are added, followed by their dated rows. CARD
+  accounts never reduce aggregate liquidity or raise negative-cash alerts: a negative CARD balance is debt, not a cash
+  deficit.
+</CalculationBreakdown>
+
+## Unassigned account
+
+An expense or subscription without an account, or a card statement without a settlement account, appears as unassigned. It remains a known commitment, but Tracky cannot know which balance it reduces. Assign the source account for a complete projection.
+
+## Three complete scenarios
+
+### 1. Ordinary month
+
+Opening balance `180000` minor units. Salary `CRDT 220000` on the 27th, rent `DBIT 90000` on the 2nd, subscriptions `15000`. In date order: `180000 − 90000 − 15000 + 220000 = 295000`. A cycle starting on the 25th places salary before expenses; one starting on the 1st applies expenses first.
+
+### 2. Card statement
+
+CARD balance is `-75000`; settlement account starts at `120000`. Closing creates a `75000` statement on the current account, projecting it to `45000`. CARD is not added to cash. Once current-account `DBIT` and CARD `CRDT` are matched, the cycle becomes paid and is not applied again.
+
+### 3. Installments plus a scheduled movement
+
+Opening `100000`; loan installment `25000`, one-off scheduled outflow `60000`, and subscription `20000`. Balances become `75000`, `15000`, then `-5000`: the subscription date is first negative. Moving an item in Tracky is valid only when the real due date changes; otherwise add real income or reduce an outflow.
+
+## Reading an alert
+
+Open the reported day, inspect all earlier rows, and verify opening balance, currency, and account. A negative notification uses the earliest affected group date and clears only when source data produces a non-negative series.
+
+<Callout title="Cash Flow does not move money">
+  Creating a transfer, money box, due item, or scheduled transaction records intent. You must still perform the real
+  operation with your bank or creditor.
+</Callout>

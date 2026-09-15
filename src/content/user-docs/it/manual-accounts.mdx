@@ -1,0 +1,56 @@
+---
+title: Conti manuali per liquidità, carte e asset
+description: Crea e mantieni manualmente conti correnti, di risparmio, carte, investimenti e altri asset.
+section: Conti
+order: 50
+locale: it
+updatedAt: 2026-07-16
+keywords: [conto manuale, CACC, SVGS, CARD, INVS, ASST, conto investimenti, saldo asset, saldo iniziale]
+related: [accounts, manual-transactions-and-transfers, credit-cards-and-statements, csv-import, settings-and-privacy]
+---
+
+# Conti manuali per liquidità, carte e asset
+
+Un conto manuale è utile quando l'integrazione bancaria non espone liquidità, una carta, un investimento o un altro asset. Puoi scegliere `CACC`, `SVGS`, `CARD`, `INVS` o `ASST`; la valuta deve essere un codice di tre lettere.
+
+<Steps>
+  <Step title="Crea il conto">
+    Da **Conti → Aggiungi conto manuale**, indica nome, tipo, valuta e alias opzionale. Tracky crea il conto attivo con
+    sincronizzazione disabilitata e uno snapshot iniziale con saldo zero.
+  </Step>
+  <Step title="Imposta la situazione iniziale">
+    Per conti correnti, di risparmio o carte, registra un movimento manuale `internal`, così l'importo iniziale non
+    diventa reddito o spesa. Per investimenti e altri asset, apri le azioni del conto e scegli **Aggiorna saldo**.
+  </Step>
+  <Step title="Mantieni il saldo">
+    Registra i movimenti per liquidità e carte. Per investimenti e altri asset, salva un nuovo saldo con data quando il
+    valore cambia in modo significativo.
+  </Step>
+</Steps>
+
+## Tipi liquidità e carta
+
+**CACC** rappresenta un conto corrente e **SVGS** un conto di risparmio. Entrambi contano come liquidità in Dashboard, disponibile dopo le spese e cashflow: un `CRDT` aumenta il saldo e un `DBIT` lo riduce.
+
+**CARD** rappresenta il registro della carta. Gli acquisti `DBIT` portano normalmente il saldo sotto zero; rimborsi e pagamento dell'estratto `CRDT` lo riportano verso zero. Il saldo negativo CARD entra nei debiti, non nella liquidità.
+
+<CalculationBreakdown title="Saldo manuale">
+  Saldo nuovo = saldo precedente + effetto del movimento.
+
+`effetto(CRDT) = +importo`; `effetto(DBIT) = −importo`. Modificare un movimento applica la differenza tra nuovo e vecchio effetto; eliminarlo applica l'effetto opposto.
+
+**Esempio CARD:** saldo `0`, acquisto `DBIT 8.000`, rimborso `CRDT 2.000` → saldo `-6.000` centesimi.
+
+</CalculationBreakdown>
+
+## Tipi investimento e altro asset
+
+**INVS** rappresenta gli investimenti e **ASST** un altro asset. Compaiono nel gruppo **Asset** della pagina Conti. Dal menu azioni scegli **Aggiorna saldo**, inserisci valore e data di riferimento, poi salva. Ogni aggiornamento aggiunge uno snapshot; Tracky usa il più recente invece di ricavare il valore da acquisti o vendite.
+
+I saldi visibili entrano nel dettaglio del patrimonio netto della Dashboard come `liquidità + asset − debiti`. Non compaiono mai nel disponibile dopo le spese o nel cashflow, perché non sono liquidità spendibile. I saldi di investimenti e altri asset alimentano anche il valore investito iniziale delle [proiezioni FIRE Pro](/app/docs/analyst-notifications-automations#proiezioni-fire-e-pensione) dell'Analyst.
+
+## Limiti operativi
+
+I conti manuali non mostrano salute o comandi di sincronizzazione. I movimenti devono avere importo positivo, valuta uguale al conto, descrizione e data `YYYY-MM-DD`. L'[importazione CSV](/app/docs/csv-import) accetta conti manuali `CACC` e `CARD` attivi, non conti di risparmio o asset. Non usare un saldo positivo fittizio su CARD per rappresentare il plafond: il plafond appartiene alla linea di credito collegata.
+
+Per scaricare i record dei conti manuali e i relativi snapshot, richiedi l'export JSON da [Impostazioni](/app/docs/settings-and-privacy#esportare-i-dati).

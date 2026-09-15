@@ -1,0 +1,66 @@
+---
+title: Analyst, notifiche e automazioni
+description: Usa l'assistente con approvazioni esplicite e comprendi i controlli automatici di Tracky.
+section: Assistenza
+order: 130
+locale: it
+updatedAt: 2026-08-04
+keywords: [Analyst, notifiche, automazioni, approvazione, Telegram, promemoria bollette, FIRE, proiezione pensione]
+related: [settings-and-privacy, security-and-glossary, planning, plan-and-subscriptions]
+---
+
+# Analyst, notifiche e automazioni
+
+L'Analyst può leggere i dati Tracky autorizzati, spiegare pattern, creare simulazioni what-if e presentare grafici o tabelle. Puoi mantenere più conversazioni, rinominarle, eliminarle e scegliere modello e livello di reasoning disponibili.
+
+## Letture e modifiche
+
+Le operazioni di lettura possono consultare conti, transazioni, spesa, avanzamento del Piano, cashflow, money box, credito, sottoscrizioni e voci pianificate. Le modifiche sensibili richiedono un'anteprima e la tua approvazione: assegnazioni o target del Piano, money box, scadenze, memoria e ricategorizzazioni multiple. Negare lascia i dati invariati.
+
+<Callout title="Controllo umano">
+  Leggi sempre importi, valuta, conto, categoria, data e ricorrenza. Una risposta dell'Analyst può essere utile per
+  esplorare, ma non è consulenza finanziaria né sostituisce i dati del contratto.
+</Callout>
+
+## Proiezioni FIRE e pensione
+
+Chiedi all'Analyst in linguaggio naturale, per esempio: «Quando potrei raggiungere la FIRE?» oppure «Proietta la pensione fra 20 anni con inflazione al 3%». La proiezione di lungo periodo, disponibile solo con Pro, parte dalla liquidità e dai saldi di investimenti e altri asset tracciati, insieme alle entrate e le uscite dei prossimi tre mesi di Flusso di cassa.
+
+Se non indichi valori diversi in chat, usa un orizzonte di 30 anni, inflazione annua delle spese al 2%, rendimento annuo degli investimenti al 5% e tasso di prelievo sostenibile al 4%. Quest'ultimo determina il target FIRE predefinito a partire dalle spese annuali. Nella richiesta puoi sostituire queste ipotesi, saldi iniziali, entrate o spese mensili, target, data del pensionamento ed eventi una tantum.
+
+Leggi sempre le ipotesi nel risultato e confronta più scenari: sono stime nominali, non garanzie. Il piano Free non può eseguire questo strumento; [Impostazioni](/app/docs/settings-and-privacy) mostra il tuo piano e i limiti attuali.
+
+## Telegram
+
+Puoi generare da [Impostazioni](/app/docs/settings-and-privacy) un comando monouso e inviarlo privatamente al bot configurato. Il codice scade dopo dieci minuti e funziona una sola volta. Non condividerlo. Puoi scollegare Telegram dalla scheda dedicata; le richieste che richiedono approvazione continuano a dichiararlo esplicitamente.
+
+## Promemoria delle bollette
+
+I promemoria derivano dalle spese pianificate con stato `planned` o `funding`. Tracky controlla la prossima scadenza—compresa quella successiva di una voce ricorrente—e salta una scadenza già segnata come pagata.
+
+L'anticipo predefinito è tre giorni. In Impostazioni puoi scegliere fino a quattro soglie da 0 a 30 giorni; `0` indica il giorno stesso. A ogni controllo Tracky usa la soglia selezionata più piccola già raggiunta. Con `7` e `3`, quindi, una bolletta può generare un promemoria nella finestra di sette giorni e un altro quando entra in quella di tre. La deduplicazione evita ripetizioni per la stessa scadenza e soglia.
+
+Se è configurato almeno un giorno di anticipo, il promemoria viene creato nella casella in-app indipendentemente dagli interruttori di consegna esterna. Email e Telegram sono consensi separati, entrambi disattivati per impostazione predefinita; Telegram deve anche essere collegato. Gestisci queste scelte da [Impostazioni](/app/docs/settings-and-privacy).
+
+## Notifiche finanziarie
+
+Ogni sei ore Tracky valuta:
+
+- bucket visibili e non in pausa del Piano almeno al 90% del finanziato (**warning**) o in rosso (**critical**);
+- sottoscrizioni attive e rate con scadenza nei prossimi sette giorni;
+- prima data negativa del cashflow;
+- sync in errore o consenso da rinnovare.
+
+Le notifiche usano chiavi di deduplicazione, quindi lo stesso evento non viene moltiplicato a ogni controllo. Puoi leggerle o ignorarle dall'interfaccia; correggi la causa nei dati sorgente.
+
+La consegna esterna comprende al momento promemoria delle bollette, pagamenti imminenti di sottoscrizioni o rate e avvisi di saldo proiettato insufficiente. Gli altri tipi restano nella casella in-app.
+
+## Automazioni backend
+
+- sync dei conti ed elaborazione notifiche: ogni 6 ore;
+- chiusura automatica dei cicli carta dovuti: ogni giorno;
+- health score e anomalie Analyst: ogni giorno;
+- report mensile: il giorno 2; revisione sottoscrizioni: il giorno 3;
+- watchdog e pulizia recuperano job e aggiornamenti Telegram interrotti.
+
+Queste automazioni non autorizzano nuovi pagamenti bancari. Aggiornano import, analisi, notifiche e stato interno.

@@ -1,0 +1,8 @@
+# Gitignored files copied into every agent worktree.
+# Read by scripts/claude-worktree-create.sh (a WorktreeCreate hook replaces
+# Claude Code's built-in .worktreeinclude handling).
+#
+# Default: copy nothing. Worktrees provision their own Convex deployment via
+# scripts/init-worktree.sh, so secrets must be set explicitly per worktree
+# (opt-in: copy .env.local manually, then let init-worktree strip Convex
+# coordinates). Copying secret files by default spreads live keys.

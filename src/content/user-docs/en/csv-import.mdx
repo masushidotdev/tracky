@@ -1,0 +1,68 @@
+---
+title: Import bank transactions from CSV
+description: Import a bank export into a manual account with column mapping, preview, deduplication, and category rules.
+section: Transactions
+order: 65
+locale: en
+updatedAt: 2026-07-16
+keywords: [CSV import, bank export, manual account, column mapping, duplicate transactions, decimal comma]
+related: [manual-accounts, manual-transactions-and-transfers, dashboard-and-totals, settings-and-privacy]
+---
+
+# Import bank transactions from CSV
+
+Use CSV import when you maintain an account manually and your bank can export its movements. Import is available only for active manual CACC and CARD accounts; connected accounts continue to receive transactions through synchronization.
+
+<Callout title="Your original file stays local">
+  Tracky reads and parses the CSV in your browser. The original file is never uploaded; only the valid transaction
+  data you confirm is sent when the import starts.
+</Callout>
+
+## Import a file
+
+<Steps>
+  <Step title="Upload the CSV">
+    Open **Import**, select a CSV with a header row, and continue. If you do not have a manual account yet, create one
+    from the wizard first.
+  </Step>
+  <Step title="Map the columns">
+    Select the destination account, then map booking date, description, optional counterparty, and amount columns.
+    Choose the date format and whether the file uses one signed amount or separate debit and credit columns.
+  </Step>
+  <Step title="Review the preview">
+    Check the destination account, directions, dates, amounts, and the **Valid**, **Duplicate**, or **Error** badge on
+    each row. An invalid row shows its reason and is not eligible for import.
+  </Step>
+  <Step title="Import valid rows">
+    Tracky imports valid rows in batches and reports imported, skipped, and failed totals. The manual balance is
+    updated from the imported debits and credits.
+  </Step>
+</Steps>
+
+After import, review the new movements and transfers. Their balance changes also feed [Dashboard totals and Safe to spend](/app/docs/dashboard-and-totals).
+
+## Supported dates and amounts
+
+- Dates can use `YYYY-MM-DD`, `DD/MM/YYYY`, `MM/DD/YYYY`, or `DD.MM.YYYY`. Automatic detection treats ambiguous slash dates as day-first; choose `MM/DD/YYYY` explicitly when required.
+- A **signed amount** column uses negative values for `DBIT` and positive values for `CRDT`.
+- With **separate debit and credit** columns, each row must contain exactly one of the two.
+- Decimal comma and decimal point are supported, including grouped values such as `1.234,56` and `1,234.56`. Tracky converts the value to the destination account currency's minor units.
+
+The CSV does not override currency. Every row uses the selected account's currency, so import each currency into its matching account.
+
+## Duplicates and safe re-import
+
+Tracky identifies a CSV row from its account, date, direction, amount, currency, and normalized description. Repeated rows in the same file and rows already imported into that account are marked **Duplicate** and skipped without changing the balance.
+
+You can therefore import the same file again after an interruption: rows already stored remain unchanged and only new valid rows are added. A row with a changed date, direction, amount, currency, or description is a different movement and should be reviewed.
+
+## Automatic categorization
+
+Choose one category during mapping to apply it to every imported row. Leave **Apply rules automatically** selected to run your existing description and counterparty rules on eligible debits. An explicit category takes priority over those rules.
+
+## Troubleshooting
+
+- **A row is invalid:** read the reason below its description. Common causes are a missing description, zero or malformed amount, impossible or unsupported date, or both debit and credit filled.
+- **The currency does not match:** confirm that you selected the manual account in the file's currency. Split mixed-currency exports and import each part into the correct account.
+- **No manual account is available:** create an active CACC or CARD manual account, then return to mapping.
+- **The import was interrupted:** start again with the same file. Deduplication makes the retry safe.

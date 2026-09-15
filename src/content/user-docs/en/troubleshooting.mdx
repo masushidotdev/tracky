@@ -1,0 +1,48 @@
+---
+title: Troubleshooting
+description: Quick diagnosis for balances, sync, projections, transfers, cards, and Analyst.
+section: Assistance
+order: 150
+locale: en
+updatedAt: 2026-08-04
+keywords: [troubleshooting, errors, sync, wrong balance, double counting, FAQ]
+related: [accounts, planning, manual-transactions-and-transfers]
+---
+
+# Troubleshooting
+
+## Balance differs from the bank
+
+Check latest snapshot date, sync status, booked versus available balance, and transactions the bank has not published yet. For a manual account, review direction and amount; editing or deleting adjusts balance automatically.
+
+## Net worth looks too low
+
+Check negative CARD balances, independent financing, and currency. Cards are not cash. If one purchase appears in several forms, confirm statement and payment are transfer/internal and the facility is linked to the correct CARD.
+
+## Cash Flow shows an expense twice
+
+Link the real transaction to the planned occurrence or mark that occurrence paid. Avoid a duplicate planned expense for a subscription. For cards, purchase is spending while statement settlement is a transfer.
+
+## An item is unassigned
+
+Assign an account to the expense or subscription. For a card statement, configure the facility's settlement account. Until then the commitment is visible but cannot reduce one specific account series.
+
+## A transfer is not recognized
+
+Check distinct accounts, opposite directions, matching currency, at most seven days apart, and amounts within tolerance. Confirm a candidate in Review. A leg already matched or classified `internal` cannot be reused.
+
+## A manual transaction cannot be edited or deleted
+
+First unlink its transfer match. If it is used by Cash Flow, an installment, statement, plan, money box, or subscription, remove or correct that relationship; Tracky blocks deletion to prevent dangling references.
+
+## Card usage cannot be edited
+
+That is expected for a CARD-linked facility: usage is `max(-balance, 0)`. Correct the card movements. Manual usage belongs only to the legacy flow without CARD.
+
+## Analyst does not respond
+
+Check message limits, wait for a running response, or choose another model. A failed tool is not a successful change without the displayed confirmation. For Telegram, regenerate an expired code and send it only in the private chat.
+
+## Bank consent expired
+
+Open Settings → Bank Connections, renew consent, and complete the bank flow again. History remains, and sync resumes when the connection becomes active.
