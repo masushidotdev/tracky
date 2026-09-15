@@ -23,6 +23,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0012-unified-planned-transactions.md` - one stored model for planned movements with legacy API compatibility.
 - `decisions/0013-loans-adopt-paired-plan-buckets.md` - paired loans reuse user Plan buckets instead of generating duplicate funding rows.
 - `decisions/0014-cross-month-plan-transfers.md` - confirmed in-plan cash transfers stay neutral across booking months while their fee remains activity.
+- `decisions/0015-account-deletion-cancel.md` - reversible account deletion requests without promising an unimplemented erasure pipeline.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.
