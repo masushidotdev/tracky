@@ -1,22 +1,25 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Blocks commits that stage local env files, key material, or PEM private keys.
 # Installed via `npm run prepare` (git config core.hooksPath githooks).
+#
+# Staged paths are read NUL-delimited so names with whitespace or special
+# characters keep their boundaries (bash is required for `read -d ''`).
 
-staged_files=$(git diff --cached --name-only --diff-filter=ACM)
-[ -z "$staged_files" ] && exit 0
+set -u
 
-blocked=""
-for file in $staged_files; do
+blocked=()
+while IFS= read -r -d '' file; do
   case "$file" in
     *.env.local.example | .env.local.example | *.env.example | .env.example) ;;
     .env | .env.* | */.env | */.env.* | *.pem | *.key | *.p12 | *.pfx)
-      blocked="$blocked  $file\n"
+      blocked+=("$file")
       ;;
   esac
-done
+done < <(git diff --cached --name-only -z --diff-filter=ACM)
 
-if [ -n "$blocked" ]; then
-  printf 'pre-commit: refusing to commit secret-bearing files:\n%b' "$blocked" >&2
+if [ "${#blocked[@]}" -gt 0 ]; then
+  printf 'pre-commit: refusing to commit secret-bearing files:\n' >&2
+  printf '  %s\n' "${blocked[@]}" >&2
   printf 'Store secrets with `npx convex env set` instead. Bypass only if you are sure: git commit --no-verify\n' >&2
   exit 1
 fi
@@ -25,21 +28,22 @@ SECRET_PATTERN='-----BEGIN( [A-Z]+)? PRIVATE KEY-----|sk-(live|test)-[A-Za-z0-9]
 
 # Scan staged content for secrets. Placeholder example files (*.example) carry
 # fake values by design and are excluded here; they are still covered by review.
-content_files=""
-for file in $staged_files; do
+# Each path is scanned as a single pathspec so names with whitespace cannot
+# split into several paths and bypass the scan.
+content_files=()
+while IFS= read -r -d '' file; do
   case "$file" in
     *.example) ;;
-    *) content_files="$content_files $file" ;;
+    *) content_files+=("$file") ;;
   esac
-done
+done < <(git diff --cached --name-only -z --diff-filter=ACM)
 
-if [ -n "$content_files" ]; then
-  # shellcheck disable=SC2086
-  if git diff --cached -U0 -- $content_files | grep -E "^\\+.*($SECRET_PATTERN)" >/dev/null; then
+for file in ${content_files[@]+"${content_files[@]}"}; do
+  if git diff --cached -U0 -- "$file" | grep -E "^\\+.*($SECRET_PATTERN)" >/dev/null; then
     printf 'pre-commit: staged changes look like a secret or bank identifier.\n' >&2
     printf 'Store secrets with `npx convex env set` instead. Bypass only if you are sure: git commit --no-verify\n' >&2
     exit 1
   fi
-fi
+done
 
 exit 0
