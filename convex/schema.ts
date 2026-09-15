@@ -89,6 +89,7 @@ export default defineSchema({
     status: v.union(
       v.literal('created'),
       v.literal('redirected'),
+      v.literal('processing'),
       v.literal('completed'),
       v.literal('failed'),
       v.literal('expired'),
@@ -104,6 +105,7 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
     createdAtMs: v.number(),
     expiresAtMs: v.number(),
+    processingStartedAtMs: v.optional(v.number()),
     completedAtMs: v.optional(v.number()),
   })
     .index('by_state', ['state'])

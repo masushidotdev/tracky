@@ -1,4 +1,5 @@
 import { httpRouter } from 'convex/server';
+import { Webhook } from 'svix';
 import { httpAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { authKit } from './auth';
@@ -45,7 +46,28 @@ function withNoSniff(response: Response): Response {
 http.route({
   path: '/resend-webhook',
   method: 'POST',
-  handler: httpAction(async (ctx, request) => withNoSniff(await resend.handleResendEventWebhook(ctx, request))),
+  handler: httpAction(async (ctx, request) => {
+    const secret = process.env.RESEND_WEBHOOK_SECRET?.trim();
+    if (!secret) {
+      return webhookResponse('Resend webhook is not configured', 503);
+    }
+    const raw = await request.text();
+    try {
+      new Webhook(secret).verify(raw, {
+        'svix-id': request.headers.get('svix-id') ?? '',
+        'svix-timestamp': request.headers.get('svix-timestamp') ?? '',
+        'svix-signature': request.headers.get('svix-signature') ?? '',
+      });
+    } catch {
+      return webhookResponse('Invalid signature', 401);
+    }
+    const forward = new Request(request.url, {
+      method: 'POST',
+      headers: request.headers,
+      body: raw,
+    });
+    return withNoSniff(await resend.handleResendEventWebhook(ctx, forward));
+  }),
 });
 
 http.route({
