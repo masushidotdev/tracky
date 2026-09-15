@@ -553,21 +553,39 @@ export const exchangeCallback = internalAction({
     errorDescription: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<ExchangeCallbackResult> => {
-    const request = await ctx.runQuery(internal.banking.providerQueries.getAuthRequestByState, {
-      state: args.state,
-    });
+    // Atomically claim the request before any external work. The claim
+    // mutation serializes concurrent callbacks: exactly one proceeds to the
+    // import job and POST /sessions, the rest get the completed result or a
+    // retryable in-progress signal. Single-use authorization codes make this
+    // racy window real: without the claim, a loser fails its exchange and
+    // its catch path would flip the winner's completed request to failed.
+    const claim = await ctx.runMutation(
+      internal.banking.providerMutations.claimAuthRequestForCallback,
+      {
+        state: args.state,
+      },
+    );
 
-    if (!request) {
+    if (claim.outcome === 'missing') {
       return { status: 'failed', reason: 'UNKNOWN_STATE' };
     }
 
     // Idempotency: a completed request already produced its connection and
     // scheduled its syncs. Replaying the same state+code (browser retry,
     // double redirect) must not POST /sessions again nor schedule duplicates.
-    // Checked before the import job is created so replays leave no trace.
-    if (request.status === 'completed') {
+    if (claim.outcome === 'completed') {
       return { status: 'completed', scheduledSyncs: 0 };
     }
+
+    if (claim.outcome === 'processing') {
+      return { status: 'failed', reason: 'CALLBACK_IN_PROGRESS' };
+    }
+
+    const request = {
+      userId: claim.userId,
+      providerConnectionId: claim.providerConnectionId,
+      expiresAtMs: claim.expiresAtMs,
+    };
 
     const importJobId: Id<'importJobs'> = await ctx.runMutation(
       internal.banking.providerMutations.startImportJob,
