@@ -335,6 +335,109 @@ describe('subscriptions', () => {
     });
   });
 
+  test('rejects a category owned by another user', async () => {
+    const t = createTest();
+    const ownerUserId = 'user_subscription_category_owner';
+    const intruderUserId = 'user_subscription_category_intruder';
+    await seedAuthKitUser(t, ownerUserId);
+    await seedAuthKitUser(t, intruderUserId);
+
+    const ownerCategoryId = await t.run(async (ctx) => {
+      const now = Date.UTC(2026, 0, 1);
+      return await ctx.db.insert('categories', {
+        userId: ownerUserId,
+        name: 'Owner category',
+        kind: 'expense',
+        budgetEligible: true,
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+    });
+
+    await expect(
+      t.withIdentity({ subject: intruderUserId }).mutation(api.subscriptions.createSubscription, {
+        name: 'Intruder subscription',
+        currency: 'EUR',
+        interval: 'month',
+        intervalCount: 1,
+        startDate: '2026-06-15',
+        trialPeriodDays: 0,
+        categoryId: ownerCategoryId,
+      }),
+    ).rejects.toThrow('Category not found');
+
+    const intruderTransactionId = await t.run(async (ctx) => {
+      const now = Date.UTC(2026, 0, 1);
+      const providerConnectionId = await ctx.db.insert('providerConnections', {
+        userId: intruderUserId,
+        provider: 'mock',
+        status: 'active',
+        displayName: 'Mock provider',
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+      const accountId = await ctx.db.insert('financialAccounts', {
+        userId: intruderUserId,
+        providerConnectionId,
+        provider: 'mock',
+        providerAccountId: 'intruder_main',
+        name: 'Intruder account',
+        currency: 'EUR',
+        status: 'active',
+        syncEnabled: true,
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+      return await ctx.db.insert('transactions', {
+        userId: intruderUserId,
+        accountId,
+        providerConnectionId,
+        provider: 'mock',
+        providerTransactionId: 'intruder_netflix_2026_06',
+        dedupeKey: 'intruder_netflix_2026_06',
+        status: 'BOOK',
+        direction: 'DBIT',
+        amount: {
+          amountMinor: -1599n,
+          currency: 'EUR',
+        },
+        bookingDate: '2026-06-15',
+        description: 'AcmeStreaming.example',
+        counterpartyName: 'AcmeStreaming.example',
+        classificationKind: 'expense',
+        classificationSource: 'provider',
+        importedAtMs: now,
+        updatedAtMs: now,
+      });
+    });
+
+    await expect(
+      t.withIdentity({ subject: intruderUserId }).mutation(api.subscriptions.convertTransactionToSubscription, {
+        transactionId: intruderTransactionId,
+        name: 'Acme Streaming',
+        interval: 'month',
+        intervalCount: 1,
+        categoryId: ownerCategoryId,
+      }),
+    ).rejects.toThrow('Category not found');
+
+    const result = await t.run(async (ctx) => {
+      const transaction = await ctx.db.get('transactions', intruderTransactionId);
+      const subscriptions = await ctx.db
+        .query('subscriptions')
+        .withIndex('by_userId', (q) => q.eq('userId', intruderUserId))
+        .take(10);
+      return { transaction, subscriptions };
+    });
+
+    expect(result.subscriptions).toHaveLength(0);
+    expect(result.transaction).toMatchObject({
+      classificationKind: 'expense',
+      classificationSource: 'provider',
+    });
+    expect(result.transaction?.subscriptionId).toBeUndefined();
+  });
+
   test('does not convert another user transaction into a subscription', async () => {
     const t = createTest();
     const ownerUserId = 'user_subscription_owner';
