@@ -554,6 +554,12 @@ export const failAuthRequest = internalMutation({
       return null;
     }
 
+    // A losing callback racing a completed one must not flip the request
+    // back to failed: completion already produced its connection and syncs.
+    if (request.status === 'completed') {
+      return request._id;
+    }
+
     await ctx.db.patch('providerAuthRequests', request._id, {
       status: 'failed',
       errorCode: args.errorCode,
@@ -562,6 +568,54 @@ export const failAuthRequest = internalMutation({
     });
 
     return request._id;
+  },
+});
+
+// How long a callback claim may stay `processing` before another callback is
+// allowed to take over: bounds recovery when a claimant crashes mid-exchange.
+export const CALLBACK_CLAIM_TIMEOUT_MS = 10 * 60 * 1000;
+
+export const claimAuthRequestForCallback = internalMutation({
+  args: {
+    state: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db
+      .query('providerAuthRequests')
+      .withIndex('by_state', (q) => q.eq('state', args.state))
+      .unique();
+
+    if (!request) {
+      return { outcome: 'missing' } as const;
+    }
+
+    if (request.status === 'completed') {
+      return { outcome: 'completed' } as const;
+    }
+
+    // Mutations run transactionally, so concurrent callbacks serialize here:
+    // exactly one becomes the claimant, the rest observe `processing`.
+    const now = Date.now();
+    const claimFresh =
+      request.status !== 'processing' ||
+      now - (request.processingStartedAtMs ?? 0) >= CALLBACK_CLAIM_TIMEOUT_MS;
+    if (!claimFresh) {
+      return { outcome: 'processing' } as const;
+    }
+
+    await ctx.db.patch('providerAuthRequests', request._id, {
+      status: 'processing',
+      processingStartedAtMs: now,
+      errorCode: undefined,
+      errorMessage: undefined,
+    });
+
+    return {
+      outcome: 'claimed',
+      userId: request.userId,
+      providerConnectionId: request.providerConnectionId,
+      expiresAtMs: request.expiresAtMs,
+    } as const;
   },
 });
 
@@ -578,6 +632,13 @@ export const completeEnableBankingSession = internalMutation({
 
     if (!request) {
       throw new ConvexError('Provider auth request not found');
+    }
+
+    // Defense in depth: exchangeCallback already returns early on completed
+    // requests, so reaching here means a direct or raced call. Refusing keeps
+    // a replay from inserting a second connection and re-scheduling syncs.
+    if (request.status === 'completed') {
+      throw new ConvexError('Provider auth request already completed');
     }
 
     const session = args.session as EnableBankingSessionPayload;
