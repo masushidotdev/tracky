@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- Scenario icons and colors are now validated on save: icons are limited to 8
+  characters and colors must be `#rrggbb` hex or a chart palette token.
+
 - Reconnecting the bank twice in a row — a double redirect or a browser retry
   while the Enable Banking login completes — no longer risks failing the
   connection. Only the first callback now runs the login through; a concurrent
