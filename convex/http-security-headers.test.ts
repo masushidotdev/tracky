@@ -5,7 +5,7 @@ import rateLimiterTest from '@convex-dev/rate-limiter/test';
 import resendTest from '@convex-dev/resend/test';
 import workOSAuthKitTest from '@convex-dev/workos-authkit/test';
 import { convexTest } from 'convex-test';
-import { describe, expect, test, vi } from 'vitest';
+import { afterAll, describe, expect, test, vi } from 'vitest';
 import schema from './schema';
 
 process.env.WORKOS_CLIENT_ID ??= 'client_test';
@@ -45,6 +45,17 @@ const modules = import.meta.glob([
 ]);
 
 const SECRET = 'a'.repeat(40);
+
+// The callback route reads ENABLE_BANKING_RETURN_URL once at module init: a
+// set value turns the callback into a 303 redirect instead of inline HTML.
+// Unset it for this suite so the HTML assertions below hold regardless of the
+// ambient environment, restoring the original value afterwards.
+const previousEnableBankingReturnUrl = process.env.ENABLE_BANKING_RETURN_URL;
+delete process.env.ENABLE_BANKING_RETURN_URL;
+afterAll(() => {
+  if (previousEnableBankingReturnUrl === undefined) delete process.env.ENABLE_BANKING_RETURN_URL;
+  else process.env.ENABLE_BANKING_RETURN_URL = previousEnableBankingReturnUrl;
+});
 
 function createTest() {
   const t = convexTest(schema, modules);
