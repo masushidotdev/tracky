@@ -230,3 +230,6 @@ export const forecastLifeEventValidator = v.union(
     age: v.number(),
   }),
 );
+
+export const HEX_COLOR_REGEX = /^#[0-9a-f]{6}$/i;
+export const SCENARIO_COLOR_VAR_REGEX = /^var\(--chart-[1-9]\)$/;

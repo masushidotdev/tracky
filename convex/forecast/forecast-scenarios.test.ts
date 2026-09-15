@@ -90,6 +90,8 @@ const updateScenario = makeFunctionReference<
   {
     scenarioId: Id<'forecastScenarios'>;
     name?: string;
+    icon?: string;
+    color?: string;
     inflationAnnualPct?: number;
     endAge?: number;
     capitalGainsTaxPct?: number;
@@ -769,5 +771,30 @@ describe('forecast seeds and scenario CRUD', () => {
       }),
     ).rejects.toThrow('End-of-plan age');
     await expect(asUser.mutation(reorderScenarios, { orderedIds: [] })).rejects.toThrow('every scenario exactly once');
+  });
+
+  test('rejects overlong scenario icons and invalid colors', async () => {
+    const t = createTest();
+    const userId = 'forecast_appearance_user';
+    await seedAuthUser(t, userId);
+    const scenarioId = await seedScenario(t, userId);
+    const asUser = t.withIdentity({ subject: userId });
+
+    await expect(asUser.mutation(updateScenario, { scenarioId, icon: 'x'.repeat(9) })).rejects.toThrow('at most 8');
+    for (const color of ['red', '#12345', 'var(--chart-99)']) {
+      await expect(asUser.mutation(updateScenario, { scenarioId, color })).rejects.toThrow('#rrggbb');
+    }
+    await expect(
+      asUser.mutation(updateScenario, { scenarioId, icon: '✦', color: '#1baf7a' }),
+    ).resolves.toMatchObject({ icon: '✦', color: '#1baf7a' });
+    await expect(
+      asUser.mutation(updateScenario, { scenarioId, color: 'var(--chart-2)' }),
+    ).resolves.toMatchObject({ icon: '✦', color: 'var(--chart-2)' });
+    await expect(
+      asUser.mutation(updateScenario, { scenarioId, icon: ' xxxxxxxx ', color: ' #1BAF7A ' }),
+    ).resolves.toMatchObject({ icon: 'xxxxxxxx', color: '#1BAF7A' });
+    await expect(
+      asUser.mutation(updateScenario, { scenarioId, color: ' var(--chart-9) ' }),
+    ).resolves.toMatchObject({ color: 'var(--chart-9)' });
   });
 });
