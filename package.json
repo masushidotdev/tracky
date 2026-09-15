@@ -98,6 +98,7 @@
     "convex-test": "^0.0.53",
     "dotenv": "^17.4.2",
     "github-slugger": "^2.0.0",
+    "jsdom": "^30.0.1",
     "mdast-util-to-string": "^4.0.0",
     "portless": "^0.13.1",
     "prettier": "^3.8.3",

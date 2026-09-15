@@ -78,6 +78,12 @@
 - Subscription names and dates are now validated: names are trimmed and
   limited to 80 characters, and due dates must be real `YYYY-MM-DD` dates.
 
+- Reconnecting the bank twice in a row — a double redirect or a browser retry
+  while the Enable Banking login completes — no longer risks failing the
+  connection. Only the first callback now runs the login through; a concurrent
+  one waits its turn or reuses the finished result instead of spending the
+  single-use code and marking the completed login failed.
+
 - Passing another user's category to subscription creation or conversion no
   longer attaches it. `createSubscription` and
   `convertTransactionToSubscription` now reject a foreign `categoryId` with
