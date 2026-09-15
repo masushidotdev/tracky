@@ -513,4 +513,133 @@ describe('subscriptions', () => {
     });
     expect(result.ownerTransaction?.subscriptionId).toBeUndefined();
   });
+
+  test('normalizes convert inputs and createSubscription name/date', async () => {
+    const t = createTest();
+    const userId = 'user_subscription_normalize';
+    await seedAuthKitUser(t, userId);
+
+    const transactionId = await t.run(async (ctx) => {
+      const now = Date.UTC(2026, 0, 1);
+      const providerConnectionId = await ctx.db.insert('providerConnections', {
+        userId,
+        provider: 'mock',
+        status: 'active',
+        displayName: 'Mock provider',
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+      const accountId = await ctx.db.insert('financialAccounts', {
+        userId,
+        providerConnectionId,
+        provider: 'mock',
+        providerAccountId: 'normalize_main',
+        name: 'Main account',
+        currency: 'EUR',
+        status: 'active',
+        syncEnabled: true,
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+      return await ctx.db.insert('transactions', {
+        userId,
+        accountId,
+        providerConnectionId,
+        provider: 'mock',
+        providerTransactionId: 'normalize_netflix_2026_06',
+        dedupeKey: 'normalize_netflix_2026_06',
+        status: 'BOOK',
+        direction: 'DBIT',
+        amount: {
+          amountMinor: -1599n,
+          currency: 'EUR',
+        },
+        bookingDate: '2026-06-15',
+        description: 'AcmeStreaming.example',
+        counterpartyName: 'AcmeStreaming.example',
+        classificationKind: 'expense',
+        classificationSource: 'provider',
+        importedAtMs: now,
+        updatedAtMs: now,
+      });
+    });
+
+    const convertArgs = { transactionId, interval: 'month' as const, intervalCount: 1 };
+
+    await expect(
+      t.withIdentity({ subject: userId }).mutation(api.subscriptions.convertTransactionToSubscription, {
+        ...convertArgs,
+        name: '   ',
+      }),
+    ).rejects.toThrow('Subscription name must contain 1 to 80 characters');
+
+    await expect(
+      t.withIdentity({ subject: userId }).mutation(api.subscriptions.convertTransactionToSubscription, {
+        ...convertArgs,
+        name: 'x'.repeat(81),
+      }),
+    ).rejects.toThrow('Subscription name must contain 1 to 80 characters');
+
+    for (const nextDueDate of ['not-a-date', '2026-13-01', '2026-02-30', '2026-6-15']) {
+      await expect(
+        t.withIdentity({ subject: userId }).mutation(api.subscriptions.convertTransactionToSubscription, {
+          ...convertArgs,
+          nextDueDate,
+        }),
+      ).rejects.toThrow();
+    }
+
+    const subscriptionId = await t.withIdentity({ subject: userId }).mutation(
+      api.subscriptions.convertTransactionToSubscription,
+      {
+        ...convertArgs,
+        name: '  Acme Streaming  ',
+        nextDueDate: ' 2026-08-15 ',
+      },
+    );
+
+    const subscription = await t.run(async (ctx) => await ctx.db.get('subscriptions', subscriptionId));
+    expect(subscription).toMatchObject({ name: 'Acme Streaming', nextDueDate: '2026-08-15' });
+
+    const createdId = await t.withIdentity({ subject: userId }).mutation(api.subscriptions.createSubscription, {
+      name: '  Manual Sub  ',
+      currency: 'EUR',
+      interval: 'month',
+      intervalCount: 1,
+      startDate: '2026-06-15',
+      nextDueDate: '2026-07-15',
+      trialPeriodDays: 0,
+    });
+    const created = await t.run(async (ctx) => await ctx.db.get('subscriptions', createdId));
+    expect(created?.name).toBe('Manual Sub');
+
+    await expect(
+      t.withIdentity({ subject: userId }).mutation(api.subscriptions.createSubscription, {
+        name: 'x'.repeat(81),
+        currency: 'EUR',
+        interval: 'month',
+        intervalCount: 1,
+        startDate: '2026-06-15',
+        trialPeriodDays: 0,
+      }),
+    ).rejects.toThrow('Subscription name must contain 1 to 80 characters');
+
+    await expect(
+      t.withIdentity({ subject: userId }).mutation(api.subscriptions.createSubscription, {
+        name: 'Bad date sub',
+        currency: 'EUR',
+        interval: 'month',
+        intervalCount: 1,
+        startDate: '2026-02-30',
+        trialPeriodDays: 0,
+      }),
+    ).rejects.toThrow();
+
+    await expect(
+      t.withIdentity({ subject: userId }).mutation(api.subscriptions.updateSubscriptionAlias, {
+        subscriptionId,
+        alias: 'y'.repeat(81),
+      }),
+    ).rejects.toThrow('at most 80 characters');
+  });
 });

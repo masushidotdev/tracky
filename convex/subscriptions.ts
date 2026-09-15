@@ -14,6 +14,32 @@ import type { MutationCtx } from './_generated/server';
 
 const subscriptionStatusValidator = v.union(v.literal('active'), v.literal('paused'), v.literal('ended'));
 
+const MAX_SUBSCRIPTION_NAME_LENGTH = 80;
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function normalizeSubscriptionName(name: string) {
+  const normalized = name.trim();
+  if (normalized.length < 1 || normalized.length > MAX_SUBSCRIPTION_NAME_LENGTH) {
+    throw new ConvexError(
+      `Subscription name must contain 1 to ${MAX_SUBSCRIPTION_NAME_LENGTH} characters`,
+    );
+  }
+  return normalized;
+}
+
+function normalizeIsoDate(value: string, field: string) {
+  const normalized = value.trim();
+  if (!ISO_DATE_PATTERN.test(normalized)) {
+    throw new ConvexError(`${field} must use YYYY-MM-DD format`);
+  }
+
+  const date = new Date(`${normalized}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== normalized) {
+    throw new ConvexError(`${field} must be a valid date`);
+  }
+  return normalized;
+}
+
 async function assertOwnedAccount(ctx: MutationCtx, accountId: Id<'financialAccounts'>, userId: string) {
   const account = await ctx.db.get('financialAccounts', accountId);
 
@@ -162,6 +188,11 @@ export const updateSubscriptionAlias = mutation({
     }
 
     const normalizedAlias = (args.alias ?? '').trim();
+    if (normalizedAlias.length > MAX_SUBSCRIPTION_NAME_LENGTH) {
+      throw new ConvexError(
+        `Subscription alias must contain at most ${MAX_SUBSCRIPTION_NAME_LENGTH} characters`,
+      );
+    }
     await ctx.db.patch('subscriptions', subscription._id, {
       alias: normalizedAlias.length > 0 ? normalizedAlias : null,
       updatedAtMs: Date.now(),
@@ -216,6 +247,11 @@ export const updateSubscriptionDetails = mutation({
     }
 
     const normalizedAlias = (args.alias ?? '').trim();
+    if (normalizedAlias.length > MAX_SUBSCRIPTION_NAME_LENGTH) {
+      throw new ConvexError(
+        `Subscription alias must contain at most ${MAX_SUBSCRIPTION_NAME_LENGTH} characters`,
+      );
+    }
     await ctx.db.patch('subscriptions', subscription._id, {
       accountId: args.accountId,
       alias: normalizedAlias.length > 0 ? normalizedAlias : null,
@@ -247,7 +283,11 @@ export const createSubscription = mutation({
   handler: async (ctx, args) => {
     const user = await requireAuthUser(ctx);
 
-    const startDate = new Date(args.startDate);
+    const name = normalizeSubscriptionName(args.name);
+    const normalizedStartDate = normalizeIsoDate(args.startDate, 'startDate');
+    const normalizedNextDueDate =
+      args.nextDueDate === undefined ? undefined : normalizeIsoDate(args.nextDueDate, 'nextDueDate');
+    const startDate = new Date(`${normalizedStartDate}T00:00:00.000Z`);
     const now = Date.now();
     const amountMinor = args.amountMinor ?? decimalNumberToMinorUnits(args.price ?? 0, args.currency);
     if (args.accountId) {
@@ -255,10 +295,16 @@ export const createSubscription = mutation({
     }
     const categoryId = await assertOwnedCategory(ctx, args.categoryId, user.id);
 
+    const alias = (args.alias ?? '').trim();
+    if (alias.length > MAX_SUBSCRIPTION_NAME_LENGTH) {
+      throw new ConvexError(
+        `Subscription alias must contain at most ${MAX_SUBSCRIPTION_NAME_LENGTH} characters`,
+      );
+    }
     const subscription = await ctx.db.insert('subscriptions', {
       userId: user.id,
-      name: args.name,
-      alias: args.alias?.trim() ? args.alias.trim() : undefined,
+      name,
+      alias: alias.length > 0 ? alias : undefined,
       merchantName: args.merchantName,
       description: args.description,
       amount: {
@@ -268,7 +314,9 @@ export const createSubscription = mutation({
       interval: args.interval,
       intervalCount: args.intervalCount,
       startDate: startDate.toISOString(),
-      nextDueDate: args.nextDueDate ?? startDate.toISOString(),
+      nextDueDate: normalizedNextDueDate
+        ? new Date(`${normalizedNextDueDate}T00:00:00.000Z`).toISOString()
+        : startDate.toISOString(),
       trialPeriodDays: args.trialPeriodDays,
       status: 'active',
       source: 'manual',
@@ -316,7 +364,9 @@ export const convertTransactionToSubscription = mutation({
     });
     const latestTransaction = relatedTransactions.at(-1) ?? transaction;
     const earliestTransaction = relatedTransactions[0] ?? transaction;
-    const nextDueDate = args.nextDueDate ?? cadence.nextDueDate;
+    const normalizedName = args.name === undefined ? undefined : normalizeSubscriptionName(args.name);
+    const nextDueDate =
+      args.nextDueDate === undefined ? cadence.nextDueDate : normalizeIsoDate(args.nextDueDate, 'nextDueDate');
 
     let subscriptionId: Id<'subscriptions'>;
     if (existingSubscription && existingSubscription.userId === user.id) {
@@ -330,7 +380,7 @@ export const convertTransactionToSubscription = mutation({
         intervalCount: cadence.intervalCount,
         latestTransactionId: latestTransaction._id,
         merchantName: transaction.counterpartyName ?? existingSubscription.merchantName,
-        name: args.name ?? existingSubscription.name,
+        name: normalizedName ?? existingSubscription.name,
         nextDueDate,
         startDate:
           earliestTransaction.bookingDate < existingSubscription.startDate
@@ -343,7 +393,7 @@ export const convertTransactionToSubscription = mutation({
       subscriptionId = await ctx.db.insert('subscriptions', {
         userId: user.id,
         accountId: transaction.accountId,
-        name: args.name ?? transaction.counterpartyName ?? transaction.description,
+        name: normalizedName ?? transaction.counterpartyName ?? transaction.description,
         merchantName: transaction.counterpartyName ?? transaction.description,
         description: transaction.description,
         amount: latestTransaction.amount,
