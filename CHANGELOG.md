@@ -78,6 +78,10 @@
 - Subscription names and dates are now validated: names are trimmed and
   limited to 80 characters, and due dates must be real `YYYY-MM-DD` dates.
 
+- A pending account-deletion request can now be cancelled from the Danger
+  zone. The request never erased anything by itself; cancelling clears the
+  pending status so a new request can be made later.
+
 - Scenario icons and colors are now validated on save: icons are limited to 8
   characters and colors must be `#rrggbb` hex or a chart palette token.
 
