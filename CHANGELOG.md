@@ -75,6 +75,17 @@
 
 ### Fixed
 
+- Passing another user's category to subscription creation or conversion no
+  longer attaches it. `createSubscription` and
+  `convertTransactionToSubscription` now reject a foreign `categoryId` with
+  "Category not found" instead of writing it onto the subscription and its
+  transactions; the stored category already on a transaction is left as-is.
+
+- Report CSV exports no longer emit spreadsheet formulas. Cells starting with
+  `=`, `+`, `-`, `@`, tab or carriage return — reachable through
+  bank-controlled payee and category names — are prefixed with an apostrophe
+  so Excel and Sheets treat them as text on open.
+
 - Linking the bank debit that pays a card instalment failed with "Impossibile
   collegare il pagamento rata". A repayment had to land on the account linked to
   the credit line, which for a card is the card itself — where a debit is a
