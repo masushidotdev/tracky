@@ -561,6 +561,14 @@ export const exchangeCallback = internalAction({
       return { status: 'failed', reason: 'UNKNOWN_STATE' };
     }
 
+    // Idempotency: a completed request already produced its connection and
+    // scheduled its syncs. Replaying the same state+code (browser retry,
+    // double redirect) must not POST /sessions again nor schedule duplicates.
+    // Checked before the import job is created so replays leave no trace.
+    if (request.status === 'completed') {
+      return { status: 'completed', scheduledSyncs: 0 };
+    }
+
     const importJobId: Id<'importJobs'> = await ctx.runMutation(
       internal.banking.providerMutations.startImportJob,
       {

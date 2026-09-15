@@ -580,6 +580,13 @@ export const completeEnableBankingSession = internalMutation({
       throw new ConvexError('Provider auth request not found');
     }
 
+    // Defense in depth: exchangeCallback already returns early on completed
+    // requests, so reaching here means a direct or raced call. Refusing keeps
+    // a replay from inserting a second connection and re-scheduling syncs.
+    if (request.status === 'completed') {
+      throw new ConvexError('Provider auth request already completed');
+    }
+
     const session = args.session as EnableBankingSessionPayload;
 
     if (!session.session_id) {
