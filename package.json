@@ -86,7 +86,7 @@
     "@tailwindcss/postcss": "^4.2.2",
     "@tanstack/eslint-config": "^0.4.0",
     "@tanstack/react-devtools": "^0.10.5",
-    "@tanstack/react-form-devtools": "^0.2.29",
+    "@tanstack/react-form-devtools": "^0.2.34",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@types/d3-sankey": "^0.12.5",
     "@types/mdx": "^2.0.13",
