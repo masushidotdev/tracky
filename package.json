@@ -47,7 +47,7 @@
     "@tanstack/react-router-ssr-query": "^1.166.11",
     "@tanstack/react-start": "^1.167.41",
     "@tanstack/react-table": "^8.21.3",
-    "@workos/authkit-tanstack-react-start": "0.6.0",
+    "@workos/authkit-tanstack-react-start": "0.11.0",
     "ai": "6.0.224",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
