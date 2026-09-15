@@ -41,6 +41,9 @@ const updateNotificationPreferences = makeFunctionReference<
 const requestAccountDeletion = makeFunctionReference<'mutation', Record<string, never>, number>(
   'userSettings:requestAccountDeletion',
 );
+const cancelAccountDeletion = makeFunctionReference<'mutation', Record<string, never>, null>(
+  'userSettings:cancelAccountDeletion',
+);
 
 function createTest() {
   const t = convexTest(schema, modules);
@@ -169,6 +172,73 @@ describe('user settings', () => {
       }),
     ).rejects.toThrow('Unauthorized');
     await expect(t.mutation(requestAccountDeletion, {})).rejects.toThrow('Unauthorized');
+    await expect(t.mutation(cancelAccountDeletion, {})).rejects.toThrow('Unauthorized');
+  });
+
+  test('cancels an account deletion request and removes it from settings', async () => {
+    const t = createTest();
+    const userId = 'user_cancel_deletion';
+    await seedAuthUser(t, userId);
+    const asUser = t.withIdentity({ subject: userId });
+
+    const requestedAtMs = await asUser.mutation(requestAccountDeletion, {});
+    expect((await asUser.query(getMySettings, {})).deletionRequestedAtMs).toBe(requestedAtMs);
+    const beforeCancelMs = Date.now();
+
+    expect(await asUser.mutation(cancelAccountDeletion, {})).toBeNull();
+    const settings = await asUser.query(getMySettings, {});
+    expect(settings).not.toHaveProperty('deletionRequestedAtMs');
+    expect(settings.createdAtMs).toBe(requestedAtMs);
+    expect(settings.updatedAtMs).toBeGreaterThanOrEqual(beforeCancelMs);
+    await t.run(async (ctx) => {
+      const stored = await ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', userId))
+        .unique();
+      expect(stored).not.toBeNull();
+      expect(stored).not.toHaveProperty('deletionRequestedAtMs');
+    });
+  });
+
+  test('cancelling without a settings document is a no-op', async () => {
+    const t = createTest();
+    const userId = 'user_cancel_absent';
+    await seedAuthUser(t, userId);
+
+    expect(await t.withIdentity({ subject: userId }).mutation(cancelAccountDeletion, {})).toBeNull();
+    await t.run(async (ctx) => {
+      expect(
+        await ctx.db
+          .query('userSettings')
+          .withIndex('by_userId', (q) => q.eq('userId', userId))
+          .unique(),
+      ).toBeNull();
+    });
+  });
+
+  test('cancelling without a request leaves existing settings unchanged', async () => {
+    const t = createTest();
+    const userId = 'user_cancel_no_request';
+    await seedAuthUser(t, userId);
+    const existing = await t.run(async (ctx) => {
+      const settingsId = await ctx.db.insert('userSettings', {
+        userId,
+        planTier: 'pro',
+        createdAtMs: 1,
+        updatedAtMs: 2,
+      });
+      return await ctx.db.get('userSettings', settingsId);
+    });
+
+    expect(await t.withIdentity({ subject: userId }).mutation(cancelAccountDeletion, {})).toBeNull();
+    await t.run(async (ctx) => {
+      expect(
+        await ctx.db
+          .query('userSettings')
+          .withIndex('by_userId', (q) => q.eq('userId', userId))
+          .unique(),
+      ).toEqual(existing);
+    });
   });
 
   test('records an account deletion request once and exposes it through settings', async () => {

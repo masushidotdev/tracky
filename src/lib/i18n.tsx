@@ -739,6 +739,9 @@ const messages = {
     'settings.danger.requestedOn': 'Requested on {date}',
     'settings.danger.requested': 'Account deletion request recorded',
     'settings.danger.requestFailed': 'Unable to record the account deletion request',
+    'settings.danger.cancel': 'Cancel deletion request',
+    'settings.danger.cancelled': 'Deletion request cancelled',
+    'settings.danger.cancelFailed': 'Unable to cancel the deletion request',
     'home.eyebrow': 'Personal finance workspace',
     'home.description':
       'Track connected bank accounts, recurring subscriptions, Plan assignments, transfers, and future expenses that need monthly funding.',
@@ -3206,6 +3209,9 @@ const messages = {
     'settings.danger.requestedOn': 'Richiesta il {date}',
     'settings.danger.requested': 'Richiesta di eliminazione account registrata',
     'settings.danger.requestFailed': 'Impossibile registrare la richiesta di eliminazione account',
+    'settings.danger.cancel': 'Annulla richiesta di eliminazione',
+    'settings.danger.cancelled': 'Richiesta di eliminazione annullata',
+    'settings.danger.cancelFailed': 'Impossibile annullare la richiesta di eliminazione',
     'home.eyebrow': 'Workspace di finanza personale',
     'home.description':
       'Traccia conti collegati, sottoscrizioni ricorrenti, assegnazioni del Piano, trasferimenti e spese future da finanziare mensilmente.',
