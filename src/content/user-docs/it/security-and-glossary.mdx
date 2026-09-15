@@ -1,0 +1,47 @@
+---
+title: Sicurezza, privacy e glossario
+description: Come sono protetti i dati e cosa significano i termini finanziari usati in Tracky.
+section: Introduzione
+order: 20
+locale: it
+updatedAt: 2026-08-04
+keywords: [sicurezza, privacy, glossario, saldo, DBIT, CRDT]
+related: [getting-started, accounts, credit-cards-and-statements]
+---
+
+# Sicurezza, privacy e glossario
+
+Le pagine dell'app e questa documentazione sono nell'area autenticata. Le operazioni backend ricavano l'utente dalla sessione: non affidarti a link condivisi o screenshot per autorizzare altre persone.
+
+## Buone pratiche
+
+- Non condividere codici di collegamento Telegram, schermate con IBAN o dettagli di spesa.
+- Completa il consenso bancario solo nella pagina della banca e controlla il dominio prima di autenticarti.
+- Se il consenso scade, usa **Rinnova consenso** in **Impostazioni → Connessioni bancarie**; non inserire credenziali bancarie dentro Tracky.
+- Prima di approvare una proposta dell'Analyst, leggi anteprima, importo, categoria, conto e ricorrenza.
+- Se un dispositivo non è più sotto il tuo controllo, termina la sessione dal menu utente.
+
+## Glossario essenziale
+
+| Termine                  | Significato nell'app                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| Saldo contabile / booked | Saldo pubblicato dalla banca per le operazioni contabilizzate.                          |
+| Saldo preferito          | Valore scelto da Tracky nello snapshot più recente: disponibile, poi booked, poi atteso. |
+| Disponibilità Tracky     | Saldo preferito più l'eventuale fido collegato; per una carta non significa liquidità. |
+| `DBIT`                   | Movimento in uscita dal conto; riduce il saldo.                                        |
+| `CRDT`                   | Movimento in entrata sul conto; aumenta il saldo.                                      |
+| Unità minore             | Intero usato per il denaro: centesimo per EUR, secondo l'esponente della valuta.       |
+| `CACC`                   | Conto corrente.                                                                        |
+| `CARD`                   | Conto carta; è un registro di passività e non viene sommato alla liquidità.            |
+| Linea di credito         | Contratto che definisce limite, utilizzo e disponibilità. Non è un conto cash.         |
+| Conto di regolamento     | Conto corrente sul quale viene addebitato l'estratto della carta.                      |
+| Ciclo / estratto         | Fotografia dell'importo della carta chiuso per un mese e atteso in pagamento.          |
+| Trasferimento            | Due movimenti opposti fra conti propri; non è nuova spesa né nuovo reddito.            |
+| Internal                 | Rettifica o pagamento interno escluso dai totali di spesa.                             |
+| Money box                | Accantonamento virtuale verso un obiettivo; non sposta denaro in banca.                |
+| Prima data negativa      | Prima scadenza che porta il saldo proiettato sotto zero nel ciclo.                     |
+
+<Callout title="Nessuna conversione automatica">
+  EUR, USD e altre valute hanno serie e totali distinti. Tracky non inventa un tasso di cambio per produrre un unico
+  totale.
+</Callout>

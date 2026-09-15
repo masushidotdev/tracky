@@ -1,0 +1,47 @@
+---
+title: Security, privacy, and glossary
+description: How to protect your data and understand the financial terms used in Tracky.
+section: Introduction
+order: 20
+locale: en
+updatedAt: 2026-08-04
+keywords: [security, privacy, glossary, balance, DBIT, CRDT]
+related: [getting-started, accounts, credit-cards-and-statements]
+---
+
+# Security, privacy, and glossary
+
+The app and these Docs live inside the authenticated area. Backend operations derive the user from the session; never treat a shared link or screenshot as authorization for another person.
+
+## Good practices
+
+- Never share Telegram link codes, screenshots containing IBANs, or sensitive spending details.
+- Complete bank consent only on your bank's page and verify the domain before signing in.
+- When consent expires, use **Renew bank consent** in **Settings → Bank Connections**; do not enter bank credentials inside Tracky.
+- Before approving an Analyst proposal, review its amount, category, account, and recurrence.
+- End the session if a device is no longer under your control.
+
+## Essential glossary
+
+| Term                | Meaning in Tracky                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| Booked balance      | Balance published by the bank for booked transactions.                              |
+| Preferred balance   | Value Tracky selects in the newest snapshot: available, then booked, then expected. |
+| Tracky availability | Preferred balance plus a linked overdraft; for CARD it is not cash liquidity.       |
+| `DBIT`              | Money leaving an account; it decreases the balance.                                  |
+| `CRDT`              | Money entering an account; it increases the balance.                                 |
+| Minor unit          | Integer money representation, such as cents for EUR, based on the currency exponent. |
+| `CACC`              | Current account.                                                                     |
+| `CARD`              | Card ledger; a liability that is not added to cash.                                  |
+| Credit facility     | Contract defining limit, usage, and availability. It is not a cash account.          |
+| Settlement account  | Current account charged for the card statement.                                      |
+| Cycle / statement   | A month's closed card amount expected for payment.                                   |
+| Transfer            | Opposite legs between your own accounts; neither new spending nor income.            |
+| Internal            | An adjustment or internal payment excluded from spending totals.                     |
+| Money box           | A virtual allocation toward a target; it does not move bank funds.                   |
+| First negative date | First due item that takes projected cash below zero in the cycle.                    |
+
+<Callout title="No automatic conversion">
+  EUR, USD, and other currencies keep separate totals. Tracky does not invent an exchange rate to create a single
+  figure.
+</Callout>

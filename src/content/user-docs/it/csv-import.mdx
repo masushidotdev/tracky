@@ -1,0 +1,69 @@
+---
+title: Importare movimenti bancari da CSV
+description: Importa un export bancario in un conto manuale con mappatura, anteprima, deduplicazione e regole di categoria.
+section: Movimenti
+order: 65
+locale: it
+updatedAt: 2026-07-16
+keywords: [importazione CSV, export bancario, conto manuale, mappatura colonne, transazioni duplicate, virgola decimale]
+related: [manual-accounts, manual-transactions-and-transfers, dashboard-and-totals, settings-and-privacy]
+---
+
+# Importare movimenti bancari da CSV
+
+Usa l'importazione CSV quando gestisci un conto manualmente e la banca ti permette di esportarne i movimenti. Puoi importare solo su conti manuali CACC o CARD attivi; i conti collegati continuano a ricevere le transazioni tramite sincronizzazione.
+
+<Callout title="Il file originale resta sul dispositivo">
+  Tracky legge e analizza il CSV nel browser. Il file originale non viene mai caricato; soltanto i dati dei movimenti
+  validi che confermi vengono inviati quando avvii l'importazione.
+</Callout>
+
+## Importare un file
+
+<Steps>
+  <Step title="Carica il CSV">
+    Apri **Importa**, scegli un CSV con una riga di intestazione e continua. Se non hai ancora un conto manuale, puoi
+    crearlo direttamente dalla procedura guidata.
+  </Step>
+  <Step title="Abbina le colonne">
+    Seleziona il conto di destinazione, poi indica le colonne per data di contabilizzazione, descrizione, controparte
+    opzionale e importo. Scegli il formato data e specifica se il file usa un unico importo con segno oppure colonne
+    separate per addebito e accredito.
+  </Step>
+  <Step title="Controlla l'anteprima">
+    Verifica conto, direzione, data e importo, insieme al badge **Valida**, **Duplicata** o **Errore** di ogni riga. Le
+    righe non valide mostrano il motivo e non possono essere importate.
+  </Step>
+  <Step title="Importa le righe valide">
+    Tracky le importa in più batch e riepiloga quante sono state aggiunte, saltate o non riuscite. Addebiti e accrediti
+    aggiornano il saldo del conto manuale.
+  </Step>
+</Steps>
+
+Al termine controlla i nuovi movimenti e gli eventuali trasferimenti. Le variazioni di saldo alimentano anche [i totali della Dashboard e il disponibile dopo le spese](/app/docs/dashboard-and-totals).
+
+## Formati di data e importo
+
+- Le date possono usare `YYYY-MM-DD`, `DD/MM/YYYY`, `MM/DD/YYYY` o `DD.MM.YYYY`. Il rilevamento automatico interpreta come giorno/mese le date con barra ambigue; scegli esplicitamente `MM/DD/YYYY` quando serve.
+- Con **un importo con segno**, un valore negativo diventa `DBIT` e uno positivo diventa `CRDT`.
+- Con **addebito e accredito separati**, ogni riga deve valorizzare una sola delle due colonne.
+- Sono accettati sia la virgola sia il punto decimale, anche con separatori delle migliaia: ad esempio `1.234,56` e `1,234.56`. Tracky converte il valore nelle unità minori della valuta del conto di destinazione.
+
+Il CSV non modifica la valuta: tutte le righe usano quella del conto selezionato. Importa quindi ogni valuta nel conto corrispondente.
+
+## Duplicati e reimportazione sicura
+
+Tracky identifica una riga CSV in base a conto, data, direzione, importo, valuta e descrizione normalizzata. Le righe ripetute nello stesso file e quelle già importate nel conto vengono segnate come **Duplicate** e saltate senza modificare il saldo.
+
+Puoi quindi ripetere l'importazione dopo un'interruzione: i movimenti già presenti restano invariati e vengono aggiunte soltanto le nuove righe valide. Se cambiano data, direzione, importo, valuta o descrizione, Tracky considera la riga un movimento distinto: controllala prima di procedere.
+
+## Categorizzazione automatica
+
+Durante la mappatura puoi scegliere una categoria da assegnare a tutte le righe. Lascia selezionato **Applica automaticamente le regole** per usare sui `DBIT` idonei le regole esistenti basate su descrizione e controparte. Una categoria esplicita ha sempre la precedenza.
+
+## Risoluzione dei problemi
+
+- **Una riga non è valida:** leggi il motivo sotto la descrizione. Le cause più comuni sono descrizione assente, importo nullo o malformato, data impossibile o non supportata, oppure addebito e accredito entrambi compilati.
+- **La valuta non coincide:** verifica di avere scelto il conto manuale nella valuta del file. Se l'export contiene più valute, dividilo e importa ogni parte nel conto corretto.
+- **Non compare alcun conto manuale:** crea un conto CACC o CARD attivo, poi torna alla mappatura.
+- **L'importazione si è interrotta:** riparti dallo stesso file. La deduplicazione rende sicuro il nuovo tentativo.

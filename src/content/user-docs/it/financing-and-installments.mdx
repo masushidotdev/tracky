@@ -1,0 +1,72 @@
+---
+title: Finanziamenti e piani rateali
+description: Segui acquisti finanziati, finanzia i bucket del Piano, registra pagamenti e comprendi le rate delle carte.
+section: Credito
+order: 120
+locale: it
+updatedAt: 2026-08-04
+keywords: [finanziamento, rata, bucket piano, target, TAN, capitale, residuo, plafond carta]
+related: [loans, credit-cards-and-statements, plan-and-subscriptions, planning]
+---
+
+# Finanziamenti e piani rateali
+
+Usa finanziamenti e piani rateali per acquisti finanziati e contratti di rimborso che vuoi seguire per numero di rate. Una linea di credito descrive capacità e utilizzo; un piano rateale descrive come un importo viene rimborsato. **Aggiungi finanziamento** crea insieme la linea e il primo piano.
+
+Un mutuo, un prestito auto o un prestito personale segue un flusso diverso: aggiungilo con **Aggiungi conto** per ottenere una [pagina prestito](/app/docs/loans), il capitale residuo, la data di estinzione e il grafico dedicato.
+
+## Dati del piano
+
+Il piano include nome, capitale, numero di rate, rata mensile, data iniziale, prossima scadenza e valuta. Puoi collegarlo a una linea esistente, registrare lo storico, modificare il futuro e inserire pagamenti personalizzati.
+
+<CalculationBreakdown title="Stima della rata">
+  Senza TAN positivo: `rata = capitale / numero rate`, arrotondata per eccesso alla più piccola unità della valuta.
+
+Con TAN: tasso mensile `r = TAN / 12`; rata teorica `capitale × r / (1 − (1 + r)^−n)`, arrotondata verso l'alto all'unità minore. Contratto, commissioni e arrotondamenti del creditore possono differire.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Residuo mostrato">
+  Per il riepilogo degli obblighi: `rimborso residuo = rata mensile × rate rimanenti`. È il totale dei pagamenti attesi, non necessariamente il solo capitale residuo.
+
+Flusso di cassa genera le rate mensili dalla prossima scadenza entro il proprio orizzonte, senza superare il numero rimanente.
+
+</CalculationBreakdown>
+
+## Registrare un pagamento
+
+Puoi segnare la rata attesa come pagata, specificare un importo personalizzato o collegare un movimento importato candidato. La suddivisione facoltativa distingue capitale, interessi e commissioni: solo il capitale riduce l'utilizzo del credito. Se la lasci vuota, tutto il pagamento viene trattato come riduzione del capitale.
+
+Il movimento da collegare è l'addebito sul conto da cui la rata viene effettivamente pagata: per un prestito è il conto collegato alla linea di credito, per un acquisto rateizzato su carta è il conto di regolamento della carta, perché sulla carta un addebito è una spesa e non un rimborso. Quando colleghi un movimento, l'elenco propone solo i piani pagati da quel conto: se è vuoto, controlla il conto di regolamento della carta o il conto collegato al prestito.
+
+Quando una linea di credito ha più piani che scadono insieme e la banca preleva un unico addebito, l'elenco propone una sola voce con tutte le rate coperte — non i singoli piani. Confermandola, Tracky ripartisce l'addebito fra i piani in un'unica operazione, esattamente come fa la scheda *Rimborsi importati suggeriti* in Impostazioni → Crediti. Se le rate non sommano l'importo dell'addebito, il collegamento dal registro si ferma e te lo dice: registrale dalla scheda in Crediti, dove puoi correggere i singoli importi.
+
+La funzione **Registra storico** crea le rate attese fino alla data selezionata e riallinea rate rimanenti e prossima scadenza. Controlla l'anteprima prima di confermare.
+
+## Il bucket rateale nel Piano
+
+Un normale piano rateale attivo riceve un bucket protetto nel Piano, con la rata prevista nel mese selezionato. Assegna lì il denaro prima della scadenza. Quando registri o colleghi il pagamento reale, questo compare nel bucket e non viene conteggiato di nuovo come un'altra categoria o un movimento fuori piano.
+
+Senza un target, il bucket chiede la rata prevista. Aggiungi un target se vuoi finanziare un importo o un ritmo diverso: il target sostituisce la rata come guida mensile, mentre importo e scadenza restano visibili.
+
+Un prestito può invece essere associato a una tua categoria del Piano. In quel caso la categoria porta con sé rata e scadenza e Tracky non aggiunge una seconda riga nel gruppo Rate.
+
+## Carte con acquisti rateizzati
+
+Quando trasformi il debito di una carta in rate, Tracky sposta quell'obbligo dal fabbisogno immediato della carta al calendario rateale:
+
+- il bucket di pagamento della carta chiede il debito attuale **meno** il residuo coperto dai piani rateali attivi;
+- ogni bucket rateale attivo chiede la rata del mese;
+- il residuo non ancora pagato delle rate continua a occupare il plafond della carta.
+
+Per una carta manuale, la conversione rimuove dal saldo carta il capitale rateizzato. Per una carta gestita dalla banca, Tracky non sovrascrive il saldo comunicato dall'istituto: la sincronizzazione resta autorevole. In entrambi i casi, non aggiungere lo stesso acquisto anche come saldo carta, estratto e capitale rateale.
+
+<Callout title="Un debito, due viste di rimborso">
+  Il bucket carta copre il debito fuori dai piani rateali. I bucket rateali coprono il residuo programmato. Insieme
+  descrivono un solo obbligo senza richiederlo due volte.
+</Callout>
+
+<Callout title="Verifica il contratto">
+  Tracky registra e proietta i dati inseriti; non sostituisce il piano di rimborso ufficiale. Usa importi, tassi e date
+  del contratto e riconcilia ogni pagamento reale.
+</Callout>

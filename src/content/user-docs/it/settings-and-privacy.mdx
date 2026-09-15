@@ -1,0 +1,89 @@
+---
+title: Impostazioni, piano e privacy
+description: Controlla profilo e piano, scegli come ricevere le notifiche e gestisci memorie, export e richiesta di eliminazione.
+section: Impostazioni
+order: 140
+locale: it
+updatedAt: 2026-08-04
+keywords: [impostazioni, privacy, Free, Pro, preferenze notifiche, Telegram, memorie Analyst, export dati, eliminazione account]
+related: [analyst-notifications-automations, csv-import, manual-accounts, security-and-glossary]
+---
+
+# Impostazioni, piano e privacy
+
+Apri **Impostazioni** per controllare preferenze e strumenti di privacy legati al tuo account. Le azioni di questa pagina non spostano denaro e non autorizzano pagamenti bancari.
+
+## Com'è organizzata la sezione Impostazioni
+
+Impostazioni si apre su **Generali** e in alto porta altre quattro pagine:
+
+- **Connessioni bancarie** - le banche collegate, il loro stato e il pulsante per
+  aggiungerne un'altra. Si apre una finestra dove scegli l'istituto e vieni
+  mandato dalla banca ad autenticarti: finché non torni, non è collegato nulla.
+- **Conti** - tutti i conti, collegati o manuali: rinomina, nascondi, disattiva
+  la sincronizzazione, correggi il saldo di un conto manuale.
+- **Credito** - carte di credito, i loro cicli di estratto conto, e i prestiti e
+  i contratti rateali che segui.
+- **Cronologia import** - le importazioni CSV già fatte e cosa ha prodotto ognuna.
+
+L'elenco dei conti nella barra laterale serve a leggere i tuoi soldi; queste
+pagine servono ad amministrarli. Aggiungere un conto resta a un clic dalla barra
+laterale.
+
+## Profilo
+
+La scheda Profilo mostra nome, indirizzo email e lingua associati al profilo con cui hai effettuato l'accesso. È una vista di sola lettura: da qui non puoi modificare questi dati.
+
+## Piani Free e Pro
+
+La scheda Piano mostra il livello attuale e il limite giornaliero dell'Analyst:
+
+- **Free:** 20 messaggi Analyst al giorno.
+- **Pro:** 100 messaggi Analyst al giorno e accesso alle proiezioni FIRE di lungo periodo.
+
+Conti collegati e manuali, [importazione CSV](/app/docs/csv-import), Dashboard e disponibile dopo le spese, Flusso di cassa e promemoria delle bollette, e money box restano disponibili con entrambi i piani.
+
+<Callout title="La fatturazione non è ancora disponibile">
+  Impostazioni mostra il tuo accesso attuale, ma per ora Tracky non permette di acquistare, cambiare o gestire un
+  abbonamento. L'azione per Pro è indicata come «in arrivo».
+</Callout>
+
+## Preferenze di notifica
+
+I **giorni di anticipo per le bollette** indicano quanto prima di una scadenza pianificata Tracky deve creare un promemoria. Il valore predefinito è **3 giorni**; `0` indica il giorno stesso. Puoi scegliere fino a quattro valori interi da 0 a 30. Se ne selezioni più di uno, Tracky usa la soglia più piccola già raggiunta: con `7` e `3`, per esempio, può creare un promemoria all'ingresso in ciascuna finestra.
+
+I promemoria in-app non richiedono un consenso di consegna separato, purché sia selezionato almeno un giorno di anticipo. La consegna via **email** e **Telegram** è invece disattivata per impostazione predefinita. Gli interruttori si applicano a promemoria delle bollette, pagamenti imminenti di sottoscrizioni o rate e avvisi di saldo proiettato insufficiente. Per Telegram serve anche un collegamento verificato.
+
+Leggi [Analyst, notifiche e automazioni](/app/docs/analyst-notifications-automations) per i dettagli su ricorrenze, scadenze già pagate e consegna.
+
+## Collegamento Telegram
+
+Genera il comando `/link` monouso e invialo privatamente al bot configurato. Scade dopo dieci minuti e può essere usato una sola volta. Non condividerlo. Dalla stessa scheda puoi scollegare la chat attuale.
+
+## Memorie dell'Analyst
+
+Le memorie sono fatti, preferenze o obiettivi che l'Analyst può salvare—con la tua approvazione—e recuperare nelle conversazioni future pertinenti. L'elenco mostra testo e tipo di ogni elemento.
+
+Usa il cestino e conferma per eliminare una memoria. L'elemento non verrà più recuperato in futuro; la conversazione da cui proviene non viene eliminata.
+
+## Esportare i dati
+
+Richiedi un export JSON versione 3 per ottenere i record Tracky associati al tuo utente:
+
+- conti e snapshot dei saldi; movimenti, categorie e regole di categoria;
+- piani, gruppi, bucket, mapping delle categorie, assegnazioni, target, sottoscrizioni, spese pianificate e pagamenti delle singole scadenze;
+- money box e contributi; linee di credito e trasferimenti pianificati;
+- notifiche, testo e tipo delle memorie Analyst e impostazioni utente.
+
+Sono compresi saldi e movimenti gestiti tramite [conti manuali](/app/docs/manual-accounts) o [importazione CSV](/app/docs/csv-import). Gli embedding delle memorie Analyst non sono inclusi.
+
+Può esserci un solo export in coda o in elaborazione. Dopo il completamento attendi 24 ore prima di richiederne un altro. Il link per scaricarlo scade sette giorni dopo la richiesta.
+
+## Richiedere l'eliminazione dell'account
+
+Confermando **Richiedi eliminazione**, Tracky registra data e ora della richiesta e la mostra come in attesa. Ripetere l'azione non crea una seconda richiesta.
+
+<Callout title="Solo una richiesta">
+  Questo comando non cancella ancora automaticamente i record Tracky, non scollega i conti e non chiude il profilo
+  di accesso. Registra una richiesta da gestire successivamente; al momento la pagina non permette di annullarla.
+</Callout>

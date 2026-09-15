@@ -1,0 +1,56 @@
+---
+title: Manual cash, card, and asset accounts
+description: Create and maintain checking, savings, card, investment, and other-asset accounts by hand.
+section: Accounts
+order: 50
+locale: en
+updatedAt: 2026-07-16
+keywords: [manual account, CACC, SVGS, CARD, INVS, ASST, investment account, asset balance, opening balance]
+related: [accounts, manual-transactions-and-transfers, credit-cards-and-statements, csv-import, settings-and-privacy]
+---
+
+# Manual cash, card, and asset accounts
+
+A manual account covers cash, a card, an investment, or another asset that the bank integration does not expose. Choose `CACC`, `SVGS`, `CARD`, `INVS`, or `ASST`; currency must be a three-letter code.
+
+<Steps>
+  <Step title="Create the account">
+    From **Accounts → Add manual account**, enter name, type, currency, and optional alias. Tracky creates an active
+    account with sync disabled and an opening zero-balance snapshot.
+  </Step>
+  <Step title="Set the opening position">
+    For checking, savings, or card accounts, record an `internal` manual movement so the opening amount is not treated
+    as income or spending. For an investment or other asset, open its actions and choose **Update balance**.
+  </Step>
+  <Step title="Maintain the balance">
+    Record movements for cash and cards. For investments and other assets, record a new dated balance whenever their
+    value changes materially.
+  </Step>
+</Steps>
+
+## Cash and card types
+
+**CACC** represents a checking account and **SVGS** a savings account. Both count as cash in Dashboard, Safe to spend, and cashflow: `CRDT` increases the balance and `DBIT` decreases it.
+
+**CARD** represents the card ledger. Purchase debits normally take the balance below zero; refunds and settlement credits move it back toward zero. A negative CARD balance is debt, not cash.
+
+<CalculationBreakdown title="Manual balance">
+  New balance = previous balance + transaction effect.
+
+`effect(CRDT) = +amount`; `effect(DBIT) = −amount`. Updating applies the difference between new and old effect; deletion applies the reverse effect.
+
+**CARD example:** opening `0`, purchase `DBIT 8000`, refund `CRDT 2000` → balance `-6000` minor units.
+
+</CalculationBreakdown>
+
+## Investment and other-asset types
+
+**INVS** represents investments and **ASST** another asset. They appear in the **Assets** group on Accounts. Use the account actions menu → **Update balance**, enter the value and reference date, then save. Each update appends a balance snapshot; Tracky uses the newest one rather than deriving value from purchases or sales.
+
+Their visible balances enter the Dashboard net-worth breakdown as `cash + assets − debts`. They never enter Safe to spend or cashflow, because they are not spendable cash. Investment and other-asset balances also seed the Analyst's starting invested balance for [Pro FIRE projections](/app/docs/analyst-notifications-automations#fire-and-retirement-projections).
+
+## Operational limits
+
+Manual accounts have no sync health or refresh controls. A movement needs a positive amount, matching currency, description, and `YYYY-MM-DD` date. [CSV import](/app/docs/csv-import) accepts active manual `CACC` and `CARD` accounts, not savings or asset types. Never use a fake positive CARD balance as its limit: the limit belongs to the linked credit facility.
+
+To download manual account records and their balance snapshots, request the JSON export from [Settings](/app/docs/settings-and-privacy#export-your-data).

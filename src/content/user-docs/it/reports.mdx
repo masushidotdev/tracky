@@ -1,0 +1,77 @@
+---
+title: Analizzare flusso di cassa, spese ed entrate
+description: Crea report visivi con filtri, andamento, dettaglio dei movimenti, viste salvate ed esportazione CSV.
+section: Report
+order: 70
+locale: it
+updatedAt: 2026-07-20
+keywords: [report, flusso di cassa, composizione spese, andamento entrate, Sankey, report salvati, esportazione CSV]
+related: [dashboard-and-totals, transactions, plan-and-subscriptions, analyst-notifications-automations]
+---
+
+# Analizzare flusso di cassa, spese ed entrate
+
+Apri **Report** per capire da dove arriva il denaro, dove viene speso e come cambiano queste abitudini nel tempo. Tracky mostra ogni valuta separatamente, senza sommare importi che produrrebbero un totale fuorviante.
+
+## Scegliere il report
+
+Le tre schede rispondono a domande diverse:
+
+- **Flusso di cassa** confronta entrate e uscite. Nella vista di composizione, un diagramma di flusso collega le fonti di entrata ai gruppi di spesa e alle categorie.
+- **Spese** include gli addebiti classificati come spesa ed esclude trasferimenti e movimenti interni.
+- **Entrate** include gli accrediti classificati come entrata ed esclude trasferimenti e movimenti interni.
+
+Ogni scheda offre due modalità. **Composizione** confronta i gruppi nell'intervallo scelto; **Andamento** suddivide gli stessi dati per mese, trimestre o anno. Per spese ed entrate puoi scegliere una ciambella o barre orizzontali. L'andamento può usare barre affiancate o impilate.
+
+<Callout title="Le valute restano separate">
+  Riepiloghi, grafici, elenchi di dettaglio e righe esportate sono raggruppati per valuta. Usa il filtro dei conti quando vuoi concentrarti su una valuta o su un istituto specifico.
+</Callout>
+
+## Filtrare i dati
+
+La barra dei filtri permette di scegliere:
+
+- un intervallo relativo, come gli ultimi 30 giorni, questo mese, quest'anno o gli ultimi 12 mesi;
+- date iniziale e finale personalizzate;
+- raggruppamento per categoria, gruppo di categorie, controparte o conto;
+- intervalli mensili, trimestrali o annuali nella modalità Andamento;
+- uno o più conti, categorie e tag delle transazioni;
+- un importo minimo e massimo opzionali.
+
+I filtri tag attivi compaiono come chip rimovibili sotto la barra. Una transazione corrisponde quando possiede almeno uno dei tag selezionati. Le transazioni marcate **Nascosta dai report** non compaiono mai nei totali o nel dettaglio.
+
+Gli intervalli relativi vengono calcolati quando apri il report. Un report salvato con **Questo mese**, per esempio, seguirà il mese corrente invece di conservare le date del giorno in cui lo hai creato.
+
+## Leggere e approfondire un report
+
+Ogni sezione valutaria inizia con **Entrate**, **Spese**, **Saldo** e **Tasso di risparmio**. Il tasso di risparmio è il saldo diviso per le entrate dell'intervallo; quando non ci sono entrate vale zero.
+
+Nella composizione di spese o entrate, seleziona uno spicchio con nome, una riga della legenda o una barra orizzontale per aprire i relativi movimenti. Il pannello mostra prima i più recenti, con data, descrizione, categoria e importo con segno. Usa **Carica altri** se il gruppo contiene altri movimenti.
+
+Il grafico mantiene visibili i dieci gruppi principali e riunisce i restanti in **Altro**. Seleziona uno dei gruppi con nome quando ti serve il dettaglio delle singole transazioni.
+
+## Salvare un report riutilizzabile
+
+<Steps>
+  <Step title="Configura la vista">
+    Scegli scheda, modalità, grafico, intervallo, raggruppamento, frequenza, conti, categorie, tag e limiti di importo.
+  </Step>
+  <Step title="Salvala">
+    Apri **Report salvati**, scegli **Salva il report corrente** e inserisci un nome riconoscibile.
+  </Step>
+  <Step title="Riaprila o gestiscila">
+    Seleziona il nome salvato per ripristinare l'intera vista. Dallo stesso menu puoi rinominare o eliminare definitivamente il report.
+  </Step>
+</Steps>
+
+Puoi salvare fino a 20 viste. Il salvataggio non duplica i movimenti: conserva soltanto la configurazione del report.
+
+## Esportare i dati aggregati
+
+Scegli **Esporta CSV** per scaricare serie temporali e totali della composizione corrente in un file `report-<scheda>-<dal>-<al>.csv`. L'esportazione contiene dati aggregati, non le singole transazioni mostrate nel dettaglio.
+
+Tracky usa la virgola come separatore per le lingue con punto decimale e il punto e virgola per quelle con virgola decimale, così il file si apre più facilmente con le impostazioni locali abituali del foglio di calcolo.
+
+## Chiedere all'Analyst
+
+L'Analyst può leggere la stessa aggregazione di flusso di cassa, spese ed entrate per un intervallo esatto. Chiedi un report per categoria, gruppo di categorie, controparte o conto e indica una frequenza mensile, trimestrale o annuale quando vuoi confrontare l'andamento.

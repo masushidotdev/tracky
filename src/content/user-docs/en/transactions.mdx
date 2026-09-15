@@ -1,0 +1,81 @@
+---
+title: Transactions, categories, and review
+description: Read the ledger, search and sort all movements, record schedules, and act on several rows.
+section: Transactions
+order: 60
+locale: en
+updatedAt: 2026-08-04
+keywords: [transactions, ledger, categories, filtering, scheduled transactions, bulk actions]
+related: [manual-transactions-and-transfers, plan-and-subscriptions, planning]
+---
+
+# Transactions, categories, and review
+
+Open **All Accounts** for the shared ledger, or select an account in the sidebar for a ledger scoped to that account. The account ledger uses the same controls but hides the redundant Account column.
+
+## Read the ledger
+
+On desktop, each row separates:
+
+- **Date**;
+- **Payee**, including the other account for a transfer;
+- **Description**;
+- **Category**;
+- **Memo**;
+- **Outflow** for money leaving and **Inflow** for money arriving.
+
+The shared ledger also shows **Account**. Drag a column boundary to make it wider or narrower. Tracky keeps column widths separately for All Accounts and for account ledgers.
+
+`DBIT` means money leaves the account, `CRDT` means money enters it, and `BOOK` means the movement is booked. Classifications are `expense`, `income`, `subscription`, `transfer`, `internal`, or `uncategorized`. A user correction has full confidence and takes priority over later automation.
+
+## Search, filter, and sort the whole ledger
+
+Use the single field above the table instead of separate filter dropdowns. As you type, it offers matching accounts, categories, payees, dates, statuses, and outflow or inflow amounts. Select more than one suggestion to combine conditions. An explicit status filter controls the table itself: for example, **Status: SCHD** keeps scheduled rows in the matching table results while the scheduled band remains available above.
+
+Selecting a column heading sorts the full matching ledger, not only the rows on the current page. Tracky scans up to the most recent 5,000 transactions; when that limit is reached, the ledger says so. The search, sort column, and direction live in the address bar, so the view survives reloads and browser navigation and can be bookmarked.
+
+## Scheduled transactions
+
+The collapsible **Scheduled transactions** band at the top of the ledger combines two kinds of future item, aligned with the same columns and widths as booked rows:
+
+- a one-off future movement saved as a real scheduled transaction;
+- the next unpaid occurrence of each recurring Cash Flow rule for the account, marked with a repeat icon. Only that next occurrence appears here; Cash Flow remains the place to inspect every occurrence in the cycle.
+
+A recurring occurrence is a preview, not a stored transaction. It cannot be selected and does not enter the transaction total or pagination. Click it to edit the recurring rule in place: the row is prefilled with its account, date and Repeat setting, payee, description, category, memo, and amount. Saving updates the rule and therefore every future occurrence; choosing **Never** turns recurrence off. Its menu can still mark that occurrence as paid or open the rule in Cash Flow; marking it paid advances the register to the next unpaid date and does not create a bank movement.
+
+Before its date, a one-off scheduled movement does not change the account balance, count as spending, or appear in Reports. On a manual account, it becomes booked and moves the balance when the date arrives. On a bank-linked account, manual entries are accepted only as scheduled; when the bank's booked row arrives, reconcile it with the scheduled row so the imported movement survives with your category, memo, and tags.
+
+## Add a movement in the ledger
+
+Choose **Add transaction** to open an editable row inside the ledger. Enter the account, date, payee, description, category, memo, and either Outflow or Inflow. A future date is identified as scheduled. For a bank-linked account, the date starts at tomorrow because only scheduled entries are accepted.
+
+Choose a Repeat value other than **Never** to save the row as a recurring Cash Flow rule instead of a transaction; its payee, description, category, memo, amount, account, and cadence stay with every projected occurrence. With **Never**, the memo is saved together with the manual or one-off scheduled row.
+
+Choose **Save and add another** to keep the entry row open for a run of movements. The account and date stay in place; the other fields clear. Editing an existing manual movement still opens its detail dialog.
+
+## Act on several rows
+
+Select booked rows to raise the action bar over the bottom of the ledger. The open actions cover category, tags, and hiding from Reports. **More** contains classification changes, unlinking transfers or money boxes, restoring report visibility, and deleting manual movements.
+
+Actions that cannot apply to the current selection remain visible but disabled. Use the clear control or press Escape to clear the selection; if a menu is open, the first Escape closes the menu without discarding the selected rows.
+
+## Tags, notes, and report visibility
+
+Open a transaction to add up to 10 tags, write a private note of up to 500 characters, or turn on **Hidden from reports**. Tags group movements without changing their category. The ledger shows the first two tags and a count for any remaining tags; the eye-off indicator marks movements excluded from Reports.
+
+Use **Manage tags** from All Accounts to create up to 50 tags, rename them, assign or remove a color, and delete them. Deleting a tag removes it from rows and filters; the transaction remains unchanged.
+
+<Callout title="Hidden does not mean deleted">
+  A hidden transaction remains in the ledger, account history, and search. It is excluded only from Reports.
+</Callout>
+
+## Categorization rules and review
+
+In Settings, create merchant or description rules using contains, equals, or starts with. A rule can also add up to 10 tags and hide matching movements from Reports. Rules apply to future imports and can be applied to history. User edits remain authoritative.
+
+Tracky can propose recurring subscriptions, transfers between your accounts, installment-payment candidates, and uncategorized items. Confirming a transfer links both legs and classifies them as `transfer`. Confirming a subscription creates or updates recurrence and links compatible transactions. Rejecting a suggestion rejects only that association.
+
+<Callout title="Prevent double counting">
+  A transfer between your accounts is not an expense on one side and income on the other. A tracked installment or
+  statement payment may be `internal` or a transfer when the obligation is already represented elsewhere.
+</Callout>

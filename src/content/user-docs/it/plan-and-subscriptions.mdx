@@ -1,0 +1,144 @@
+---
+title: Piano, categorie e sottoscrizioni
+description: Assegna i saldi reali, controlla la disponibilità mensile e porta i pagamenti ricorrenti nel flusso di cassa futuro.
+section: Controllo spese
+order: 80
+locale: it
+updatedAt: 2026-08-29
+keywords: [piano, da assegnare, scoperto, carte, rate, target, assegnazione automatica, sottoscrizioni]
+related: [transactions, planning, analyst-notifications-automations]
+---
+
+# Piano, categorie e sottoscrizioni
+
+## Da assegnare
+
+Il Piano è una vista di allocazione zero-based: assegna un lavoro al denaro già osservato nei conti liquidi selezionati prima di spenderlo. Ogni piano usa una sola valuta. I conti liquidi determinano quanto puoi assegnare; le carte selezionate restano fuori dalla liquidità e ricevono un proprio bucket di pagamento.
+
+**Da assegnare** è l'importo che non si trova ancora nei bucket del Piano. Aprilo per vedere il riporto dal mese precedente, le entrate e gli altri accrediti, il credito preso dalle carte, i movimenti precedenti all'inizio del Piano, i movimenti interni, i trasferimenti oltre il perimetro, gli importi assegnati, le riserve dei salvadanai e lo scoperto liquido.
+
+Le entrate sono sommate a partire dai movimenti di entrata, non ricavate da ciò che avanza. Per questo **Movimenti non spiegati** deve valere zero. Se non è così, uno o più movimenti non sono ancora stati attribuiti correttamente: non considerare quella riga come reddito.
+
+Le due righe dedicate alle carte rispondono a domande diverse:
+
+- **Liquidità prelevata da una carta** è denaro preso a prestito e arrivato su un conto liquido del Piano. Puoi assegnarlo, ma il debito corrispondente sulla carta resta da pagare.
+- **Speso a credito sulla carta** è la parte degli acquisti con carta che i bucket non riuscivano a coprire. Non ha consumato liquidità subito, ma ha creato un debito da finanziare.
+
+Né un saldo positivo della carta né il plafond disponibile sono denaro da assegnare.
+
+## Scoperti di conto
+
+Quando un conto corrente selezionato è in rosso, un avviso in cima mostra l'importo dello scoperto, l'eventuale fido residuo, se il saldo è migliorato o peggiorato rispetto al mese scorso e il passo mensile necessario per tornare a zero entro la data che scegli.
+
+L'avviso è informativo: il fido non è denaro da assegnare. Non serve nemmeno un bucket separato per rientrare. Il saldo negativo del conto è già dentro il Piano, quindi ogni euro delle prossime entrate che non assegni riduce automaticamente lo scoperto. Accantonare un altro importo per lo stesso debito significherebbe contarlo due volte.
+
+## Assegnare il denaro
+
+Usa la colonna **Assegnato** per inserire l'importo di un bucket nel mese selezionato. Su desktop seleziona il valore e digita il nuovo importo; sugli schermi piccoli apri l'editor dell'assegnato. Nel pannello dei dettagli puoi anche spostare denaro da un bucket a un altro senza cambiare l'Assegnato totale.
+
+La griglia ha quattro colonne:
+
+- **Categoria:** il bucket del Piano che riceve una o più categorie delle transazioni.
+- **Assegnato:** denaro allocato durante il mese.
+- **Attività:** saldo netto di spese e rimborsi contabilizzati nel mese.
+- **Disponibile:** denaro rimasto nel bucket.
+
+## Attività, Disponibile e riporto
+
+<CalculationBreakdown title="Calcolo mensile del bucket">
+  `Disponibile = riporto positivo dal mese precedente + Assegnato + Attività`.
+
+L'Attività ha segno: le spese contabilizzate riducono il bucket, mentre i rimborsi contabilizzati nella stessa categoria lo aumentano. Entrate, trasferimenti, movimenti interni, transazioni non contabilizzate e valute diverse non entrano nell'Attività del bucket. Seleziona un importo di Attività per vedere le transazioni corrispondenti.
+
+Un Disponibile positivo passa al mese successivo. Un importo negativo non resta nel bucket: lo scoperto liquido riduce Da assegnare invece di diventare un riporto negativo.
+
+</CalculationBreakdown>
+
+Tracky mostra anche righe informative **Fuori dal Piano** per rate o rimborsi interni e trasferimenti netti oltre il perimetro del piano. Spiegano la variazione della liquidità dei conti ma non sono bucket assegnabili.
+
+Un giroconto confermato fra due conti liquidi dello stesso Piano resta neutro anche quando le banche contabilizzano le due parti in mesi diversi. Solo l'eventuale differenza, per esempio una commissione bancaria, diventa Attività di Non pianificato nella data di uscita. Il capitale trasferito non compare come giroconto verso un conto escluso.
+
+Ogni riga ordinaria distingue anche **scoperto liquido** e **scoperto a credito**. Lo scoperto liquido è già uscito da un conto: coprilo spostando il Disponibile di un altro bucket, altrimenti Da assegnare resta più basso. Lo scoperto a credito è invece un acquisto non finanziato fatto con una carta: finanzia il bucket di pagamento della carta, così la liquidità sarà pronta quando pagherai l'estratto.
+
+## Origine del Piano e Ricomincia da qui
+
+Ogni Piano comincia in un giorno preciso. I movimenti precedenti fanno comunque parte del saldo del conto, ma non creano Attività o scoperti nei bucket. In questo modo un Piano creato a metà mese può partire da quel giorno senza giudicare spese avvenute prima che esistesse.
+
+Usa **Ricomincia da qui…** nel selettore del piano per scegliere una nuova data iniziale. Tracky conserva gruppi, bucket, target e assegnazioni, ignora l'attività precedente ai fini del Piano e ricostruisce lo storico mensile dalla data scelta.
+
+## Bucket delle carte e delle rate
+
+Ogni carta inclusa ha un bucket di pagamento protetto. Gli acquisti coperti spostano l'importo corrispondente verso quel bucket, mentre i pagamenti dell'estratto compaiono separatamente nei dettagli dell'Attività. Per registrare l'estratto dal Piano, apri il bucket carta, scegli l'addebito sul conto di regolamento e conferma. Tracky crea il movimento mancante sulla carta e conferma il trasferimento; l'acquisto non viene contato di nuovo come spesa.
+
+Anche ogni normale piano rateale attivo riceve un bucket protetto con la rata prevista nel mese selezionato. Un prestito associato a una tua categoria usa invece quella categoria, senza una seconda riga nel gruppo Rate. Collega o registra il pagamento reale come di consueto: contribuirà alla riga corretta senza comparire una seconda volta altrove.
+
+I bucket carta e rateali usano normalmente il debito o la rata prevista come fabbisogno. Puoi impostare un target personale, per esempio «alla carta do 400 € al mese», e quel target diventa la guida mensile. Se un debito della carta è stato rateizzato, il bucket carta chiede solo la parte non già coperta dai piani rateali attivi.
+
+## Target
+
+Apri un bucket per creare un target:
+
+- **Settimanale:** ripete un importo nel giorno scelto; i mesi con cinque occorrenze ne contano cinque.
+- **Mensile:** finanzia un importo ogni mese, facoltativamente entro un giorno del mese.
+- **Annuale:** finanzia un importo entro una data di scadenza.
+- **Personalizzato:** usa una scadenza, scegli se il target si ripete e imposta l'intervallo ogni N mesi o anni.
+
+Il comportamento può **mettere da parte un altro importo**, **rabboccare fino a un importo** oppure, per un target personalizzato non ripetibile, **raggiungere un saldo entro la scadenza**. Mettere in pausa un target lo rimuove dall'elenco dei sotto-finanziati del mese corrente senza eliminarlo.
+
+## Assegnazione automatica e Cost to Be Me
+
+**Assegnazione automatica** supporta Sotto-finanziato, Assegnato il mese scorso, Speso il mese scorso, Media assegnata, Azzera assegnato e Azzera disponibile. Seleziona bucket specifici oppure lascia vuota la selezione per usare i bucket visibili idonei. Tracky mostra sempre le righe proposte, il totale da assegnare e il nuovo Da assegnare prima della conferma.
+
+**Cost to Be Me** somma i target del mese e li confronta con il reddito previsto salvato nel piano. Mostra il reddito residuo o l'ammanco; non sposta denaro automaticamente.
+
+## Viste focalizzate e Modifica Piano
+
+Le viste focalizzate restringono la griglia a bucket **Sotto-finanziati**, **In rosso**, **In pausa**, **Con disponibilità** o **Nascosti**. La vista completa conserva le informazioni dell'intero mese, come movimenti fuori piano, riserve carta e totali.
+
+Usa **Modifica Piano** per:
+
+- creare, rinominare, riordinare ed eliminare gruppi;
+- creare, rinominare, riordinare ed eliminare bucket;
+- trascinare i bucket dentro lo stesso gruppo o fra gruppi, con puntatore o tastiera;
+- selezionare più bucket per spostarli, nasconderli, mostrarli o eliminarli insieme.
+
+## Gruppi, bucket e categorie globali
+
+Le categorie delle transazioni restano globali: ogni transazione ha una sola categoria usata da Piano, Report, Previsioni, regole e Analyst. Il Piano organizza queste categorie nei propri gruppi e bucket ordinati. L'Attività segue le categorie incluse nel bucket, elencate nel pannello dei dettagli. Creare un nuovo bucket in Modifica Piano crea anche la categoria di spesa globale corrispondente. Creare nelle Impostazioni una categoria idonea al Piano le assegna automaticamente un bucket proprio nel piano attivo.
+
+Le categorie più vecchie o comunque non mappate contribuiscono alla riga di sistema **Non pianificato** quando hanno Attività. Usa **Assegna categoria** da quella riga, oppure **Aggiungi categoria** in Modifica Piano, per aggiungerne una a un bucket esistente o assegnarle un bucket proprio nel gruppo scelto. In questo modo una spesa reale non scompare dal Piano.
+
+## Bucket nascosti e piani multipli
+
+Nascondere un bucket modifica la vista, non la contabilità. Il suo Disponibile continua a entrare nei totali del gruppo e in Da assegnare, e la vista **Nascosti** permette di mostrarlo di nuovo. Non pianificato non può essere nascosto.
+
+Il selettore permette di cambiare e rinominare piano. Il primo piano è disponibile per tutti; creare piani aggiuntivi è una funzione **Pro** verificata anche dal backend. Puoi eliminare un piano solo se ne rimane un altro.
+
+## Collegare un salvadanaio
+
+Per un bucket ordinario, usa **Salvadanaio collegato** nel pannello dei dettagli per conteggiare il denaro già risparmiato per quello scopo. L'importo compare come **Già accantonato**, aumenta il Disponibile attuale del bucket e fa sì che il target chieda solo la parte restante; non diventa una nuova assegnazione.
+
+Può contribuire solo un salvadanaio idoneo nella valuta e nei conti del Piano, e lo stesso salvadanaio non può prefinanziare più bucket. Se in seguito non è più disponibile, il collegamento viene conservato ma il suo contributo diventa zero. La riserva viene riletta ogni mese invece di essere riportata, così lo stesso denaro non viene contato di nuovo come un altro accantonamento mensile.
+
+## Categorie e regole
+
+Gestisci le categorie globali personalizzate e le regole di categorizzazione automatica in **Impostazioni**. Le regole possono confrontare esercente o descrizione con contiene, uguale o inizia con; possono aggiungere fino a 10 tag e nascondere dai Report i movimenti corrispondenti. Le modifiche di categoria fatte dall'utente restano prioritarie.
+
+## Sottoscrizioni
+
+Puoi creare una sottoscrizione manuale oppure convertire un addebito. Una sottoscrizione contiene nome, importo, valuta, intervallo, numero di intervalli, prossima scadenza, stato e conto di addebito opzionale.
+
+Tracky riconosce possibili ricorrenze usando il nome normalizzato dell'esercente, la stessa valuta, importi simili e la distanza fra le date. Le cadenze riconosciute includono circa 25–35 giorni per mensile, 55–65 per bimestrale, 85–95 per trimestrale e 355–375 per annuale. La tolleranza importo è il maggiore fra 5% e 100 unità minori.
+
+## Stati e prossima scadenza
+
+- **Attiva:** entra nei rinnovi e in Flusso di cassa.
+- **In pausa:** resta registrata ma non rappresenta una scadenza attiva.
+- **Terminata:** conserva lo storico e non viene riutilizzata per nuovi abbinamenti.
+
+Se manca la prossima data, viene derivata dalla data iniziale avanzando secondo l'intervallo fino a oggi. Puoi assegnare alias e conto di addebito senza cambiare il nome usato per il riconoscimento.
+
+<Callout title="Suggerimento, non certezza">
+  Conferma esercente, importo e cadenza. Un acquisto ripetuto non è necessariamente un contratto e una sottoscrizione può
+  cambiare prezzo.
+</Callout>

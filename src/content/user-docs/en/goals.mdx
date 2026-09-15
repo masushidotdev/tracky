@@ -1,0 +1,102 @@
+---
+title: Save for goals and pay down debt
+description: Track savings targets, withdrawals, growth assumptions, debt payoff schedules, and account conversion.
+section: Cash Flow
+order: 92
+locale: en
+updatedAt: 2026-08-04
+keywords: [goals, savings target, money box, account conversion, debt payoff, avalanche, snowball]
+related: [planning, money-boxes-and-planned-items, loans, financing-and-installments, forecasting]
+---
+
+# Save for goals and pay down debt
+
+Open **Goals** to manage savings targets and debt payoff plans in one place. **Save up** uses Tracky's money boxes; **Pay down** uses active credit facilities and installment plans.
+
+## Save up for a goal
+
+<Steps>
+  <Step title="Create the goal">
+    Choose **New goal**, enter a name, target amount, target date, and optional account. Tracky calculates the remaining
+    amount, monthly funding pace, and projected completion date.
+  </Step>
+  <Step title="Record contributions">
+    Use **Add contribution** whenever you allocate more money. You can record a manual contribution or, when the goal
+    has an account, link one of its recent transactions.
+  </Step>
+  <Step title="Record withdrawals or spending">
+    Use **Withdraw or spend** when money leaves the goal. The amount cannot exceed what is currently saved, and it is
+    recorded in the goal's currency. The activity view shows withdrawals as negative amounts.
+  </Step>
+  <Step title="Review progress">
+    Compare the saved and target amounts, target date, projected completion date, and status badge. Open **View
+    activity** for the complete contribution and withdrawal history.
+  </Step>
+</Steps>
+
+The status meanings are:
+
+- **On track:** saved progress is close to the expected pace for the target date.
+- **Ahead:** saved progress is above the expected pace.
+- **Behind:** saved progress is below the expected pace.
+- **Completed:** the saved amount has reached the target.
+
+## Configure goal growth and spending
+
+Open **Goal settings** to enter an expected annual growth rate from 0% to 20%. Tracky includes that assumed growth when estimating the monthly amount needed to reach the target; it is a planning assumption, not a guaranteed return.
+
+Use **Spending reduces progress** to keep spending associated with the goal reflected in its saved progress. A withdrawal recorded directly from the goal always reduces the saved amount and can reopen a previously completed target.
+
+<Callout title="Money boxes are virtual allocations">
+  Contributions and withdrawals update the goal, not the balance of an underlying bank account. Record or link the real
+  bank movement separately when money actually moves.
+</Callout>
+
+## Convert an eligible goal to an account
+
+A goal that holds money outside the balance reported by its bank account can become a real manual checking or savings account in one step. Open the goal menu and choose **Convert to account**.
+
+Tracky creates the account in the same currency. Contributions backed by real bank transactions become transfers to or from the new account. Savings entered by hand become its opening balance. If the goal has an associated account, the new account inherits membership in every same-currency Plan that already included that host account, preserving Plan liquidity without changing unrelated Plans.
+
+Conversion deletes the goal and all contributions entered by hand. It also clears Plan and other references to that goal. The operation cannot be undone, so review the confirmation before continuing.
+
+A goal that only reminds you about money still included in another account balance cannot be converted. Creating another account for it would show the same money in both balances and count it twice; the unavailable action explains this under the menu item.
+
+### A goal linked to a Plan category
+
+If the goal pre-funded a Plan category, converting it takes that away. A linked goal covers its
+category without an assignment - the Plan reads the amount saved and shows the category as funded.
+The goal is deleted by the conversion, so the link goes with it and the category reads as short again,
+even though the money is now sitting in a real account.
+
+To get it back, create a goal on the new account, contribute what is already set aside, and link it to
+the same category from the Plan. Leave **money moved to a separate pocket** off: the cash is now
+inside a balance the Plan already counts, and turning it on would count it twice.
+
+## Prepare debt payoff projections
+
+The **Pay down** tab includes an active credit facility only when Tracky has:
+
+- an annual interest rate on the facility;
+- at least one active installment plan with a positive monthly payment;
+- consistent currency data for balance and payment.
+
+Facilities missing a rate or payment appear under **Complete debt setup**. Open the relevant credit or [loan page](/app/docs/loans) to finish its configuration.
+
+## Read a payoff plan
+
+Each currency has separate summary cards for total debt, monthly payments, projected debt-free date, and total projected interest. Open a facility to see its balance decline month by month. Hover the chart for that month's closing balance, principal, and interest, or open the payoff table for the same values in an accessible row format.
+
+The displayed schedule is a projection based on current balances, rates, and minimum payments. New borrowing, fees, rate changes, or different payment timing can change the result. A contractual payoff date on a loan overrides the rate-based end estimate.
+
+## Use the payoff calculator
+
+Choose a currency, then test:
+
+- **Extra each month**, with the slider or amount field;
+- a **one-time lump sum**;
+- **Avalanche**, which prioritizes the highest interest rate;
+- **Snowball**, which prioritizes the smallest balance;
+- **Planned order**, which keeps the current installment order.
+
+Tracky compares the scenario with the current plan and shows the simulated debt-free date, months saved, interest saved, and remaining projected interest. Calculator values are estimates only and do not create or schedule real payments.
