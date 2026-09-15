@@ -112,6 +112,24 @@ export const requestAccountDeletion = mutation({
   },
 });
 
+export const cancelAccountDeletion = mutation({
+  args: {},
+  handler: async (ctx): Promise<null> => {
+    const user = await requireAuthUser(ctx);
+    const existing = await settingsForUser(ctx, user.id);
+    if (!existing || existing.deletionRequestedAtMs === undefined) {
+      return null;
+    }
+
+    const now = Date.now();
+    await ctx.db.patch('userSettings', existing._id, {
+      deletionRequestedAtMs: undefined,
+      updatedAtMs: now,
+    });
+    return null;
+  },
+});
+
 export const getUserSettingsForUser = internalQuery({
   args: { userId: v.string() },
   handler: async (ctx, args) => await settingsForUser(ctx, args.userId),

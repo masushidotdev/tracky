@@ -27,7 +27,9 @@ export function DangerZoneCard() {
   const { intlLocale, t } = useI18n();
   const settings = useQuery(api.userSettings.getMySettings, {});
   const requestDeletion = useMutation(api.userSettings.requestAccountDeletion);
+  const cancelDeletion = useMutation(api.userSettings.cancelAccountDeletion);
   const [requesting, setRequesting] = React.useState(false);
+  const [cancelling, setCancelling] = React.useState(false);
 
   const request = async () => {
     setRequesting(true);
@@ -41,12 +43,24 @@ export function DangerZoneCard() {
     }
   };
 
+  const cancel = async () => {
+    setCancelling(true);
+    try {
+      await cancelDeletion({});
+      toast.success(t('settings.danger.cancelled'));
+    } catch {
+      toast.error(t('settings.danger.cancelFailed'));
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t('settings.danger.title')}</CardTitle>
         <CardDescription>{t('settings.danger.description')}</CardDescription>
-        {!settings?.deletionRequestedAtMs ? (
+        {settings?.deletionRequestedAtMs === undefined ? (
           <CardAction>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -71,12 +85,18 @@ export function DangerZoneCard() {
               </AlertDialogContent>
             </AlertDialog>
           </CardAction>
-        ) : null}
+        ) : (
+          <CardAction>
+            <Button type="button" variant="secondary" size="sm" disabled={cancelling} onClick={() => void cancel()}>
+              {t('settings.danger.cancel')}
+            </Button>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {settings === undefined ? (
           <Skeleton className="h-10 w-full" aria-label={t('settings.loading')} />
-        ) : settings.deletionRequestedAtMs ? (
+        ) : settings.deletionRequestedAtMs !== undefined ? (
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="destructive">{t('settings.danger.pending')}</Badge>
             <span className="text-sm text-muted-foreground">
