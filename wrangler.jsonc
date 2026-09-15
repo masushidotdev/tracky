@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tracky",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": { "enabled": true },
+  "workers_dev": true,
+  // Build and deploy always run with CLOUDFLARE_ENV=staging (see the `deploy`
+  // script and the Workers Builds trigger); without it both steps would target
+  // a separate top-level Worker. Rename `tracky-staging` to your own Worker
+  // name before deploying a public instance.
+  "env": {
+    "staging": {
+      "name": "tracky-staging",
+      "workers_dev": true,
+      "observability": { "enabled": true },
+      "vars": { "APP_ENV": "staging" }
+    }
+  }
+}

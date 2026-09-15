@@ -1,0 +1,82 @@
+---
+title: Transazioni, categorie e revisione
+description: Leggi il registro, cerca e ordina tutti i movimenti, registra scadenze e agisci su più righe.
+section: Movimenti
+order: 60
+locale: it
+updatedAt: 2026-08-04
+keywords: [transazioni, registro, categorie, filtri, transazioni programmate, azioni multiple]
+related: [manual-transactions-and-transfers, plan-and-subscriptions, planning]
+---
+
+# Transazioni, categorie e revisione
+
+Apri **Tutti i conti** per il registro condiviso oppure seleziona un conto nella barra laterale per vedere soltanto i suoi movimenti. Il registro del singolo conto usa gli stessi comandi, ma nasconde la colonna Conto perché sarebbe ridondante.
+
+## Leggere il registro
+
+Su desktop ogni riga separa:
+
+- **Data**;
+- **Beneficiario**, che per un trasferimento indica l'altro conto;
+- **Descrizione**;
+- **Categoria**;
+- **Nota**;
+- **Uscita** per il denaro che lascia il conto ed **Entrata** per quello che arriva.
+
+Il registro condiviso mostra anche **Conto**. Trascina il bordo di una colonna per allargarla o restringerla. Tracky conserva larghezze distinte per Tutti i conti e per i registri dei singoli conti.
+
+`DBIT` indica un'uscita, `CRDT` un'entrata e `BOOK` un movimento contabilizzato. Le classificazioni sono `expense`, `income`, `subscription`, `transfer`, `internal` o `uncategorized`. Una correzione dell'utente ha confidenza piena e prevale sugli automatismi successivi.
+
+## Cercare, filtrare e ordinare l'intero registro
+
+Usa l'unico campo sopra la tabella al posto dei filtri separati. Mentre scrivi, Tracky propone conti, categorie, beneficiari, date, stati e importi di uscita o entrata compatibili. Puoi selezionare più suggerimenti per combinare le condizioni. Un filtro esplicito sullo stato controlla la tabella stessa: per esempio, **Stato: SCHD** mantiene le righe programmate fra i risultati corrispondenti, mentre la fascia delle transazioni programmate resta disponibile sopra.
+
+Selezionando l'intestazione di una colonna ordini tutti i movimenti che corrispondono alla ricerca, non soltanto le righe della pagina visibile. Tracky esamina al massimo le 5.000 transazioni più recenti; se raggiunge il limite, il registro lo segnala. Ricerca, colonna e direzione dell'ordinamento restano nell'indirizzo della pagina, quindi sopravvivono al ricaricamento e alla navigazione del browser e possono essere salvate nei preferiti.
+
+## Transazioni programmate
+
+La fascia comprimibile **Transazioni programmate** in cima al registro combina due tipi di elemento futuro, allineati alle stesse colonne e larghezze dei movimenti contabilizzati:
+
+- un movimento una tantum futuro salvato come vera transazione programmata;
+- la prossima occorrenza non pagata di ogni regola ricorrente di Flusso di cassa associata al conto, indicata dall'icona di ripetizione. Qui compare soltanto la prossima occorrenza; Flusso di cassa resta il posto in cui esaminare tutte le occorrenze del ciclo.
+
+Un'occorrenza ricorrente è un'anteprima, non una transazione salvata. Non può essere selezionata e non entra nel totale delle transazioni né nella paginazione. Selezionala per modificare la regola ricorrente direttamente nella riga: l'editor riprende conto, data e impostazione Ripeti, beneficiario, descrizione, categoria, nota e importo. Il salvataggio aggiorna la regola e quindi tutte le occorrenze future; scegliendo **Mai** disattivi la ricorrenza. Il suo menu permette ancora di segnarla come pagata oppure di aprire la regola in Flusso di cassa; segnandola come pagata, il registro avanza alla prossima data non pagata senza creare un movimento bancario.
+
+Prima della data prevista, un movimento una tantum programmato non modifica il saldo del conto, non conta come spesa e non entra nei Report. Su un conto manuale diventa contabilizzato e sposta il saldo quando arriva la data. Su un conto collegato alla banca puoi inserire manualmente soltanto movimenti programmati; quando arriva la registrazione della banca, riconciliala con quella programmata. La riga importata resta e riceve categoria, nota e tag che avevi preparato.
+
+## Aggiungere un movimento nel registro
+
+Scegli **Aggiungi movimento** per aprire una riga modificabile dentro il registro. Inserisci conto, data, beneficiario, descrizione, categoria, nota e uno solo tra Uscita ed Entrata. Una data futura viene indicata come programmata. Per un conto collegato, la data parte da domani perché sono accettati soltanto movimenti programmati.
+
+Scegli un valore di Ripeti diverso da **Mai** per salvare la riga come regola ricorrente di Flusso di cassa anziché come transazione: beneficiario, descrizione, categoria, nota, importo, conto e cadenza restano associati a ogni occorrenza proiettata. Con **Mai**, la nota viene salvata insieme al movimento manuale o programmato una tantum.
+
+Scegli **Salva e aggiungi un altro** per lasciare aperta la riga e inserire più movimenti di seguito. Conto e data restano impostati; gli altri campi vengono svuotati. La modifica di un movimento manuale esistente continua ad aprire il pannello dedicato.
+
+## Agire su più righe
+
+Seleziona più movimenti contabilizzati per far comparire la barra delle azioni sopra il fondo del registro. Le azioni subito visibili riguardano categoria, tag ed esclusione dai Report. **Altro** contiene le modifiche di classificazione, lo scollegamento da trasferimenti o money box, il ripristino nei Report e l'eliminazione dei movimenti manuali.
+
+Le azioni non compatibili con la selezione restano visibili ma disattivate. Usa il comando di chiusura oppure premi Esc per deselezionare tutto; se è aperto un menu, la prima pressione di Esc chiude il menu senza perdere le righe selezionate.
+
+## Tag, note e visibilità nei Report
+
+Apri una transazione per aggiungere fino a 10 tag, scrivere una nota privata di massimo 500 caratteri o attivare **Nascosta dai report**. I tag raggruppano i movimenti senza modificarne la categoria. Il registro mostra i primi due tag e il numero degli altri; l'icona con l'occhio barrato indica i movimenti esclusi dai Report.
+
+Usa **Gestisci tag** da Tutti i conti per creare fino a 50 tag, rinominarli, assegnare o rimuovere un colore ed eliminarli. Eliminando un tag, questo sparisce dalle righe e dai filtri, mentre la transazione resta invariata.
+
+<Callout title="Nascosta non significa eliminata">
+  Una transazione nascosta resta nel registro, nella cronologia del conto e nella ricerca. Viene esclusa soltanto dai
+  Report.
+</Callout>
+
+## Regole di categorizzazione e revisione
+
+In Impostazioni puoi creare regole sul nome dell'esercente o sulla descrizione, con confronto “contiene”, “uguale” o “inizia con”. Una regola può anche aggiungere fino a 10 tag e nascondere dai Report i movimenti corrispondenti. Le regole operano sui futuri import e possono essere applicate allo storico. Le modifiche fatte dall'utente restano prioritarie.
+
+Tracky può proporre sottoscrizioni ricorrenti, trasferimenti fra conti propri, movimenti candidati al pagamento di una rata ed elementi non categorizzati. Confermare un trasferimento collega le due parti e le classifica come `transfer`. Confermare una sottoscrizione crea o aggiorna la ricorrenza e collega i movimenti compatibili. Rifiutare un suggerimento rifiuta soltanto quella specifica associazione.
+
+<Callout title="Evita il doppio conteggio">
+  Un trasferimento tra due conti tuoi non è una spesa da una parte e un'entrata dall'altra. Il pagamento di una rata o
+  di un estratto può essere `internal` o un trasferimento quando l'obbligo è già rappresentato altrove.
+</Callout>

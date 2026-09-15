@@ -1,0 +1,44 @@
+---
+title: Connected accounts and synchronization
+description: Bank connection, balances, consent, sync health, aliases, and visibility.
+section: Accounts
+order: 40
+locale: en
+updatedAt: 2026-08-04
+keywords: [accounts, Enable Banking, sync, consent, balance]
+related: [manual-accounts, dashboard-and-totals, troubleshooting]
+---
+
+# Connected accounts and synchronization
+
+Open **Settings → Bank Connections** to connect a bank through Enable Banking. Authentication and consent happen at the bank; after returning, Tracky creates the connection, imports accounts, and schedules initial synchronization.
+
+## What is synchronized
+
+For each account, Tracky stores metadata, currency, status, balance snapshots, and transactions supplied by the institution. Automatic synchronization is evaluated every six hours, and you can request an account refresh. Availability still depends on the bank.
+
+Sync can be active, disabled, failed, or require reauthorization. Import history reports items seen and imported; a difference does not necessarily mean loss because duplicates are recognized.
+
+## Find an account and open its ledger
+
+The sidebar groups accounts as **Cash**, **Credit**, and **Loans**. Selecting a cash or credit account opens a ledger containing only that account's movements. A loan opens its loan page. **All Accounts** opens the shared ledger across your accounts.
+
+## Alias, visibility, and sync
+
+- An **alias** changes the displayed name, not provider data.
+- A **hidden** account is excluded from general Dashboard totals but remains stored and can be shown again.
+- Disabling **sync** stops future updates without deleting history.
+- **Renew consent** reopens the bank flow near or after consent expiry.
+
+## Which balance Tracky uses
+
+Tracky takes the newest snapshot and prefers its available balance; if absent it uses booked, then expected balance. For an account with overdraft, cash capacity is calculated separately. CARD accounts are liabilities and never cash.
+
+<Callout title="Update problems">
+  If you see “Reconnect” or “Authorization required,” renew consent. For an error, inspect the job and retry later;
+  repeated refreshes cannot force the bank to publish new data.
+</Callout>
+
+## Connected or manual?
+
+Use a connected account whenever the bank exposes it. Use **Add Account** under the sidebar account list to create a [manual account](/app/docs/manual-accounts) for missing cash, checking, savings, or card balances, or to add a mortgage, car loan, or personal loan. You maintain manual cash and card movements yourself; investments and other assets use dated balance snapshots.

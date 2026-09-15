@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/convex/schemas/convex.schema.json",
+  "authKit": {
+    "dev": {
+      "configure": {
+        "redirectUris": [
+          "http://localhost:3000/callback",
+          "https://<your-worker>.<your-account>.workers.dev/callback"
+        ],
+        "appHomepageUrl": "https://<your-worker>.<your-account>.workers.dev",
+        "corsOrigins": ["http://localhost:3000", "https://<your-worker>.<your-account>.workers.dev"]
+      },
+      "localEnvVars": {
+        "WORKOS_CLIENT_ID": "${authEnv.WORKOS_CLIENT_ID}",
+        "WORKOS_API_KEY": "${authEnv.WORKOS_API_KEY}",
+        "WORKOS_REDIRECT_URI": "http://localhost:3000/callback"
+      }
+    }
+  }
+}

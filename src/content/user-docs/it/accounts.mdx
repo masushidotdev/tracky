@@ -1,0 +1,44 @@
+---
+title: Conti collegati e sincronizzazione
+description: Collegamento bancario, saldi, consenso, stato della sincronizzazione, alias e visibilità.
+section: Conti
+order: 40
+locale: it
+updatedAt: 2026-08-04
+keywords: [conti, Enable Banking, sincronizzazione, consenso, saldo]
+related: [manual-accounts, dashboard-and-totals, troubleshooting]
+---
+
+# Conti collegati e sincronizzazione
+
+Apri **Impostazioni → Connessioni bancarie** per collegare una banca tramite Enable Banking. Autenticazione e consenso avvengono presso la banca; al ritorno Tracky crea la connessione, importa i conti e pianifica le prime sincronizzazioni.
+
+## Cosa viene sincronizzato
+
+Per ogni conto Tracky conserva metadati, valuta, stato, snapshot dei saldi e movimenti forniti dall'istituto. Le sincronizzazioni automatiche vengono valutate ogni sei ore; puoi anche richiedere l'aggiornamento di un conto. Il momento in cui un dato diventa disponibile dipende dalla banca.
+
+Lo stato distingue sincronizzazione attiva, disattivata, in errore o con nuova autorizzazione richiesta. La cronologia dei job mostra elementi visti e importati; una differenza non implica necessariamente una perdita, perché i duplicati vengono riconosciuti.
+
+## Trovare un conto e aprire il registro
+
+La barra laterale raggruppa i conti in **Liquidità**, **Credito** e **Prestiti**. Selezionando un conto di liquidità o credito apri un registro con i soli movimenti di quel conto. Un prestito apre invece la sua pagina dedicata. **Tutti i conti** mostra il registro condiviso.
+
+## Alias, visibilità e sincronizzazione
+
+- L'**alias** cambia il nome visualizzato, non quello registrato dal provider.
+- Un conto **nascosto** non partecipa ai totali generali della Dashboard; resta nei dati e può essere mostrato di nuovo.
+- Disattivare la **sincronizzazione** ferma i futuri aggiornamenti senza eliminare lo storico.
+- **Rinnova consenso** riapre il flusso bancario quando la scadenza è vicina o superata.
+
+## Quale saldo usa Tracky
+
+Tracky usa lo snapshot più recente e, al suo interno, preferisce il saldo disponibile; se manca usa il contabilizzato, poi l'atteso. Per un conto con fido, la capacità disponibile è calcolata separatamente. Un conto CARD è trattato come passività e non come liquidità.
+
+<Callout title="Problemi di aggiornamento">
+  Se vedi “Ricollega” o “Autorizzazione richiesta”, rinnova il consenso. Se lo stato è errore, controlla il dettaglio
+  del job e riprova più tardi: avviare molti aggiornamenti non forza la banca a pubblicare nuovi dati.
+</Callout>
+
+## Conto collegato o manuale?
+
+Usa un conto collegato quando la banca lo espone. Con **Aggiungi conto**, sotto l'elenco nella barra laterale, puoi creare un [conto manuale](/app/docs/manual-accounts) per contanti, conto corrente, risparmio o carta non disponibili tramite la banca, oppure aggiungere un mutuo, un prestito auto o un prestito personale. Gestisci personalmente i movimenti di liquidità e carte manuali; per investimenti e altri asset registri snapshot del saldo con data.

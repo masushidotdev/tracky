@@ -1,0 +1,77 @@
+---
+title: Explore cash flow, spending, and income reports
+description: Build visual reports with filters, trends, transaction drill-down, saved views, and CSV export.
+section: Reports
+order: 70
+locale: en
+updatedAt: 2026-07-20
+keywords: [reports, cash flow, spending breakdown, income trends, Sankey, saved reports, CSV export]
+related: [dashboard-and-totals, transactions, plan-and-subscriptions, analyst-notifications-automations]
+---
+
+# Explore cash flow, spending, and income reports
+
+Open **Reports** to understand where money comes from, where it goes, and how those patterns change over time. Every currency is shown separately, so amounts from different currencies are never combined into a misleading total.
+
+## Choose a report
+
+The three tabs answer different questions:
+
+- **Cash Flow** compares incoming and outgoing money. Its composition view uses a flow diagram that connects income sources to spending groups and categories.
+- **Spending** includes debit expenses and excludes transfers and internal movements.
+- **Income** includes credit income and excludes transfers and internal movements.
+
+Each tab has two modes. **Breakdown** compares groups across the selected range; **Trends** splits the same data into monthly, quarterly, or yearly periods. Spending and income breakdowns can use a donut or horizontal bars. Trends can use grouped or stacked bars.
+
+<Callout title="Currencies stay separate">
+  Summary cards, charts, drill-down lists, and exported rows are grouped by currency. Use account filters when you want to focus on one currency or institution.
+</Callout>
+
+## Filter the data
+
+Use the filter bar to choose:
+
+- a relative date range such as the last 30 days, this month, this year, or the last 12 months;
+- a custom start and end date;
+- category, category group, counterparty, or account grouping;
+- monthly, quarterly, or yearly intervals in Trends mode;
+- one or more accounts, categories, and transaction tags;
+- optional minimum and maximum transaction amounts.
+
+Active tag filters appear as removable chips below the filter bar. A transaction matches when it has at least one selected tag. Transactions marked **Hidden from reports** never appear in report totals or drill-down rows.
+
+Relative ranges are resolved when you view the report. A saved report using **This month**, for example, follows the current month instead of preserving the dates from the day you saved it.
+
+## Read and inspect a report
+
+Each currency section starts with **Income**, **Expenses**, **Net**, and **Savings rate**. The savings rate is net income divided by income for the selected range; it is zero when there is no income.
+
+In a spending or income breakdown, select a named donut segment, legend row, or horizontal bar to open its transactions. The sheet lists the newest movements first with date, description, category, and signed amount. Use **Load more** when the group contains additional movements.
+
+The chart keeps the ten largest groups visible and combines the remainder into **Other**. Select one of the named groups when you need transaction-level details.
+
+## Save a reusable report
+
+<Steps>
+  <Step title="Configure the view">
+    Choose the tab, mode, chart type, date preset, grouping, interval, accounts, categories, tags, and amount limits you need.
+  </Step>
+  <Step title="Save it">
+    Open **Saved reports**, choose **Save current report**, and enter a recognizable name.
+  </Step>
+  <Step title="Open or manage it later">
+    Select a saved name to restore the full view. The same menu lets you rename or permanently delete a saved report.
+  </Step>
+</Steps>
+
+You can save up to 20 report views. Saving a view does not copy transactions; it stores only the report configuration.
+
+## Export aggregated data
+
+Choose **Export CSV** to download the current trend series and breakdown totals as `report-<tab>-<from>-<to>.csv`. The export contains aggregated values, not the individual transactions shown in drill-down.
+
+Tracky uses a comma separator for decimal-point locales and a semicolon separator for decimal-comma locales, making the file easier to open in the locale's usual spreadsheet settings.
+
+## Ask the Analyst
+
+The Analyst can read the same cash-flow, spending, and income aggregation for an exact date range. Ask for a category, category-group, counterparty, or account report and specify monthly, quarterly, or yearly intervals when you want a trend comparison.

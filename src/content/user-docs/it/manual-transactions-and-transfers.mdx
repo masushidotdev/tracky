@@ -1,0 +1,56 @@
+---
+title: Movimenti manuali e trasferimenti
+description: Registra, programma, modifica e abbina movimenti manuali senza duplicare spese o saldi.
+section: Movimenti
+order: 70
+locale: it
+updatedAt: 2026-08-04
+keywords: [movimento manuale, movimento programmato, trasferimento, matching, uscita, entrata]
+related: [manual-accounts, transactions, credit-cards-and-statements]
+---
+
+# Movimenti manuali e trasferimenti
+
+Apri **Tutti i conti**, oppure il registro di un conto, e scegli **Aggiungi movimento**. Il nuovo movimento si inserisce direttamente in una riga allineata alle colonne del registro.
+
+Un conto manuale accetta movimenti contabilizzati con data odierna o passata e movimenti programmati con data futura. Un conto collegato alla banca accetta soltanto inserimenti manuali programmati: per movimenti contabilizzati e saldi resta autorevole la banca.
+
+<Steps>
+  <Step title="Scegli conto e data">
+    Da Tutti i conti seleziona il conto. Una data futura crea un movimento programmato; su un conto collegato la data
+    iniziale è domani.
+  </Step>
+  <Step title="Descrivilo">
+    Inserisci il beneficiario quando è utile, una descrizione obbligatoria, una categoria facoltativa e un'eventuale
+    nota.
+  </Step>
+  <Step title="Inserisci una sola direzione">
+    Usa **Uscita** per il denaro che lascia il conto oppure **Entrata** per quello che arriva. Scrivi un importo positivo
+    nella valuta del conto; i due campi si escludono a vicenda.
+  </Step>
+  <Step title="Continua o chiudi">
+    Scegli **Salva e aggiungi un altro** per conservare conto e data nella riga successiva oppure **Salva** per chiudere
+    l'editor.
+  </Step>
+</Steps>
+
+## Movimenti programmati
+
+Un movimento una tantum con data futura compare nella fascia delle Transazioni programmate sopra le righe contabilizzate. Prima della data non modifica il saldo corrente e non entra nella spesa o nei Report. Su un conto manuale Tracky lo contabilizza alla scadenza. Su un conto collegato, riconcilialo con la registrazione della banca quando questa arriva.
+
+## Matching automatico dei trasferimenti
+
+Alla creazione, Tracky cerca una parte opposta su un altro conto: stessa valuta e data entro sette giorni prima o dopo. La tolleranza sull'importo è `min(max(2% dell'importo, 300 unità minori), 1000 unità minori)`.
+
+La confidenza parte da `0,90` per importo identico, `0,82` per differenza fino a 300 unità minori e `0,72` negli altri casi ammessi, meno `0,02` per ogni giorno di distanza, con minimo `0,60`. Gli abbinamenti più affidabili vengono confermati automaticamente; gli altri appaiono in Revisione.
+
+## Modifica ed eliminazione
+
+Apri un movimento manuale esistente per modificarlo. Spostando nel futuro una riga già contabilizzata, questa diventa programmata e il precedente effetto sul saldo viene annullato; riportandola a oggi o nel passato, viene contabilizzata di nuovo.
+
+Prima di modificare o eliminare una parte di un trasferimento confermato devi scollegare l'abbinamento. L'eliminazione è bloccata se il movimento è collegato a un pagamento pianificato, una rata, un estratto carta, un piano rateale, un contributo money box, una sottoscrizione o un'altra relazione confermata. I semplici candidati non confermati vengono rimossi insieme al movimento e il saldo viene ripristinato.
+
+<Callout title="Pagamento carta">
+  Registra l'Uscita importata sul conto corrente e un'Entrata sul conto CARD manuale. Quando le due parti vengono
+  abbinate, il trasferimento non entra nella spesa e può chiudere l'estratto previsto.
+</Callout>

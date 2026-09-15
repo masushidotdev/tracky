@@ -1,0 +1,86 @@
+---
+title: Dashboard e calcolo dei totali
+description: Origine, formula e limiti del disponibile dopo le spese, della liquidità, del patrimonio e delle proiezioni.
+section: Panoramica
+order: 30
+locale: it
+updatedAt: 2026-08-04
+keywords: [dashboard, totali, disponibile dopo le spese, safe-to-spend, liquidità, patrimonio netto, proiezione, formule]
+related: [accounts, planning, plan-and-subscriptions, csv-import]
+---
+
+# Dashboard e calcolo dei totali
+
+La Dashboard usa conti attivi e non nascosti quando selezioni **Tutti i conti**. Con un conto specifico, il perimetro si restringe a quel conto. Ogni valuta rimane separata.
+
+## Disponibile dopo le spese
+
+Il primo riquadro stima quanto puoi destinare alle spese discrezionali nel ciclo corrente di Flusso di cassa. Il calcolo resta separato per valuta; il riquadro mostra quella principale e apre il dettaglio completo.
+
+<CalculationBreakdown title="Disponibile dopo le spese">
+  `disponibile dopo le spese = liquidità disponibile − bollette e impegni residui − funding money box ancora da accantonare nel ciclo`.
+
+Gli impegni comprendono spese pianificate, uscite una tantum programmate, sottoscrizioni, rate ed estratti carta proiettati e non ancora pagati nel ciclo. Le scadenze già pagate o riconciliate non vengono sottratte di nuovo.
+
+Per ogni money box, Tracky fissa la quota del ciclo usando il saldo accantonato all'inizio del ciclo e sottrae solo `max(quota − contributi registrati fino a oggi, 0)`. Un contributo futuro non copre il funding di oggi. Se la spesa collegata è già presente tra gli impegni dello stesso ciclo, il funding della relativa money box non viene sottratto una seconda volta.
+
+Le entrate attese, comprese quelle programmate, compaiono su una riga separata e modificano soltanto **Incluse le entrate attese**. Non aumentano il valore principale prima dell'incasso: uno stipendio o un rimborso previsto non viene trattato come liquidità già disponibile.
+
+</CalculationBreakdown>
+
+Il ritmo giornaliero indicativo divide un valore positivo per i giorni rimasti fino alla fine del ciclo, includendo oggi. Se il disponibile è negativo, mostra zero al giorno. Apri il riquadro per vedere liquidità, singole sottrazioni, entrate attese e i prossimi cinque impegni con data.
+
+Saldi e voci dei conti CARD sono esclusi. Il loro effetto sulla liquidità passa dall'estratto in scadenza sul conto di regolamento non-CARD, evitando di sottrarre due volte acquisti o debiti della carta.
+
+Se mancano movimenti su un conto manuale, aggiornalo con [l'importazione CSV](/app/docs/csv-import) prima di fare affidamento su questo indicatore.
+
+<CalculationBreakdown title="Liquidità disponibile">
+  **Significato:** capacità immediata sui conti spendibili non-CARD.
+
+**Dati:** ultimo saldo preferito di ciascun conto nel perimetro e fido collegato. Per ogni snapshot Tracky preferisce il saldo disponibile, quando presente; altrimenti usa il saldo contabilizzato, poi quello atteso.
+
+**Formula:** `Σ saldo preferito + Σ limite fido` nella stessa valuta. Il riquadro “Contabilizzato” somma gli stessi saldi preferiti senza aggiungere i fidi; l'etichetta non garantisce quindi che la banca abbia fornito esclusivamente un saldo contabile.
+
+**Inclusioni:** conti attivi, visibili, spendibili e non-CARD. **Esclusioni:** carte CARD, conti investimento e altro asset, linee non collegate e altre valute.
+
+**Esempio:** conto `150.000` centesimi e conto `-20.000` con fido `50.000` danno contabilizzato `130.000` e disponibile `180.000` centesimi.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Patrimonio netto">
+  **Formula:** `liquidità dai saldi preferiti + asset − debiti` per valuta.
+
+I saldi dei conti investimento e altro asset compaiono nel riquadro separato **Asset**. Aumentano il patrimonio netto, ma non entrano mai nel Disponibile dopo le spese o in Flusso di cassa.
+
+I debiti includono il valore assoluto dei saldi CARD negativi e le passività di credito non già rappresentate da quel saldo. Per una linea collegata a un conto CARD, il saldo della carta è la fonte unica: estratti programmati e rate della stessa esposizione non vengono sommati di nuovo. L'utilizzo del fido è già contenuto nel saldo negativo del conto.
+
+**Esempio:** liquidità `300.000`, carta `-45.000` e prestito indipendente residuo `120.000` producono debiti `165.000` e patrimonio `135.000` centesimi.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Saldo proiettato">
+  **Formula:** `saldi iniziali liquidi + entrate pianificate − uscite pianificate`, applicando le voci in ordine di data.
+
+Le uscite comprendono spese programmate, movimenti una tantum programmati, sottoscrizioni, rate, estratti e trasferimenti in uscita; le entrate comprendono incassi pianificati, entrate programmate e parte ricevente dei trasferimenti. Le voci senza conto compaiono come non assegnate ma non possono modificare una serie di conto finché non assegni la sorgente.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Avanzamento del Piano">
+  La Dashboard legge i bucket visibili del Piano attivo. Per ogni bucket, `finanziato = riporto positivo + Assegnato`, `speso = max(−Attività, 0)` e `rimanente = Disponibile`.
+
+Il riquadro del Piano mostra la percentuale finanziata già usata e il numero di bucket in rosso. Il grafico dà priorità ai bucket in rosso, poi ai sotto-finanziati e infine agli importi finanziati maggiori; mostra al massimo otto righe.
+
+</CalculationBreakdown>
+
+## Grafici e riquadri
+
+- **Transazioni recenti** mostra gli ultimi movimenti nel perimetro.
+- **Spesa per categoria** usa le spese del periodo selezionato.
+- **Storico saldo** usa gli snapshot giornalieri disponibili, non ricostruisce date mancanti.
+- **Pagamenti in arrivo** deriva dalle voci future di Flusso di cassa.
+- **Avanzamento Piano** riassume importi finanziati, spesi e Disponibili del Piano attivo.
+
+<Callout title="Un totale è una fotografia">
+  Una sincronizzazione incompleta, un movimento non categorizzato o una scadenza non assegnata può cambiare
+  l'interpretazione. Apri sempre il dettaglio prima di agire.
+</Callout>

@@ -1,0 +1,48 @@
+---
+title: Risoluzione dei problemi
+description: Diagnosi rapida per saldi, sincronizzazione, proiezioni, trasferimenti, carte e Analyst.
+section: Assistenza
+order: 150
+locale: it
+updatedAt: 2026-08-04
+keywords: [problemi, errori, sync, saldo errato, doppio conteggio, FAQ]
+related: [accounts, planning, manual-transactions-and-transfers]
+---
+
+# Risoluzione dei problemi
+
+## Il saldo non coincide con la banca
+
+Controlla data dell'ultimo snapshot, stato sync, saldo contabile rispetto al disponibile e movimenti non ancora pubblicati dalla banca. Su un conto manuale controlla direzione e importo di ogni movimento; modificarlo o eliminarlo rettifica automaticamente il saldo.
+
+## Il patrimonio sembra troppo basso
+
+Verifica saldi CARD negativi, finanziamenti indipendenti e valuta. Una carta non entra nel cash. Se lo stesso acquisto appare in più forme, controlla che estratto e pagamento siano trasferimenti/internal e che la linea sia collegata al conto CARD corretto.
+
+## Flusso di cassa mostra due volte una spesa
+
+Collega la transazione reale alla scadenza programmata oppure segna la singola occorrenza pagata. Per una sottoscrizione, evita una spesa programmata duplicata. Per una carta, l'acquisto è spesa mentre il pagamento dell'estratto è trasferimento.
+
+## Una voce è “non assegnata”
+
+Assegna il conto alla spesa o sottoscrizione. Per un estratto carta, configura il conto di regolamento sulla linea. Finché manca, l'obbligo è visibile ma non può ridurre una serie di conto specifica.
+
+## Un trasferimento non viene riconosciuto
+
+Controlla conti diversi, direzioni opposte, stessa valuta, distanza massima di sette giorni e importi entro tolleranza. Se esiste un candidato, confermalo in Revisione. Se una gamba è già collegata o classificata `internal`, non viene riutilizzata.
+
+## Non posso modificare o eliminare un movimento manuale
+
+Scollega prima il transfer match. Se il movimento è usato da Flusso di cassa, rata, estratto, piano rateale, money box o sottoscrizione, rimuovi o correggi quella relazione: Tracky blocca l'eliminazione per evitare riferimenti orfani.
+
+## L'utilizzato della carta non è modificabile
+
+È corretto per una linea collegata a CARD: deriva da `max(-saldo, 0)`. Correggi i movimenti della carta. L'aggiornamento manuale appartiene soltanto al flusso legacy senza conto CARD.
+
+## L'Analyst non risponde
+
+Controlla il limite messaggi, attendi la fine di una risposta in corso o scegli un altro modello. Se un tool fallisce, nessuna modifica viene considerata riuscita senza la conferma mostrata. Per Telegram rigenera un codice scaduto e invialo solo in chat privata.
+
+## Il consenso bancario è scaduto
+
+Apri Impostazioni → Connessioni bancarie, rinnova il consenso e completa nuovamente il flusso presso la banca. Lo storico rimane; la sincronizzazione riprende quando la connessione torna attiva.

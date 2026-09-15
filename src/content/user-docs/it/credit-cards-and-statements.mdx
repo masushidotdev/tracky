@@ -1,0 +1,74 @@
+---
+title: Carte, linee di credito ed estratti
+description: Comprendi debito carta, plafond, bucket di pagamento, conto di regolamento e pagamento dell'estratto.
+section: Credito
+order: 110
+locale: it
+updatedAt: 2026-09-02
+keywords: [carta di credito, bucket carta, plafond, estratto, conto di regolamento, rate]
+related: [plan-and-subscriptions, financing-and-installments, planning]
+---
+
+# Carte, linee di credito ed estratti
+
+Tracky separa il debito della carta, la liquidità riservata per ripagarlo e il plafond contrattuale. In questo modo un acquisto non diventa due spese e il plafond non diventa denaro spendibile.
+
+## Cosa vedi
+
+1. Il **conto carta** contiene acquisti, rimborsi e pagamenti. Il saldo negativo è il debito attuale.
+2. La **linea di credito** contiene plafond, date dell'estratto e modalità di rimborso.
+3. Il **conto di regolamento** è il conto corrente dal quale paghi l'estratto.
+4. Il **ciclo dell'estratto** registra l'importo chiuso per un mese e la data di pagamento.
+5. Il **bucket di pagamento della carta** nel Piano conserva la liquidità preparata per quel debito.
+
+<CalculationBreakdown title="Utilizzato e disponibile">
+  Per una carta collegata: `utilizzato = max(−saldo carta, 0)`.
+
+`disponibile = max(plafond − utilizzato − residuo rateale attivo, 0)`. Il residuo rateale viene aggiunto solo quando il capitale convertito non è più presente anche nel saldo carta.
+
+**Esempio:** plafond di 2.000 €, debito carta di 650 € e nessuna rata → 1.350 € disponibili. Se 400 € di capitale sono stati spostati dal saldo carta a un piano rateale attivo, quei 400 € continuano a occupare il plafond finché non li rimborsi.
+
+</CalculationBreakdown>
+
+## Acquisti e rimborsi
+
+Assegna una categoria all'acquisto nel giorno in cui avviene: Attività del Piano e grafici lo contano allora. Un rimborso riduce sia la spesa netta della categoria sia il debito della carta. Ricariche o passaggi fra conti propri sono trasferimenti, non nuove entrate o uscite.
+
+La carta resta fuori dalla liquidità del Piano: il debito non è denaro e il plafond disponibile non si può assegnare. Quando un acquisto è coperto dal suo bucket di spesa, Tracky porta l'importo corrispondente nel bucket di pagamento della carta. Un acquisto non coperto compare come **scoperto a credito** e crea il fabbisogno da finanziare in quel bucket.
+
+## Chiudere e pagare l'estratto
+
+Chiudere il mese crea un estratto programmato e mostra in Flusso di cassa il futuro addebito sul conto di regolamento. La chiusura non paga il debito e non libera il plafond. Per questo il saldo e l'utilizzato totale della carta continuano a mostrare il debito fino al pagamento, mentre **Estratto carta corrente** riparte da zero e mostra solo gli acquisti non già inclusi negli estratti chiusi.
+
+Se un estratto precedente è ancora da pagare, Tracky lo sottrae dal saldo totale prima di chiudere il ciclo successivo: lo stesso debito non può quindi essere programmato due volte. Il mese e la scadenza mostrati appartengono al ciclo effettivamente aperto, anche dopo una chiusura anticipata.
+
+<Steps>
+  <Step title="Attendi l'addebito">Importa o registra l'addebito dell'estratto sul conto di regolamento.</Step>
+  <Step title="Apri il bucket carta">
+    Nel Piano, apri il bucket di pagamento corrispondente e scegli **Registra pagamento estratto**.
+  </Step>
+  <Step title="Conferma">
+    Seleziona l'addebito sul conto di regolamento. Tracky crea il pagamento mancante sulla carta, collega il
+    trasferimento e segna pagato l'estratto compatibile. Per una carta gestita dalla banca, la sincronizzazione
+    successiva resta la fonte autorevole del saldo.
+  </Step>
+</Steps>
+
+Nei dettagli dell'Attività del bucket carta, **Acquisti coperti** e **Pagamenti dell'estratto** restano separati. Insieme spiegano il bucket, ma solo gli acquisti sono spese; l'estratto usa liquidità già riservata.
+
+## Target e rate
+
+Senza un target, il bucket carta chiede il debito attuale meno l'importo residuo già affidato ai piani rateali attivi. Imposta un target quando vuoi deliberatamente un ritmo diverso, per esempio 400 € al mese: il target diventa la guida, mentre debito e data di pagamento restano visibili.
+
+Rateizzare un estratto aggiorna insieme le due viste: il bucket carta smette di chiedere il capitale coperto dalle rate e il residuo non pagato delle rate continua a occupare il plafond. Per questo lo stesso debito non viene richiesto o sottratto dal plafond due volte.
+
+Quando il capitale non è divisibile esattamente per il numero di rate, Tracky conserva il centesimo residuo nel totale e lo aggiunge all'ultima rata prevista invece di chiudere il piano con capitale ancora aperto.
+
+## Carta senza conto carta collegato
+
+Una linea di credito più vecchia o autonoma può ancora usare l'utilizzato aggiornato manualmente e collegare un estratto chiuso a un solo addebito. Mantieni quel flusso separato da quello della carta collegata descritto sopra.
+
+<Callout title="Un acquisto, una sola spesa">
+  La spesa nasce all'acquisto. Pagare l'estratto sposta denaro dal conto di regolamento alla carta e non deve diventare
+  una seconda spesa.
+</Callout>

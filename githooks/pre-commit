@@ -1,0 +1,30 @@
+#!/bin/sh
+# Blocks commits that stage local env files, key material, or PEM private keys.
+# Installed via `npm run prepare` (git config core.hooksPath githooks).
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged_files" ] && exit 0
+
+blocked=""
+for file in $staged_files; do
+  case "$file" in
+    *.env.local.example | .env.local.example | *.env.example | .env.example) ;;
+    .env | .env.* | */.env | */.env.* | *.pem | *.key | *.p12 | *.pfx)
+      blocked="$blocked  $file\n"
+      ;;
+  esac
+done
+
+if [ -n "$blocked" ]; then
+  printf 'pre-commit: refusing to commit secret-bearing files:\n%b' "$blocked" >&2
+  printf 'Store secrets with `npx convex env set` instead. Bypass only if you are sure: git commit --no-verify\n' >&2
+  exit 1
+fi
+
+if git diff --cached -U0 | grep -E '^\+.*-----BEGIN( [A-Z]+)? PRIVATE KEY-----' >/dev/null; then
+  printf 'pre-commit: staged changes contain a PEM private key block.\n' >&2
+  printf 'Store secrets with `npx convex env set` instead. Bypass only if you are sure: git commit --no-verify\n' >&2
+  exit 1
+fi
+
+exit 0

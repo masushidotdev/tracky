@@ -1,0 +1,58 @@
+---
+title: Money boxes and planned items
+description: Plan due items, reconcile payments, link saved money to Plan buckets, and convert eligible savings to an account.
+section: Cash Flow
+order: 100
+locale: en
+updatedAt: 2026-08-04
+keywords: [money box, plan bucket, account conversion, planned expense, income, contribution, reconciliation]
+related: [planning, goals, plan-and-subscriptions, transactions]
+---
+
+# Money boxes and planned items
+
+A planned item has a name, amount, currency, date, direction, optional account, optional category, and optional recurrence. Edit it from Cash Flow to change those details, including assigning or clearing its category. Its visible status can be **Planned**, **Funding**, **Paid**, or **Cancelled**. For recurring items, each occurrence can be paid, linked to a transaction, or reopened independently.
+
+## Reconcile an occurrence
+
+When the real movement arrives, use **Link transaction**. Tracky finds compatible candidates and stores the payment so the due item no longer weighs on future cash flow. Mark it paid without a transaction only when payment happened outside tracked accounts; reopen an incorrect decision.
+
+## Money boxes
+
+A money box is virtual. It records a target, saved amount, target date, and optional account, but its saved amount is not another bank balance. Contributions can be quick or linked to a transaction.
+
+From an unmatched outgoing transfer, choose **Associate money box** to use the transfer amount as a contribution and show the money-box name as its destination. Choosing **Change money box** moves the same contribution without duplicating it. Use **View movements and contributions** from the money-box menu to inspect the complete history. Archiving preserves that history while removing the target from active items.
+
+## Convert a money box to an account
+
+A money box marked as holding funds outside the associated bank balance can become a manual checking or savings account from **Goals**. Transaction-backed contributions and withdrawals become transfers; the amount explained only by manual contributions becomes the opening balance.
+
+The conversion deletes the money box and its manually entered contributions, clears references to it, and cannot be undone. If the box has an associated account, the new account also joins every same-currency Plan that already included that host account, so conversion preserves the Plan's liquidity; other Plans remain unchanged. A box whose money is still included in another account balance is not eligible, because creating a second account would count the same money twice.
+
+## Use saved money in a Plan bucket
+
+Open an ordinary Plan bucket and choose **Linked money box** to connect savings already held for the same purpose. Tracky shows the eligible saved amount as **Already set aside** and includes it in the bucket's current Available amount. The bucket target then asks only for what is still missing, so you do not save the same euro once in the money box and again through Plan assignments.
+
+A money box can pre-fund only one bucket, and card or installment payment buckets cannot use this link. It contributes only when it is active, uses the Plan currency, and belongs to an account inside that Plan. If one of those conditions changes, Tracky preserves the link but temporarily counts zero.
+
+The saved amount is not an assignment. Tracky reads the current money-box balance again each month and does not carry that reserve forward as another month's saving. Otherwise the same unchanged money would be added once per month.
+
+<CalculationBreakdown title="Money-box funding plan">
+  `remaining = max(target − saved, 0)`.
+
+`months remaining` counts calendar months inclusively from today to target, minimum 1. `monthly required = remaining / months remaining`, rounded up to the smallest currency unit.
+
+`progress = saved / target × 100`, kept between 0% and 100%. Expected savings spread the target over inclusive total months and round upward.
+
+Status is **covered** when remaining is zero; **behind** below expected savings; **due soon** with at most 30 days left; otherwise **on track**.
+
+</CalculationBreakdown>
+
+## Planned transfers
+
+A future transfer creates outgoing and incoming legs on the same date and in the same currency. Edit accounts, date, or amount, mark complete, or delete. When the source is a credit facility, Cash Flow keeps credit capacity distinct from cash received.
+
+<Callout title="Virtual allocation">
+  Recording a contribution does not reduce a bank balance. If funds moved in reality, also record the transfer or link
+  the real transaction. Linking the money box to Plan prevents a second funding request; it does not create cash.
+</Callout>

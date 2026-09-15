@@ -1,0 +1,73 @@
+---
+title: Cards, credit lines, and statements
+description: Understand card debt, limits, Plan payment buckets, settlement accounts, and statement payments.
+section: Credit
+order: 110
+locale: en
+updatedAt: 2026-09-02
+keywords: [credit card, card payment bucket, limit, statement, settlement, installments]
+related: [plan-and-subscriptions, financing-and-installments, planning]
+---
+
+# Cards, credit lines, and statements
+
+Tracky separates card debt, the cash reserved to repay it, and the card's contractual limit. This prevents one purchase from becoming two expenses or the limit from becoming spendable cash.
+
+## What you see
+
+1. The **card account** holds purchases, refunds, and repayments. Its negative balance is the current debt.
+2. The **credit line** holds the limit, statement dates, and repayment settings.
+3. The **settlement account** is the current account that pays the statement.
+4. The **statement cycle** records the amount closed for a month and its payment date.
+5. The **card payment bucket** in Plan holds the cash prepared for that debt.
+
+<CalculationBreakdown title="Used and available">
+  For a linked card: `used = max(−card balance, 0)`.
+
+`available = max(limit − used − active installment residual, 0)`. An installment residual is included only when the converted principal is no longer also present in the card balance.
+
+**Example:** €2,000 limit, €650 card debt, and no installments → €1,350 available. If €400 of principal has been moved out of the card balance into active installments, that €400 still occupies the limit until repaid.
+
+</CalculationBreakdown>
+
+## Purchases and refunds
+
+Categorize a purchase on the day it happens so Plan Activity and charts count it then. A refund reduces both the category's net spending and the card debt. Top-ups or movements between your own accounts are transfers, not new income or spending.
+
+The card itself stays outside Plan cash liquidity: debt is not cash, and available credit is not money to assign. When a purchase is covered by its spending bucket, Tracky places the matching amount in the card payment bucket. An uncovered card purchase appears as **credit overspending** and creates a need to fund that payment bucket.
+
+## Close and pay the statement
+
+Closing a month creates a scheduled statement and shows the future debit on the settlement account in Cash Flow. Closing does not pay the debt or free the limit. The card balance and total used amount therefore keep showing the debt until settlement, while **Current card statement** starts again at zero and contains only purchases not already included in a closed statement.
+
+When an earlier statement is still unpaid, Tracky subtracts it from total card usage before closing the next cycle, so the same debt cannot be scheduled twice. The displayed month and due date belong to the cycle that is actually open, including after an early close.
+
+<Steps>
+  <Step title="Wait for the debit">Import or record the statement debit on the settlement account.</Step>
+  <Step title="Open the card bucket">
+    In Plan, open the matching card payment bucket and choose **Register statement payment**.
+  </Step>
+  <Step title="Confirm">
+    Select the settlement debit. Tracky creates the missing repayment on the card, links the transfer, and marks the
+    compatible statement paid. For a bank-managed card, the next synchronization remains authoritative for its balance.
+  </Step>
+</Steps>
+
+The card bucket's Activity details keep **Covered purchases** and **Statement payments** separate. Together they explain the bucket, but only the purchases are spending; the statement consumes cash that was already reserved.
+
+## Targets and installments
+
+Without a target, the card bucket asks for current card debt minus the outstanding amount already assigned to active installment plans. Set a target when you deliberately want another pace, such as €400 per month; the target becomes the guide while the debt and payment date remain visible.
+
+Converting a statement into installments changes both views together: the card bucket no longer asks for the installment-covered principal, and the unpaid installment residual continues to occupy the card limit. This is why the same debt is not requested or deducted from the limit twice.
+
+When principal does not divide evenly across the installment count, Tracky keeps the remaining cent in the total and adds it to the final expected installment instead of closing the plan with principal still outstanding.
+
+## A card without a linked card account
+
+An older or standalone credit line can still use manually maintained usage and link a closed statement to one debit. Keep that flow separate from the linked-card flow above.
+
+<Callout title="One purchase, one expense">
+  The purchase creates spending. Statement settlement moves money from the settlement account to the card and must not
+  become a second expense.
+</Callout>

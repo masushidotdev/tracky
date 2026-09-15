@@ -1,0 +1,299 @@
+---
+title: Plan walkthrough
+description: How the zero-based Plan is actually used, from the first assignments to targets for annual bills, with the questions that come up along the way.
+section: Spending control
+order: 81
+locale: en
+updatedAt: 2026-08-04
+keywords: [tutorial, plan, zero-based, overdraft, cards, installments, targets, annual expenses, ready to assign, auto-assign, month ahead]
+related: [plan-and-subscriptions, dashboard-and-totals, transactions]
+---
+
+# Plan walkthrough
+
+This guide is the practical companion to [Plan, categories and subscriptions](/app/docs/plan-and-subscriptions).
+That page tells you what each control does; this one tells you **in which order to use them**, and why.
+
+## The idea in one sentence
+
+The Plan does not ask how much you would like to spend: it asks you to **give a job to the money you already
+have**. Every euro sitting in the plan's accounts is assigned to a bucket until *Ready to Assign* reaches
+zero. It is not a forecast, it is a decision taken over money that exists.
+
+## Start on the day the Plan becomes real
+
+Every Plan has a starting day. A new Plan normally starts on the day you create it: earlier movements remain
+part of today's account balances, but they do not create *Activity* or overspending. The first month therefore
+describes only the decisions you could actually have made after the Plan existed.
+
+If you imported history or chose the wrong origin, open the plan selector and use **Restart from here…**.
+Choose the first day that should count. Tracky keeps the Plan's groups, buckets, targets, and assignments, but
+rebuilds its history and stops treating earlier spending as overspending.
+
+The Plan still starts from **today's real cash balances**, not a reconstructed opening balance. The chosen
+date decides which movements explain bucket activity; it does not invent money that is no longer in the
+accounts.
+
+## Negative Ready to Assign: three different causes
+
+The label above the number changes with the reason, because the remedies differ.
+
+**The cash accounts are overdrawn.** The arranged overdraft is borrowed capacity, not money to assign. The
+notice at the top shows the amount, remaining facility, change since last month, and—after you choose a
+date—the monthly pace toward zero. Do not create a payoff bucket: every euro of future income you leave
+unassigned already stays in the account and reduces the negative balance.
+
+**You assigned more than you have.** Lower an assignment, or move money between buckets from the inspector:
+the total does not change, only who holds it.
+
+**Categories hold more than the liquidity.** This follows cash overspending in the previous month, which
+reduces the new month's *Ready to Assign* instead of staying in the category.
+
+## Cash overspending and credit overspending
+
+The two figures shown on a red row need different action.
+
+**Cash overspending** means the money has already left a cash account. Move Available money from another
+bucket to cover it. If you do not, the shortfall lowers *Ready to Assign* rather than carrying as a negative
+bucket balance.
+
+**Credit overspending** means the purchase was made on a card without enough money in its spending bucket.
+No cash left yet, but the card debt increased. Fund the card's payment bucket so that cash is ready when the
+statement is paid.
+
+## Targets: the part that changes everything
+
+A target states **how much a bucket should receive and by when**. It does two jobs: telling you what is
+missing this month, and ordering priorities when there is not enough money to go around.
+
+A repeating **Custom** target can run every N months or years. Use every three months for a quarterly bill,
+for example, or every two years for a renewal that does not fit the monthly or yearly cadences.
+
+### Recurring monthly spending
+
+Groceries, dining, transport, fuel. Cadence **Monthly**, behaviour **Refill up to**. What you do not spend
+lowers next month's need, and the target behaves like a cap. If instead you want the unspent part to
+accumulate — a gifts fund, say — use **Set aside another**.
+
+### Annual bills: use the yearly cadence, not your own division
+
+This is the question everyone asks: *insurance costs €600 once a year, should I set a €50 monthly target?*
+
+Arithmetically it works, but it is a dead number: it asks for €50 whatever happens. Skip a month and you
+arrive short without noticing. Start in October for a March due date and €50 a month is not enough.
+
+**Use the Yearly cadence with the due date instead, and the *Refill up to* behaviour.**
+Tracky computes this month's need as:
+
+```
+(full amount − what you already set aside) ÷ months left until the due date
+```
+
+The division is redone every month. Skipped August? September automatically asks for more. Starting
+mid-year? It spreads over the time that actually remains. And as the bucket fills, the need falls by itself.
+
+**Mind the behaviour.** With *Set aside another* the subtraction of what you already saved does **not**
+happen: the need becomes `full amount ÷ months remaining`, so it grows month after month while the fund
+fills, and you would set aside far more than the premium. On €600 due in March, in July both ask for
+€66.67; in October, with €200 already saved, *Refill up to* still asks €66.67 while *Set aside another*
+asks €100. For annual bills always use *Refill up to*.
+
+This is what YNAB calls a **true expense**: an annual bill stops being a surprise and becomes a monthly
+instalment you pay to yourself. It applies to insurance, road tax, servicing, taxes, annual subscriptions.
+
+### Bills spread across the year: service charges and the like
+
+Building service charges look like neither the weekly shop nor the insurance policy. They are **several
+payments spread through the year** — typically four quarterly instalments — plus balancing charges and extra
+levies you cannot predict to the cent, but with a **fairly stable annual total**.
+
+Here the yearly cadence is the wrong choice, even though the expense is annual in total. The fund empties at
+every instalment, so what you have set aside falls, and with the yearly formula the monthly ask would **rise
+again** right after each payment: it would fight itself.
+
+Use **Monthly** with **Set aside another…** and the annual total divided by twelve. The fund grows in the
+months without an instalment and partly empties at each due date, which is exactly what you want.
+
+**Mind the reversal.** On the monthly cadence the two behaviours do the opposite of what they do on the
+yearly one: *Set aside another* asks for the full amount **every month regardless of what is already put
+away**, so it accumulates; *Refill up to* stops as soon as the bucket reaches the threshold, so it caps. For
+an accrual you want the first, for a spending cap the second. The real rule is not the word "annual" but
+**how the payments are spread**: one payment on a known date wants the yearly cadence with *Refill up to*,
+several payments scattered through the year want the monthly one with *Set aside another*.
+
+For the amount, look at the actual year-end total rather than the nominal instalment: four instalments of
+€428.89 come to €1,715, but with balancing charges and extra levies the real total can reach €1,833. Divide
+that, rounding up, so the extras do not catch you short.
+
+### Two similar bills with different cadences
+
+Two insurance policies — the car charged monthly, the motorbike paid once a year — want **two categories**,
+and that is not an interface quirk: a target lives on a bucket, and a bucket has exactly one target.
+Different cadences mean different targets, so different buckets, so different categories.
+
+Put the car on a bucket with a monthly *Refill up to* target, and the motorbike on a bucket with a yearly
+*Refill up to* target and the renewal date. That way you see separately what you spend each month and what
+you are accruing towards the due date — which is exactly why keeping them apart is worth it.
+
+The same holds when the spending is "the same kind of thing" but the bucket would blur it: keeping service
+charges inside *Housing* makes that bucket's *Available* unreadable, because you can no longer tell the fund
+that is accruing from the slack left for other home costs. A dedicated category, and the number says one
+thing again.
+
+### Snoozing a target
+
+For a month where that spending makes no sense — holidays in January — snooze the target rather than
+deleting it. It leaves the month's underfunded list without losing its configuration.
+
+## Cost to Be Me
+
+It sums every target for the month and compares it with the **expected income** you entered. It is the cost
+of a fully funded month of your life.
+
+Without expected income the card only shows the target total and tells you nothing. With that number in
+place it answers the real question: *does my lifestyle fit inside my income?* If the targets exceed the
+income, no assignment will fix it — the problem is upstream.
+
+**Expected income belongs to the plan, not to a month.** You enter it once and it stays as you move between
+months: it describes a typical month, not July or August in particular. That is why it wants your
+**recurring, reliable** income — take-home pay — and not a one-off sum, which compared against targets that
+return every month would be a false comparison. If your income varies, use the **lowest amount you can count
+on** rather than the average: underestimating leaves you extra money to assign, overestimating has you
+planning money that never arrives.
+
+A windfall — a tax refund, back pay, a gift — does not belong here. When it actually lands, the Plan sees it
+as income and it shows up in *Ready to Assign*: you give it a job then. That is the difference between
+planning the money you have and planning the money you hope for.
+
+## Auto-Assign
+
+<Figure
+  src="/docs/plan/plan-auto-assign.jpg"
+  alt="The Auto-Assign dialog with strategy and bucket selection"
+  caption="Every strategy previews before it writes: no assignment happens blind."
+/>
+
+Six strategies, all of them previewed before you confirm:
+
+**Underfunded** is the one you will use most. It spreads the available money starting with what is already
+in the red, then targets with a near due date, then the rest. It is the right way to use a small amount.
+
+**Assigned last month** and **Spent last month** replay the previous month: useful when life is stable and
+you want to start quickly.
+
+**Average assigned** looks further back and smooths the peaks.
+
+**Reset assigned** and **Reset available** start over: the first zeroes the month's assignments, the second
+also empties the carry.
+
+Leave every bucket unchecked to apply the strategy to all visible ones, or tick a few to act only on those.
+
+## Unplanned, and why it is good news
+
+The *Unplanned* row collects activity from categories no bucket covers. It is not an error: it is where you
+discover that the plan does not yet describe your whole life.
+
+When you see one, use **Assign category** on that row: put it into an existing bucket or give it one of its
+own. From then on that spending has a row of its own.
+
+Categories you create from Settings join the plan automatically, so this mostly shows up for older ones or
+for categories created before the plan existed.
+
+## Card and installment buckets: prepare the payment once
+
+Each card in the Plan has its own protected payment bucket. When a categorized card purchase is covered by
+money in its spending bucket, Tracky shows that amount as **Covered spending** and makes it available for the
+future card payment. Open the Activity details to see covered purchases separately from statement payments.
+
+When the statement debit appears on the settlement account, open the card bucket and choose **Register
+statement payment**. Select that debit and confirm. Tracky creates the missing movement on the card and links
+the two sides. The original purchases remain the expenses; paying the statement only consumes the cash that
+was reserved for them.
+
+Every ordinary active installment plan also has a protected bucket with the current month's installment. A loan
+paired with one of your categories uses that category instead, without a second Instalments row. This makes the
+cash requirement visible even when the financed purchase happened earlier or outside the Plan. When a
+card balance is converted into installments, that remaining installment debt is subtracted from the card
+bucket's need: you fund the installments, not the same principal twice.
+
+Card and installment buckets use the full derived need by default. Add a target if you want a different
+pace, such as giving the card €400 each month.
+
+## Plan or Goals: which one does the setting aside
+
+The Plan and Goals both let you put money aside, so it is easy to end up doing it twice for the same thing
+and seeing two different figures telling you what is still missing.
+
+Goals are not redundant: they feed the Cash Flow projection and the *safe to spend* figure on the
+Dashboard, neither of which the Plan provides. What overlaps is only the monthly accrual towards a purpose.
+
+The rule is not about which feature you prefer, but **what kind of expense it is**:
+
+A **recurring bill** — service charges, insurance, road tax — returns every year and is part of what a month
+of your life costs. It belongs in the **Plan**, as a bucket with a target, so that it reaches Cost to Be Me.
+Leaving it only in Goals makes that figure say your month costs less than it does.
+
+A **one-off goal** — a gift, a trip, an emergency fund — is reached and then spent. It is not a recurring
+monthly cost: it belongs in **Goals**.
+
+If a money box already holds savings for an ordinary Plan bucket, link it from that bucket's inspector.
+Tracky shows the amount as **Already set aside** and asks only for the target remainder. It is not a new
+assignment, and it is read fresh each month instead of being carried again, so the same savings do not
+silently double.
+
+**Something to know if you use your bank's pockets or vaults.** The Plan reads liquidity from the **balances
+the accounts report**. Some banks report the main balance **net of** pockets: in that case the money moved
+there is outside the Plan's cash liquidity even if you link the matching money box. The link can cover that
+bucket's target, but it does not turn the pocket into assignable cash.
+
+## Being a month ahead
+
+This is the goal of the method, and it is worth naming explicitly because everything else leads here.
+
+While you assign money that arrives *during* the month, you are always catching up: spending comes before
+decisions. Once you can cover a whole month with money earned in the previous one, on the first of the month
+you sit down, assign everything, and for thirty days you no longer have to wonder whether you can afford
+something — you already decided.
+
+It is not reached in one go. Every euro left at the end of a month and not spent is a step.
+
+## Frequently asked questions
+
+**How do I choose cadence and behaviour, briefly?**
+Look at how the payments are spread, not at what the expense is called. You spend it every month and want a
+cap: **Monthly + Refill up to**. You pay it once a year on a known date: **Yearly + Refill up to**, with the
+due date. You pay it in instalments scattered through the year with a stable total: **Monthly + Set aside
+another**, for the annual total divided by twelve. It is a one-off goal that then ends: **Custom + Have a
+balance of**.
+
+**Do I have to assign down to zero?**
+It is the goal, not an obligation. A positive *Ready to Assign* means you hold money without a job: sooner
+or later it leaves on its own, on something you did not choose.
+
+**What happens if I spend more than a category holds?**
+The bucket goes red. For cash overspending, move money from another bucket; otherwise the shortfall lowers
+*Ready to Assign*. For credit overspending, fund the card payment bucket so you can settle the debt later.
+The negative category balance itself does not carry into the next month.
+
+**Does unspent money stay in the category?**
+Yes, a positive *Available* carries into the next month. That is how funds for annual bills are built.
+
+**Why doesn't my salary appear in a category?**
+Income is not category activity: it funds the plan. You find it in *Ready to Assign* and its breakdown,
+never as negative spending inside a bucket.
+
+**What should Unexplained movement show?**
+Zero. Income and every other component are counted directly. A non-zero value means some account movement
+has not been attributed correctly, not that you earned or spent extra money.
+
+**I recategorized an old transaction — does the plan update?**
+Yes. The last two months are always recomputed live, and edits to older months invalidate the cache on their
+own. *Recalculate plan* remains a safety net, not the normal path.
+
+**Can I have more than one plan?**
+The first one is for everybody. Additional plans are a Pro feature — useful to separate perimeters, for
+example personal accounts from a business, or a second currency.
+
+**Does hiding a category remove its money from the plan?**
+No. Hiding only changes what you see: that bucket's *Available* still counts in the totals and in *Ready to
+Assign*. The *Hidden categories* view brings it back.

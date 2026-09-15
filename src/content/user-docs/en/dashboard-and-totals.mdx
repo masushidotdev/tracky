@@ -1,0 +1,86 @@
+---
+title: Dashboard and total calculations
+description: Source, formula, and boundaries for Safe to spend, cash, net worth, projections, Plan progress, and spending.
+section: Overview
+order: 30
+locale: en
+updatedAt: 2026-08-04
+keywords: [dashboard, totals, Safe to spend, available cash, net worth, projection, formulas]
+related: [accounts, planning, plan-and-subscriptions, csv-import]
+---
+
+# Dashboard and total calculations
+
+With **All Accounts**, the Dashboard uses active, visible accounts. Selecting one account narrows the scope. Every currency remains separate.
+
+## Safe to spend
+
+The first KPI estimates what remains available for discretionary spending in the current Cash Flow cycle. It is calculated separately for every currency; the card shows the primary currency and opens the complete breakdown.
+
+<CalculationBreakdown title="Safe to spend">
+  `Safe to spend = available cash − remaining bills and commitments − money-box funding still due in the cycle`.
+
+Commitments include projected planned expenses, one-off scheduled outflows, subscriptions, installments, and card statements that remain unpaid in the cycle. Paid or reconciled occurrences are not subtracted again.
+
+For each money box, Tracky fixes the cycle target from the amount saved at the start of the cycle and subtracts only `max(target − contributions recorded through today, 0)`. A future-dated contribution does not cover today's funding. When the linked expense is already included as a commitment in the same cycle, its money-box funding is not subtracted a second time.
+
+Expected income, including scheduled inflows, is shown on a separate line and only affects **Including expected income**. It does not increase the main figure before the money arrives, so a forecast salary or refund is not treated as cash already available.
+
+</CalculationBreakdown>
+
+The card's approximate daily pace divides a positive Safe-to-spend amount by the days left through the cycle end, including today. It shows zero per day when the amount is negative. Open the card to see available cash, each subtraction, expected income, and the next five commitments with their dates.
+
+CARD balances and items are excluded. Their cash effect enters through the statement due on the non-CARD settlement account, which prevents card purchases or liabilities from reducing liquidity twice.
+
+If a manual account is missing movements, update it with [CSV import](/app/docs/csv-import) before relying on this KPI.
+
+<CalculationBreakdown title="Available cash">
+  **Meaning:** immediate cash capacity in spendable non-CARD accounts.
+
+**Data:** the latest preferred balance for each account in scope and any linked overdraft. Within a snapshot Tracky uses available balance first, when present, then booked balance, then expected balance.
+
+**Formula:** `Σ preferred balance + Σ overdraft limit` in the same currency. The “Booked” tile sums the same preferred balances without overdraft limits, so its label does not guarantee that the bank supplied a booked-only figure.
+
+**Included:** active, visible, spendable non-CARD accounts. **Excluded:** CARD ledgers, investment and other-asset accounts, unlinked facilities, and other currencies.
+
+**Example:** an account with `150000` minor units plus an account at `-20000` with a `50000` overdraft produce booked cash `130000` and available cash `180000`.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Net worth">
+  **Formula:** `cash from preferred balances + assets − debts`, per currency.
+
+Investment and other-asset account balances appear in the separate **Assets** bucket. They increase net worth but never enter Safe to spend or Cash Flow.
+
+Debts include the absolute value of negative CARD balances and credit liabilities not already represented by that balance. For a facility linked to CARD, the card balance is the single source: scheduled statements and installments for the same exposure are not added again. Overdraft use is already reflected in the account balance.
+
+**Example:** cash `300000`, card balance `-45000`, and an independent loan balance of `120000` produce debts `165000` and net worth `135000` minor units.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Projected balance">
+  **Formula:** `opening cash + planned inflows − planned outflows`, applied by date.
+
+Outflows include planned expenses, one-off scheduled movements, subscriptions, installments, statements, and outgoing transfers; inflows include planned income, scheduled inflows, and receiving transfer legs. Unassigned items remain visible but cannot change a specific account series until assigned.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Plan progress">
+  The Dashboard reads visible buckets from the active Plan. For each bucket, `funded = positive carry + Assigned`, `spent = max(−Activity, 0)`, and `remaining = Available`.
+
+The Plan KPI shows the funded percentage used and the number of buckets in the red. The chart prioritizes overspent buckets, then underfunded buckets, then the largest funded amounts; it displays at most eight rows.
+
+</CalculationBreakdown>
+
+## Charts and cards
+
+- **Recent transactions** shows the latest activity in scope.
+- **Spending by category** uses expenses for the selected period.
+- **Balance history** uses available daily snapshots and does not invent missing dates.
+- **Upcoming payments** comes from future Cash Flow items.
+- **Plan progress** summarizes funded, spent, and Available amounts from the active Plan.
+
+<Callout title="A total is a snapshot">
+  Incomplete sync, an uncategorized transaction, or an unassigned due item can change its meaning. Open the detail
+  before acting.
+</Callout>

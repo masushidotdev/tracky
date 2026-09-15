@@ -1,0 +1,66 @@
+---
+title: Proiezione del flusso di cassa
+description: Leggi cicli, saldi, impegni ricorrenti, movimenti programmati, conti non assegnati e prima data negativa.
+section: Flusso di cassa
+order: 90
+locale: it
+updatedAt: 2026-08-04
+keywords: [flusso di cassa, saldo proiettato, transazione programmata, disponibile dopo le spese, prima data negativa, ciclo]
+related: [money-boxes-and-planned-items, credit-cards-and-statements, dashboard-and-totals]
+---
+
+# Proiezione del flusso di cassa
+
+Flusso di cassa costruisce un calendario della liquidità: parte dall'ultimo saldo noto dei conti liquidi, inserisce gli impegni del ciclo e calcola il saldo dopo ogni data. Non è una previsione statistica del comportamento; è la conseguenza delle voci conosciute.
+
+## Il ciclo
+
+Nelle preferenze scegli frequenza, quantità e data di inizio o giorno del mese. Puoi spostarti fra ciclo precedente, corrente e successivo. Il ciclo determina la finestra mostrata, non modifica le date originali delle voci.
+
+## Origine delle righe
+
+Flusso di cassa combina spese ed entrate programmate, sottoscrizioni attive, rate, estratti carta, trasferimenti pianificati e movimenti una tantum programmati nel registro. Il registro rispecchia soltanto la prossima occorrenza non pagata di ogni elemento pianificato ricorrente; Flusso di cassa continua a elencare tutte le occorrenze del ciclo selezionato. Una regola pianificata conserva la nota opzionale in tutte le occorrenze e il dialogo di modifica di Flusso di cassa mostra separatamente beneficiario e nota. Il fabbisogno delle money box è mostrato separatamente e non modifica da solo il saldo del conto. Una voce riconciliata o pagata resta identificabile ma non viene applicata una seconda volta.
+
+Un movimento programmato nel registro entra nella proiezione alla sua data futura, anche se non ha ancora modificato il saldo odierno. Le uscite programmate contano anche come impegni nel **Disponibile dopo le spese**; le entrate programmate restano entrate attese e non aumentano il valore principale prima di arrivare.
+
+<CalculationBreakdown title="Serie di un conto">
+  `saldo dopo riga = saldo prima + entrata − uscita`.
+
+Per un conto con fido, il disponibile proiettato applica lo stesso movimento alla capacità disponibile. Il primo valore sotto zero determina la prima data negativa del conto.
+
+Se manca il saldo o la valuta della voce non coincide, la riga può essere mostrata ma la serie è indicata come non proiettata.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Serie aggregata">
+  Vengono sommati soltanto i saldi iniziali dei conti liquidi nella valuta principale del gruppo e poi applicate le
+  relative righe cronologiche. I conti CARD non partecipano alla liquidità aggregata e non generano allarmi di saldo
+  negativo: il loro valore negativo è debito, non scoperto di liquidità.
+</CalculationBreakdown>
+
+## Conto non assegnato
+
+Una spesa o sottoscrizione senza conto, oppure un estratto senza conto di regolamento, appare nel gruppo non assegnato. È un impegno conosciuto, ma Tracky non può stabilire quale saldo ridurrà. Assegna il conto per ottenere una proiezione completa.
+
+## Tre scenari completi
+
+### 1. Mese ordinario
+
+Saldo corrente `180.000` centesimi. Stipendio `CRDT 220.000` il 27, affitto `DBIT 90.000` il 2 e sottoscrizioni `15.000`. In ordine cronologico: `180.000 − 90.000 − 15.000 + 220.000 = 295.000`. Se il ciclo inizia il 25, lo stipendio arriva prima delle uscite; con un ciclo che inizia il 1, le scadenze vengono applicate prima.
+
+### 2. Estratto carta
+
+Il conto CARD ha saldo `-75.000`; il conto corrente di regolamento parte da `120.000`. La chiusura crea un estratto `75.000` alla data prevista sul conto corrente: la sua proiezione scende a `45.000`. Il conto CARD non viene sommato alla liquidità. Quando il `DBIT` corrente e il `CRDT` CARD sono confermati come trasferimento, il ciclo passa a pagato e non viene applicato due volte.
+
+### 3. Rata e movimento programmato
+
+Saldo `100.000`; rata del prestito `25.000`, uscita una tantum programmata `60.000` e sottoscrizione `20.000`. Dopo la rata restano `75.000`, dopo l'uscita `15.000`, dopo la sottoscrizione `-5.000`: quella data è la prima negativa. Spostare una voce in Tracky ha senso soltanto se cambia la vera scadenza; altrimenti serve un'entrata reale o un'uscita più bassa.
+
+## Come leggere un allarme
+
+Apri il giorno indicato, verifica tutte le righe precedenti e controlla saldo iniziale, valuta e conto. Una notifica negativa usa la prima data del gruppo; scompare solo quando i dati producono una serie non negativa.
+
+<Callout title="Flusso di cassa non sposta denaro">
+  Creare un trasferimento, una money box, una scadenza o un movimento programmato registra un'intenzione. Devi comunque
+  eseguire l'operazione presso la banca o il finanziatore.
+</Callout>

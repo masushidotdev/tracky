@@ -1,0 +1,55 @@
+---
+title: Step-by-step tutorials
+description: Guided workflows for setting up Tracky, a manual card, and reliable Cash Flow.
+section: Tutorials
+order: 140
+locale: en
+updatedAt: 2026-08-04
+keywords: [tutorial, manual card, planning, plan, workflow]
+related: [getting-started, planning, credit-cards-and-statements]
+---
+
+# Step-by-step tutorials
+
+## Build a reliable month
+
+<Steps>
+  <Step title="Refresh and verify">
+    Sync accounts, compare balances and recent movements, then correct categories and transfers.
+  </Step>
+  <Step title="Record known items">Create expenses, income, and transfers; assign the account whenever known.</Step>
+  <Step title="Confirm recurrences">Review subscription suggestions, amount, cadence, and debit account.</Step>
+  <Step title="Read the projection">
+    Open the current cycle, resolve unassigned items, and inspect the first negative date.
+  </Step>
+  <Step title="Create funding targets">Use a money box for distant costs and record real contributions regularly.</Step>
+</Steps>
+
+## Add a card missing from bank import
+
+<Steps>
+  <Step title="Create CARD">
+    Choose the contract currency. If debt already exists, record it as an opening `DBIT internal` adjustment.
+  </Step>
+  <Step title="Create the card line">
+    Set contractual limit and days, link CARD, and choose the current settlement account.
+  </Step>
+  <Step title="Record usage">
+    Every purchase is categorized `DBIT`; every refund is `CRDT`. Used credit follows the balance.
+  </Step>
+  <Step title="Close the month">
+    Review the amount, close the cycle, and verify the planned settlement-account outflow.
+  </Step>
+  <Step title="Settle the statement">
+    After payment, record CARD `CRDT` and match it with current-account `DBIT`. Verify paid cycle and renewed
+    availability.
+  </Step>
+</Steps>
+
+## Convert recurrence to a subscription
+
+Open All Accounts → Review, verify merchant, amount, and confidence, then confirm. In Subscriptions, assign alias and debit account. Return to Cash Flow and check the next date. If date or price changes, update the subscription instead of adding a duplicate planned item.
+
+## Prepare for an annual expense
+
+Create a planned expense with date and account, enable its money box, and follow the suggested monthly amount. Record contributions. When payment arrives, link the transaction to that occurrence so forecast and real movement cannot coexist as two outflows.

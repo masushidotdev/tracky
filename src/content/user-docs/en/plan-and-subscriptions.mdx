@@ -1,0 +1,144 @@
+---
+title: Plan, categories, and subscriptions
+description: Assign real account balances, track monthly availability, and bring recurring payments into future cashflow.
+section: Spending control
+order: 80
+locale: en
+updatedAt: 2026-08-29
+keywords: [plan, ready to assign, overdraft, cards, installments, targets, auto-assign, subscriptions]
+related: [transactions, planning, analyst-notifications-automations]
+---
+
+# Plan, categories, and subscriptions
+
+## Ready to Assign
+
+Plan is a zero-based allocation view: give the money already observed in selected cash accounts a job before spending it. Each plan uses one currency. Cash accounts define how much can be assigned; selected cards remain outside cash liquidity and receive their own payment buckets.
+
+**Ready to Assign** is the amount not currently held in Plan buckets. Open it to see carry from the previous month, income and other inflows, card borrowing, movements before the Plan started, internal movements, perimeter transfers, assignments, money-box reserves, and cash overspending.
+
+Income is added from the income movements themselves, not inferred from whatever is left over. **Unexplained movement** should therefore be zero. If it is not, one or more movements have not yet been attributed correctly; do not treat that row as income.
+
+The two card rows answer different questions:
+
+- **Cash drawn from a card** is borrowed cash that reached a Plan cash account. It can be assigned, while the matching card debt remains due.
+- **Spent on card credit** is card spending that no bucket had enough money to cover. It did not consume cash now, but it created debt to fund later.
+
+Neither a card's positive balance nor its available limit is money to assign.
+
+## Overdrafts
+
+When a selected current account is below zero, a notice at the top shows the amount overdrawn, any overdraft credit remaining, whether the balance improved or worsened since last month, and the monthly pace needed to return to zero by the date you choose.
+
+This notice is informational: an arranged overdraft is not extra money to assign. You do not need a separate bucket to pay it down either. The negative account balance is already inside the Plan, so every euro of future income that you leave unassigned reduces the overdraft automatically. Setting aside another amount for the same debt would count it twice.
+
+## Assigning money
+
+Use the **Assigned** column to enter the amount for a bucket in the selected month. On desktop, select the value and type the new amount; on smaller screens, open the assigned editor. The inspector can also move money from one bucket to another without changing total Assigned.
+
+The grid has four columns:
+
+- **Category:** the Plan bucket that receives one or more transaction categories.
+- **Assigned:** money allocated during this month.
+- **Activity:** net booked spending and refunds during this month.
+- **Available:** money that remains in the bucket.
+
+## Activity, Available, and carry
+
+<CalculationBreakdown title="Monthly bucket calculation">
+  `Available = positive carry from the previous month + Assigned + Activity`.
+
+Activity is signed: booked expenses reduce the bucket, while booked refunds in the same category increase it. Income, transfers, internal movements, non-booked transactions, and other currencies do not enter bucket Activity. Select an Activity amount to inspect the matching transactions.
+
+A positive Available amount carries into the next month. A negative amount does not stay in the bucket: cash overspending reduces Ready to Assign instead of becoming a negative carry.
+
+</CalculationBreakdown>
+
+Tracky also shows informative **Out of Plan** rows for internal repayments and net transfers across the plan boundary. They explain changes in account liquidity but are not assignable buckets.
+
+A confirmed transfer between two cash accounts in the same Plan remains neutral even when the banks book its legs in different months. Only an amount difference, such as a bank transfer fee, becomes Unplanned activity on the outgoing date. The transferred principal does not appear as a transfer to an excluded account.
+
+Each ordinary row also distinguishes **cash overspending** from **credit overspending**. Cash overspending has already left a cash account: cover it by moving available money from another bucket, or Ready to Assign stays lower. Credit overspending is an unfunded purchase on a card: fund the card's payment bucket so cash will be ready when the statement is paid.
+
+## Plan origin and Restart from here
+
+Every Plan begins on a specific day. Movements before that date still belong to the account balance, but they do not create bucket Activity or overspending. This lets a Plan created in the middle of a month begin from that day instead of judging spending that happened before the Plan existed.
+
+Use **Restart from here…** in the plan selector to choose a new starting day. Tracky keeps groups, buckets, targets, and assignments, ignores earlier activity for Plan purposes, and rebuilds the monthly history from the chosen date.
+
+## Card and installment buckets
+
+Each included card has a protected payment bucket. Covered card purchases move the corresponding amount toward that bucket, while statement payments appear separately in its Activity details. To record the statement from the Plan, open the card bucket, choose the debit from the settlement account, and confirm. Tracky creates the missing card-side movement and confirms the transfer; the purchase itself is not counted as an expense again.
+
+Each ordinary active installment plan also receives a protected bucket with the installment due for the selected month. A loan paired with one of your categories uses that category instead, so no second Instalments row appears. Link or record the real payment as usual; it contributes to the relevant row instead of appearing a second time elsewhere.
+
+Card and installment buckets normally use the debt or scheduled installment as their need. You can set your own target instead—for example, to give a card €400 each month—and that target becomes the monthly funding guide. If card debt has been converted into installments, the card bucket asks only for the part not already covered by the active installment plans.
+
+## Targets
+
+Open a bucket to create a target:
+
+- **Weekly:** repeat an amount on the selected weekday; five-week months include five occurrences.
+- **Monthly:** fund an amount each month, optionally by a day of the month.
+- **Yearly:** fund toward an amount by a due date.
+- **Custom:** use a due date, choose whether the target repeats, and set the interval to every N months or years.
+
+Target behavior can **set aside another amount**, **refill up to an amount**, or, for a custom non-repeating target, **reach a balance by the due date**. Snoozing a target removes it from the current month's underfunded work list without deleting the target.
+
+## Auto-Assign and Cost to Be Me
+
+**Auto-Assign** supports Underfunded, Assigned last month, Spent last month, Average assigned, Reset assigned, and Reset available. Select specific buckets or leave the selection empty to use eligible visible buckets. Tracky always shows the proposed rows, total assignment, and resulting Ready to Assign before confirmation.
+
+**Cost to Be Me** adds the month's target requirements and compares them with the expected income saved on the plan. It shows the remaining income or the shortfall; it does not move money automatically.
+
+## Focused views and Edit Plan
+
+Focused views narrow the grid to **Underfunded**, **Overspent**, **Snoozed**, **Money available**, or **Hidden** buckets. The full view keeps account-wide information such as out-of-plan movements, card reservations, and month totals.
+
+Use **Edit Plan** to:
+
+- create, rename, reorder, and delete groups;
+- create, rename, reorder, and delete buckets;
+- drag buckets within or between groups with pointer or keyboard controls;
+- select several buckets to move, hide, show, or delete them together.
+
+## Groups, buckets, and global categories
+
+Transaction categories remain global: a transaction has one category used by Plan, Reports, Forecast, rules, and the Analyst. Plan organizes those categories into its own ordered groups and buckets. Activity follows the categories included in each bucket, which are listed in the bucket inspector. Creating a new bucket in Edit Plan also creates its matching global expense category. Creating a budget-eligible category in Settings gives it its own bucket in the active plan automatically.
+
+Older or otherwise unmapped categories contribute to the system **Unplanned** row when they have Activity. Use **Assign category** there, or **Add category** in Edit Plan, to add one to an existing bucket or give it its own bucket in a chosen group. This keeps real spending visible instead of dropping it from the Plan.
+
+## Hidden buckets and multiple plans
+
+Hiding a bucket changes the view, not the accounting. Its Available amount still counts in group totals and Ready to Assign, and the **Hidden** focused view can show it again. Unplanned cannot be hidden.
+
+The plan selector can switch and rename plans. The first plan is available to everyone; creating additional plans is a **Pro** feature enforced by the backend. A plan can be deleted only while another plan remains.
+
+## Link a money box
+
+For an ordinary bucket, use **Linked money box** in the inspector to count money already saved toward that purpose. The saved amount appears as **Already set aside**, increases the bucket's current Available amount, and makes the target ask only for the remainder; it does not become a new assignment.
+
+Only an eligible money box in the Plan's currency and accounts can contribute, and one money box cannot pre-fund several buckets. The link is preserved if the money box later becomes unavailable, but its contribution is then zero. The reserve is read fresh each month rather than carried forward, so the same saved money is never counted again as another month's saving.
+
+## Categories and rules
+
+Manage custom global categories and auto-categorization rules in **Settings**. Rules can match merchant or description by contains, equals, or starts with; they may add up to 10 tags and hide matching movements from Reports. User category edits remain authoritative.
+
+## Subscriptions
+
+Create a subscription manually or convert a debit. It records name, amount, currency, interval, interval count, next due date, status, and an optional debit account.
+
+Detection uses normalized merchant, matching currency, similar amount, and date spacing. Recognized windows include roughly 25–35 days for monthly, 55–65 for every two months, 85–95 for quarterly, and 355–375 for yearly. Amount tolerance is the greater of 5% and 100 minor units.
+
+## Status and next due date
+
+- **Active** enters renewals and Cash Flow.
+- **Paused** remains stored without an active commitment.
+- **Ended** preserves history and is not used as an active match.
+
+If next due date is absent, Tracky advances from the start date using the interval until today. Alias and debit account do not change the original name used for matching.
+
+<Callout title="Suggestion, not certainty">
+  Confirm merchant, amount, and cadence. Repeated purchases are not always subscriptions, and subscription prices can
+  change.
+</Callout>

@@ -1,0 +1,54 @@
+---
+title: Manual transactions and transfers
+description: Record, schedule, edit, and match manual movements without duplicating spending or balances.
+section: Transactions
+order: 70
+locale: en
+updatedAt: 2026-08-04
+keywords: [manual transaction, scheduled transaction, transfer, matching, outflow, inflow]
+related: [manual-accounts, transactions, credit-cards-and-statements]
+---
+
+# Manual transactions and transfers
+
+Open **All Accounts**, or the ledger for one account, and choose **Add transaction**. The new movement is entered directly in a row aligned with the ledger columns.
+
+A manual account accepts booked movements dated today or earlier and scheduled movements dated in the future. A bank-linked account accepts only scheduled manual entries: the bank remains authoritative for booked movements and balances.
+
+<Steps>
+  <Step title="Choose the account and date">
+    On All Accounts, select the account. A future date creates a scheduled movement; on a bank-linked account the date
+    starts at tomorrow.
+  </Step>
+  <Step title="Describe it">
+    Enter the payee when useful, a required description, an optional category, and an optional memo.
+  </Step>
+  <Step title="Enter one direction">
+    Use **Outflow** for money leaving or **Inflow** for money arriving. Enter a positive value in the account currency;
+    the two fields are mutually exclusive.
+  </Step>
+  <Step title="Continue or close">
+    Choose **Save and add another** to keep the same account and date for the next row, or **Save** to close the editor.
+  </Step>
+</Steps>
+
+## Scheduled entries
+
+A future one-off movement appears in the Scheduled band above booked rows. It does not move the current balance or enter spending and Reports before its date. On a manual account, Tracky books it when due. On a linked account, reconcile it with the bank's own row after that row arrives.
+
+## Automatic transfer matching
+
+On creation, Tracky searches another account for an opposite leg with the same currency and a date within seven days before or after. Amount tolerance is `min(max(2% of amount, 300 minor units), 1000 minor units)`.
+
+Confidence starts at `0.90` for an exact amount, `0.82` for a difference up to 300 minor units, and `0.72` for other allowed differences, minus `0.02` per day apart, with a `0.60` floor. High-confidence matches are automatic; others appear in Review.
+
+## Update and delete
+
+Open an existing manual movement to edit it. Moving a booked manual row into the future turns it into scheduled and removes its previous balance effect; moving it back to today or earlier books it again.
+
+Unlink a confirmed transfer before editing or deleting one of its legs. Deletion is blocked when the transaction is linked to a planned payment, installment, card statement, installment plan, money-box contribution, subscription, or another confirmed relationship. Unconfirmed candidates are removed with it, and the balance is restored.
+
+<Callout title="Card settlement">
+  Record the imported Outflow on the current account and an Inflow on the manual CARD account. Matching them excludes
+  the transfer from spending and can settle the scheduled statement.
+</Callout>

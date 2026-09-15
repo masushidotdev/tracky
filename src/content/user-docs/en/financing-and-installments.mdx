@@ -1,0 +1,72 @@
+---
+title: Financing and installment plans
+description: Track financed purchases, fund their Plan buckets, record payments, and understand card installments.
+section: Credit
+order: 120
+locale: en
+updatedAt: 2026-08-04
+keywords: [financing, installment, plan bucket, target, nominal rate, principal, outstanding, card limit]
+related: [loans, credit-cards-and-statements, plan-and-subscriptions, planning]
+---
+
+# Financing and installment plans
+
+Use financing and installment plans for financed purchases and repayment contracts that you want to track by number of installments. A credit facility describes capacity and usage; an installment plan describes how an amount is repaid. **Add financing** creates the facility and its first plan together.
+
+A mortgage, car loan, or personal loan is different: add it with **Add Account** so it receives its own [loan page](/app/docs/loans), outstanding-principal balance, payoff date, and chart.
+
+## Plan data
+
+An installment plan includes name, principal, installment count, monthly payment, start date, next due date, and currency. Link it to an existing facility, record history, update future details, and enter custom payments.
+
+<CalculationBreakdown title="Payment estimate">
+  Without a positive nominal annual rate: `payment = principal / installment count`, rounded up to the smallest currency unit.
+
+With a rate: monthly `r = annual rate / 12`; theoretical payment `principal × r / (1 − (1 + r)^−n)`, rounded upward to a minor unit. Contract fees and creditor rounding may differ.
+
+</CalculationBreakdown>
+
+<CalculationBreakdown title="Displayed outstanding repayment">
+  For obligation summaries: `remaining repayment = monthly payment × remaining installments`. This is expected total payments, not necessarily principal alone.
+
+Cash Flow generates monthly due items from the next date within its horizon, never beyond the remaining count.
+
+</CalculationBreakdown>
+
+## Record a payment
+
+Mark the expected amount paid, enter a custom amount, or link an imported candidate. An optional split separates principal, interest, and fees: only principal reduces credit usage. With no split, the full payment is treated as principal reduction.
+
+The transaction to link is the debit on the account that actually pays the installment: for a loan, the account linked to the credit line; for a card purchase converted into installments, the card's settlement account, because on the card itself a debit is a purchase, not a repayment. When you link a transaction, the list only offers plans repaid from that account: if it is empty, check the card's settlement account or the loan's linked account.
+
+When a credit line has several plans falling due together and the bank takes a single debit, the list offers one entry covering all those installments rather than the individual plans. Confirming it splits the debit across the plans in a single operation, exactly as the *Suggested imported repayments* card does under Settings → Credit. If the installments do not add up to the debit, linking from the ledger stops and says so: record them from that card in Credit, where each amount can be adjusted.
+
+**Record history** creates expected records through a chosen date and aligns remaining count and next due date. Review the preview first.
+
+## The installment bucket in Plan
+
+An ordinary active installment plan receives a protected bucket in Plan, with the installment due for the selected month. Assign money there before the due date. When you record or link the real payment, it appears in that bucket and is not counted again as another category or out-of-plan movement.
+
+Without a target, the bucket asks for the scheduled installment. Add a target if you want to fund a different amount or pace; the target replaces the scheduled amount as the monthly guide while the installment and due date remain visible.
+
+A loan can instead be paired with one of your own Plan categories. In that case the category carries the installment and due date, and Tracky does not add a second row under Instalments.
+
+## Installments on cards
+
+When you convert card debt into installments, Tracky moves that obligation from the card's immediate payment need to the installment schedule:
+
+- the card payment bucket asks for current card debt **minus** the outstanding amount covered by active installments;
+- each active installment bucket asks for its installment for the month;
+- the unpaid installment residual continues to occupy the card's limit.
+
+For a manual card, converting the balance removes the converted principal from the card balance. For a bank-managed card, Tracky does not overwrite the bank's balance; synchronization remains authoritative. In either case, do not add the same purchase again as a card balance, statement, and installment principal.
+
+<Callout title="One debt, two repayment views">
+  The card bucket covers debt due outside the installment plans. The installment buckets cover the scheduled residual.
+  Together they describe one obligation without requesting it twice.
+</Callout>
+
+<Callout title="Check the contract">
+  Tracky records and projects your inputs; it does not replace the official repayment schedule. Use contractual
+  amounts, rates, and dates, then reconcile real payments.
+</Callout>

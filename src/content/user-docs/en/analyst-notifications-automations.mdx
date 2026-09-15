@@ -1,0 +1,66 @@
+---
+title: Analyst, notifications, and automations
+description: Use the assistant with explicit approvals and understand Tracky's automated checks.
+section: Assistance
+order: 130
+locale: en
+updatedAt: 2026-08-04
+keywords: [Analyst, notifications, automations, approval, Telegram, bill reminder, FIRE, retirement projection]
+related: [settings-and-privacy, security-and-glossary, planning, plan-and-subscriptions]
+---
+
+# Analyst, notifications, and automations
+
+Analyst can read authorized Tracky data, explain patterns, simulate what-if scenarios, and present charts or tables. You can manage multiple conversations and choose an available model and reasoning level.
+
+## Reads and changes
+
+Read tools cover accounts, transactions, spending, Plan progress, cashflow, money boxes, credit, subscriptions, and planned items. Sensitive writes require a preview and your approval: Plan assignments or targets, money boxes, planned items, memory, and bulk recategorization. Denial leaves data unchanged.
+
+<Callout title="Human control">
+  Always check amount, currency, account, category, date, and recurrence. Analyst is an exploration aid, not financial
+  advice or a replacement for contract data.
+</Callout>
+
+## FIRE and retirement projections
+
+Ask the Analyst in ordinary language, for example: “When could I reach FIRE?” or “Project retirement in 20 years with 3% inflation.” The Pro-only long-term projection starts from your tracked cash, investment and other-asset balances, and the next three months of Cash Flow inflows and outflows.
+
+Unless you override them in chat, it uses a 30-year horizon, 2% annual expense inflation, 5% annual investment returns, and a 4% safe withdrawal rate. The withdrawal rate derives the default FIRE target from annual expenses. You can replace these assumptions, starting balances, monthly income or expenses, target, retirement date, and one-off events in your request.
+
+Read the assumptions in every result and compare scenarios: projections are nominal estimates, not guarantees. Free accounts cannot run this tool; [Settings](/app/docs/settings-and-privacy) shows your tier and the current plan limits.
+
+## Telegram
+
+Generate a one-time command from [Settings](/app/docs/settings-and-privacy) and send it privately to the configured bot. It expires after ten minutes and works once. Never share it. You can unlink Telegram; requests that need approval continue to state that explicitly.
+
+## Bill reminders
+
+Bill reminders come from planned expenses with a `planned` or `funding` status. Tracky checks the next occurrence—including the next date of a recurring bill—and skips an occurrence already marked paid.
+
+The default lead time is three days. In Settings you can choose up to four thresholds from 0 to 30 days; `0` means the due date. At each evaluation, Tracky uses the smallest selected threshold the occurrence has reached. With `7` and `3`, a bill can therefore create one reminder in the seven-day window and another when it reaches three days. Dedupe prevents repeats for the same occurrence and threshold.
+
+When at least one lead day is configured, the reminder is created in the in-app inbox regardless of external delivery switches. Email and Telegram are separate opt-ins, both off by default; Telegram also has to be linked. Manage these choices in [Settings](/app/docs/settings-and-privacy).
+
+## Financial notifications
+
+Every six hours Tracky evaluates:
+
+- visible, non-snoozed Plan buckets at least 90% funded-and-spent (**warning**) or in the red (**critical**);
+- active subscriptions and installments due within seven days;
+- the first projected negative cashflow date;
+- failed sync or consent requiring renewal.
+
+Dedupe keys prevent the same event from multiplying on every evaluation. Read or dismiss a notification in the UI, then fix the underlying source data.
+
+External delivery currently covers bill reminders, upcoming subscription or installment payments, and low projected-balance warnings. Other notification types remain in the in-app inbox.
+
+## Backend automations
+
+- account sync and notification evaluation: every 6 hours;
+- automatic closing of due card cycles: daily;
+- Analyst health scores and anomaly detection: daily;
+- monthly report: day 2; subscription review: day 3;
+- watchdog and cleanup recover interrupted jobs and Telegram updates.
+
+These automations never authorize a bank payment. They update imports, analysis, notifications, and internal state.
