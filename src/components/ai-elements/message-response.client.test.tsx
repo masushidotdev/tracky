@@ -84,6 +84,9 @@ describe('MessageResponse untrusted markdown (client-rendered)', () => {
     for (const call of openSpy.mock.calls) {
       expect(isUnsafeUrl(typeof call[0] === 'string' ? call[0] : null)).toBe(false);
     }
+    for (const image of container.querySelectorAll('img[src]')) {
+      expect(isUnsafeUrl(image.getAttribute('src'))).toBe(false);
+    }
   });
 
   test('safe https link still opens through the confirmation flow (harness control)', () => {
