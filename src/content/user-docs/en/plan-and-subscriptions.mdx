@@ -126,7 +126,7 @@ Manage custom global categories and auto-categorization rules in **Settings**. R
 
 ## Subscriptions
 
-Create a subscription manually or convert a debit. It records name, amount, currency, interval, interval count, next due date, status, and an optional debit account.
+Create a subscription manually or convert a debit. It records name, amount, currency, interval, interval count, next due date, status, and an optional debit account. Names and aliases are trimmed and limited to 80 characters; dates must use YYYY-MM-DD format and be real calendar dates.
 
 Detection uses normalized merchant, matching currency, similar amount, and date spacing. Recognized windows include roughly 25–35 days for monthly, 55–65 for every two months, 85–95 for quarterly, and 355–375 for yearly. Amount tolerance is the greater of 5% and 100 minor units.
 
