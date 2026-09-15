@@ -75,6 +75,10 @@
 
 ### Fixed
 
+- A pending account-deletion request can now be cancelled from the Danger
+  zone. The request never erased anything by itself; cancelling clears the
+  pending status so a new request can be made later.
+
 - Passing another user's category to subscription creation or conversion no
   longer attaches it. `createSubscription` and
   `convertTransactionToSubscription` now reject a foreign `categoryId` with
