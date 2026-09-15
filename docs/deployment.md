@@ -68,6 +68,12 @@ under `authKit.dev.configure` and applied by `npx convex dev`. Both
 `http://localhost:3000` and the Worker URL are listed, so local development and
 the deployed app work at the same time.
 
+`RESEND_WEBHOOK_SECRET` is mandatory on the Convex deployment for Resend delivery
+updates. Set it with `npx convex env set RESEND_WEBHOOK_SECRET <whsec_...>` using
+the signing secret from the Resend webhook endpoint. If missing or blank,
+`POST /resend-webhook` returns 503 and email delivery states never update.
+Invalid webhook signatures return 401.
+
 ## Access gate
 
 Set the Worker URL (and any preview URL pattern) to **Restricted** in the
