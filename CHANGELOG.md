@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- The bank-connection callback page can no longer be framed by another site,
+  and all backend routes send `nosniff`. Nothing changes on screen.
+
 - A pending account-deletion request can now be cancelled from the Danger
   zone. The request never erased anything by itself; cancelling clears the
   pending status so a new request can be made later.
