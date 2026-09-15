@@ -135,11 +135,17 @@ export function minorToDecimal(amountMinor: bigint, currency: string, decimalSep
   return `${negative ? '-' : ''}${whole}${decimalSeparator}${String(absolute % factor).padStart(digits, '0')}`;
 }
 
+// Neutralize spreadsheet formula injection: bank-controlled labels (payee,
+// category names) can start with `=`, `+`, `-`, `@` and execute on open in
+// Excel/Sheets. A leading apostrophe forces text treatment in every reader.
+const CSV_FORMULA_TRIGGER_RE = /^[=+\-@\t\r]/;
+
 function escapeCsvCell(value: string, separator: string) {
-  if (value.includes(separator) || value.includes('"') || value.includes('\n')) {
-    return `"${value.replaceAll('"', '""')}"`;
+  const neutralized = value.length > 0 && CSV_FORMULA_TRIGGER_RE.test(value[0]) ? `'${value}` : value;
+  if (neutralized.includes(separator) || neutralized.includes('"') || neutralized.includes('\n')) {
+    return `"${neutralized.replaceAll('"', '""')}"`;
   }
-  return value;
+  return neutralized;
 }
 
 export function createCsv(rows: Array<Array<string>>, separator: string) {
