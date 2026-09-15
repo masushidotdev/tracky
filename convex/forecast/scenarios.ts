@@ -2,7 +2,13 @@ import { ConvexError, v } from 'convex/values';
 
 import { mutation, query } from '../_generated/server';
 import { requireAuthUser } from '../auth';
-import { forecastChangeModeValidator, forecastLifeEventValidator, moneyAmountValidator } from '../lib/validators';
+import {
+  HEX_COLOR_REGEX,
+  SCENARIO_COLOR_VAR_REGEX,
+  forecastChangeModeValidator,
+  forecastLifeEventValidator,
+  moneyAmountValidator,
+} from '../lib/validators';
 import { loadForecastSeeds } from './seeds';
 import type { Doc, Id } from '../_generated/dataModel';
 import type { MutationCtx, QueryCtx } from '../_generated/server';
@@ -13,6 +19,7 @@ const MAX_INCOME_SOURCES = 20;
 const MAX_LIFE_EVENTS = 50;
 const MAX_SPLITS = 20;
 const MAX_NAME_LENGTH = 80;
+const MAX_SCENARIO_ICON_LENGTH = 8;
 
 type ScenarioContext = QueryCtx | MutationCtx;
 type MoneyAmount = { amountMinor: bigint; currency: string };
@@ -40,6 +47,22 @@ function normalizeName(name: string, label = 'Scenario name') {
   const normalized = name.trim();
   if (normalized.length < 1 || normalized.length > MAX_NAME_LENGTH) {
     throw new ConvexError(`${label} must contain 1 to ${MAX_NAME_LENGTH} characters`);
+  }
+  return normalized;
+}
+
+function normalizeScenarioIcon(icon: string) {
+  const normalized = icon.trim();
+  if (normalized.length > MAX_SCENARIO_ICON_LENGTH) {
+    throw new ConvexError('Scenario icon must contain at most 8 characters');
+  }
+  return normalized;
+}
+
+function normalizeScenarioColor(color: string) {
+  const normalized = color.trim();
+  if (!HEX_COLOR_REGEX.test(normalized) && !SCENARIO_COLOR_VAR_REGEX.test(normalized)) {
+    throw new ConvexError('Scenario color must use #rrggbb format or a chart palette token');
   }
   return normalized;
 }
@@ -470,8 +493,8 @@ export const updateScenario = mutation({
     }
     const patch: Partial<Doc<'forecastScenarios'>> & { updatedAtMs: number } = { updatedAtMs: Date.now() };
     if (args.name !== undefined) patch.name = normalizeName(args.name);
-    if (args.icon !== undefined) patch.icon = args.icon.trim();
-    if (args.color !== undefined) patch.color = args.color.trim();
+    if (args.icon !== undefined) patch.icon = normalizeScenarioIcon(args.icon);
+    if (args.color !== undefined) patch.color = normalizeScenarioColor(args.color);
     if (args.inflationAnnualPct !== undefined) patch.inflationAnnualPct = args.inflationAnnualPct;
     if (args.endAge !== undefined) patch.endAge = args.endAge;
     if (args.livingExpenses !== undefined) patch.livingExpenses = args.livingExpenses;
