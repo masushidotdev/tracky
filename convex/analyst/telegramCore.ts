@@ -1,5 +1,6 @@
 const TELEGRAM_TEXT_LIMIT = 4_096;
 const MAX_INBOUND_TEXT = 4_000;
+export const LINK_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LINK_CODE_PATTERN = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8,16}$/;
 const WEBHOOK_SECRET_PATTERN = /^[A-Za-z0-9_-]{32,256}$/;
 
@@ -36,6 +37,13 @@ export function normalizeTelegramLocale(languageCode: unknown): 'en' | 'it' {
 export function normalizeLinkCode(value: string) {
   const code = value.trim().toUpperCase();
   return LINK_CODE_PATTERN.test(code) ? code : null;
+}
+
+export function randomLinkCode(codeLength = 12) {
+  const bytes = crypto.getRandomValues(new Uint8Array(codeLength));
+  // Alphabet length is a power of two (32), so masking the low 5 bits maps
+  // each byte to an index uniformly — modulo on random bytes risks bias.
+  return [...bytes].map((byte) => LINK_CODE_ALPHABET[byte & (LINK_CODE_ALPHABET.length - 1)]).join('');
 }
 
 export function parseTelegramUpdate(value: unknown): ParsedTelegramUpdate | null {

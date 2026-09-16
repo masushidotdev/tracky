@@ -1,10 +1,12 @@
 // @vitest-environment node
 
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import {
+  LINK_CODE_ALPHABET,
   isValidTelegramWebhookSecret,
   normalizeLinkCode,
   parseTelegramUpdate,
+  randomLinkCode,
   safeSecretEqual,
   sha256Hex,
   shouldContinueTelegramChunkDelivery,
@@ -43,6 +45,25 @@ describe('Telegram webhook boundary', () => {
     expect(safeSecretEqual('secret_124', 'secret_123')).toBe(false);
     expect(safeSecretEqual(null, 'secret_123')).toBe(false);
     expect(await sha256Hex('ABCDEFGH')).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  test('generates link codes from the alphabet without modulo bias', () => {
+    for (const code of [randomLinkCode(), randomLinkCode()]) {
+      expect(code).toHaveLength(12);
+      expect([...code].every((char) => LINK_CODE_ALPHABET.includes(char))).toBe(true);
+    }
+    // 32 divides 256, so the mask stays uniform; guard the invariant.
+    expect(256 % LINK_CODE_ALPHABET.length).toBe(0);
+    // Pin the index mapping: byte 255 masks to index 31, i.e. '9'.
+    const spy = vi.spyOn(crypto, 'getRandomValues').mockImplementation(((array: Uint8Array) => {
+      array.fill(255);
+      return array;
+    }) as typeof crypto.getRandomValues);
+    try {
+      expect(randomLinkCode()).toBe('9'.repeat(12));
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   test('requires a webhook secret with at least 32 allowed characters', () => {
