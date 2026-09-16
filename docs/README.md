@@ -68,6 +68,7 @@ resume from source-controlled context instead of chat history.
 - `execution-plans/navigation-ledger-loans-and-planning-consolidation.md` - executed shell, ledger, loan, scheduled-transaction, planning-storage, and money-box conversion work with live-data findings.
 - `execution-plans/ledger-recurring-planned-occurrences.md` - next unpaid recurring-rule projections in the ledger without synthetic transaction behavior.
 - `execution-plans/plan-cross-month-transfers.md` - cross-month confirmed cash-transfer normalization, fee attribution, and regression verification.
+- `execution-plans/public-repository-governance.md` - public repository governance: branch rulesets, merge settings, fork workflow approval, and security configuration.
 
 ## Harness Notes
 

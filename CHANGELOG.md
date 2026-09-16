@@ -75,6 +75,10 @@
 
 ### Fixed
 
+- Repository docs no longer contain real account data: execution plans and
+  decisions now use synthetic example values instead of observed balances,
+  product names, and statement amounts.
+
 - Subscription names and dates are now validated: names are trimmed and
   limited to 80 characters, and due dates must be real `YYYY-MM-DD` dates.
 
