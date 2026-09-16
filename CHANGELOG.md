@@ -75,6 +75,19 @@
 
 ### Fixed
 
+- Subscription names and dates are now validated: names are trimmed and
+  limited to 80 characters, and due dates must be real `YYYY-MM-DD` dates.
+
+- The bank-connection callback page can no longer be framed by another site,
+  and all backend routes send `nosniff`. Nothing changes on screen.
+
+- A pending account-deletion request can now be cancelled from the Danger
+  zone. The request never erased anything by itself; cancelling clears the
+  pending status so a new request can be made later.
+
+- Scenario icons and colors are now validated on save: icons are limited to 8
+  characters and colors must be `#rrggbb` hex or a chart palette token.
+
 - Reconnecting the bank twice in a row — a double redirect or a browser retry
   while the Enable Banking login completes — no longer risks failing the
   connection. Only the first callback now runs the login through; a concurrent

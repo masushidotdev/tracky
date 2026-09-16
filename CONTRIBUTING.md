@@ -36,6 +36,12 @@ Tests and docs use **fake Acme-style data only**:
 - Raw provider captures belong in gitignored `diagnostics/` (0600 files) and
   must never be force-added.
 
+## Identity
+
+- Commit with your GitHub noreply address
+  (`<id>+<login>@users.noreply.github.com`), never a personal mailbox —
+  commit emails are public on a public repository.
+
 ## Pull requests
 
 - Keep changes focused; one concern per PR.

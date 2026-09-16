@@ -8,7 +8,8 @@ import { Webhook } from 'svix';
 import { beforeAll, describe, expect, test } from 'vitest';
 import schema from './schema';
 
-const SECRET = 'whsec_MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
+// Test-only Svix secret (base64 of a 0x01..0x20 counter, not a real credential).
+const SECRET = `whsec_${Buffer.from(Array.from({ length: 32 }, (_, i) => i + 1)).toString('base64')}`;
 const modules = import.meta.glob([
   './_generated/*.js',
   './entitlements.ts',
