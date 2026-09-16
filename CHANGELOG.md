@@ -81,6 +81,11 @@
 - The bank-connection callback page can no longer be framed by another site,
   and all backend routes send `nosniff`. Nothing changes on screen.
 
+- Telegram link codes are now drawn from the random bytes without modulo
+  bias: each character maps through the low 5 bits of a byte onto the
+  32-character alphabet, so every code is equally likely. Nothing changes
+  on screen.
+
 - A pending account-deletion request can now be cancelled from the Danger
   zone. The request never erased anything by itself; cancelling clears the
   pending status so a new request can be made later.

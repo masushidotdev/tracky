@@ -6,6 +6,7 @@ import { requireAuthUser } from '../auth';
 import { analystFunctionRefs } from './functionRefs';
 import { claimAnalystTurn } from './turnLocks';
 import {
+  randomLinkCode,
   sha256Hex,
   telegramLinkReply,
   telegramRateLimitReply,
@@ -18,12 +19,6 @@ import type { MutationCtx } from '../_generated/server';
 
 const LINK_CODE_TTL_MS = 10 * 60 * 1_000;
 const UPDATE_LEASE_MS = 12 * 60 * 1_000;
-const LINK_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function randomLinkCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(12));
-  return [...bytes].map((byte) => LINK_CODE_ALPHABET[byte % LINK_CODE_ALPHABET.length]).join('');
-}
 
 export const generateTelegramLinkCode = action({
   args: {},
