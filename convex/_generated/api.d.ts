@@ -100,6 +100,7 @@ import type * as banking_planningMath from "../banking/planningMath.js";
 import type * as banking_planningReconciliation from "../banking/planningReconciliation.js";
 import type * as banking_planningSuggestionFunctions from "../banking/planningSuggestionFunctions.js";
 import type * as banking_planningSuggestions from "../banking/planningSuggestions.js";
+import type * as banking_providerAvailability from "../banking/providerAvailability.js";
 import type * as banking_providerMutations from "../banking/providerMutations.js";
 import type * as banking_providerQueries from "../banking/providerQueries.js";
 import type * as banking_reports from "../banking/reports.js";
@@ -239,6 +240,7 @@ declare const fullApi: ApiFromModules<{
   "banking/planningReconciliation": typeof banking_planningReconciliation;
   "banking/planningSuggestionFunctions": typeof banking_planningSuggestionFunctions;
   "banking/planningSuggestions": typeof banking_planningSuggestions;
+  "banking/providerAvailability": typeof banking_providerAvailability;
   "banking/providerMutations": typeof banking_providerMutations;
   "banking/providerQueries": typeof banking_providerQueries;
   "banking/reports": typeof banking_reports;

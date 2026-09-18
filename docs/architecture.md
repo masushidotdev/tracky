@@ -205,11 +205,15 @@ clears the link without moving or deleting the adopted bucket. See
 
 ## Import Flow
 
-1. A signed-in user starts a provider connection from the UI.
+1. A signed-in user starts a provider connection from the UI. The UI reads
+   provider availability through an authenticated Convex query and disables the
+   connect button when Enable Banking is not configured on the instance, so no
+   consent dialog opens without server credentials.
 2. Convex can run an authenticated provider diagnostic that calls Enable
    Banking `GET /application` plus bounded ASPSP discovery and returns only
    non-secret status facts to the UI: readiness, active state, environment,
-   services, ASPSP count, and normalized setup errors.
+   services, ASPSP count, and normalized setup errors. Missing server
+   configuration is reported as plain unavailable without env var names.
 3. Convex calls Enable Banking `GET /aspsps` and returns a normalized,
    searchable list of ASPSPs to the UI. The browser never calls Enable Banking
    directly.

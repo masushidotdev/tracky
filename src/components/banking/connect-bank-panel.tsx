@@ -387,6 +387,8 @@ function ProviderDiagnosticPanel({
   onRefresh: () => void;
   t: I18nContextValue['t'];
 }>) {
+  // A null message with !ok means the provider is not configured on this
+  // instance: show the generic unavailable label instead of a raw error.
   const details = diagnostic?.ok
     ? t('connect.diagnostic.details', {
         environment: diagnostic.environment ?? '-',
@@ -394,7 +396,7 @@ function ProviderDiagnosticPanel({
         count: diagnostic.aspspCount ?? 0,
         country: diagnostic.country,
       })
-    : diagnostic?.message || t('connect.diagnostic.pending');
+    : (diagnostic?.message ?? (diagnostic ? t('connect.diagnostic.unavailable') : t('connect.diagnostic.pending')));
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/20 px-3 py-2">
