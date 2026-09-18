@@ -158,6 +158,11 @@
   ran underneath its own buttons and the last fields could not be reached. The
   form scrolls now and the buttons stay put.
 
+- When Enable Banking is not configured on the instance, the Connect a bank
+  button in Settings → Bank connections is now disabled with a note instead of
+  opening a dialog full of raw server errors. Missing server configuration also
+  no longer leaks environment variable names to the client.
+
 - Transactions that the bank books a day or two late — common with some providers' card
   payments — were skipped and never appeared in the ledger. Sync now re-checks
   the past week every time, and an account whose sync hits an error retries by

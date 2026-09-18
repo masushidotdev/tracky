@@ -7,6 +7,7 @@ import { internal } from '../_generated/api';
 import { requireAuthUser } from '../auth';
 import { buildConnectionHealth } from './connectionHealth';
 import { enableBankingErrorSummary, enableBankingOperationalErrorMessage } from './enableBankingErrors';
+import { isMissingEnvError } from './providerAvailability';
 import { enableBankingSyncWindow } from './syncWindow';
 import type { Id } from '../_generated/dataModel';
 import type { ActionCtx } from '../_generated/server';
@@ -302,13 +303,22 @@ export const listAspsps = action({
   handler: async (ctx, args): Promise<ListAspspsResult> => {
     await requireAuthUser(ctx);
     const country = args.country?.trim().toUpperCase();
-    const payload = await enableBankingRequest('GET', '/aspsps', {
-      query: {
-        service: args.service ?? 'AIS',
-        ...(country ? { country } : {}),
-        ...(args.psuType ? { psu_type: args.psuType } : {}),
-      },
-    });
+    let payload: unknown;
+    try {
+      payload = await enableBankingRequest('GET', '/aspsps', {
+        query: {
+          service: args.service ?? 'AIS',
+          ...(country ? { country } : {}),
+          ...(args.psuType ? { psu_type: args.psuType } : {}),
+        },
+      });
+    } catch (error) {
+      // Missing server configuration must not leak env var names to the client.
+      if (isMissingEnvError(error)) {
+        throw new ConvexError('Enable Banking is not configured.');
+      }
+      throw error;
+    }
     const rows = Array.isArray(asRecord(payload).aspsps) ? (asRecord(payload).aspsps as Array<unknown>) : [];
     const search = normalizeSearch(args.search ?? '');
     const limit = Math.min(Math.max(args.limit ?? 30, 1), 100);
@@ -370,6 +380,23 @@ export const diagnoseConnection = action({
           : null,
       };
     } catch (error) {
+      // Missing server configuration is reported as plain unavailable without
+      // leaking env var names; the UI shows a generic provider message instead.
+      if (isMissingEnvError(error)) {
+        return {
+          ok: false,
+          status: 'unavailable',
+          applicationName: null,
+          environment: null,
+          active: null,
+          services: [],
+          country,
+          applicationCountries: [],
+          aspspCount: null,
+          checkedAtMs,
+          message: null,
+        };
+      }
       return {
         ok: false,
         status: providerDiagnosticStatus(error),
