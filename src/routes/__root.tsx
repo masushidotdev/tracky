@@ -1,8 +1,7 @@
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
-import { TanStackDevtools } from '@tanstack/react-devtools';
-import { formDevtoolsPlugin } from '@tanstack/react-form-devtools';
+import { Suspense, lazy } from 'react';
 
 import appCssUrl from '../app.css?url';
 
@@ -15,6 +14,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
 import { I18nProvider, useI18n } from '@/lib/i18n';
+
+// Dev-only panel: static `null` in production so the devtools chunk is never
+// requested outside development.
+const DevtoolsPanel = import.meta.env.DEV ? lazy(() => import('@/components/devtools')) : () => null;
 
 const fetchWorkosAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const auth = await getAuth();
@@ -92,7 +95,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
           <Toaster />
         </ThemeProvider>
         <Scripts />
-        <TanStackDevtools plugins={[formDevtoolsPlugin()]} />
+        <Suspense>
+          <DevtoolsPanel />
+        </Suspense>
       </body>
     </html>
   );

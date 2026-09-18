@@ -89,6 +89,11 @@
 
 ### Fixed
 
+- The TanStack devtools panel no longer ships to production: it now loads
+  through a `React.lazy` import gated on `import.meta.env.DEV`, so the
+  production bundle never requests the devtools chunk. Nothing changes on
+  screen in development.
+
 - The AI Analyst section is now opt-in per environment: unless the frontend is
   built with `VITE_ANALYST_ENABLED=true`, its sidebar and command-palette
   entries stay hidden and `/app/analyst` shows a localized "feature disabled"
