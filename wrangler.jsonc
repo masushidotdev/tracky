@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tracky-oos",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true
+    }
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "trytracky.app",
+      "zone_name": "trytracky.app",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "www.trytracky.app",
+      "zone_name": "trytracky.app",
+      "custom_domain": true,
+    }
+  ],
+  // Staging deploys run with CLOUDFLARE_ENV=staging (see the `deploy`
+  // script); without it both build and deploy target the top-level
+  // production Worker `tracky-oos`. Production: no CLOUDFLARE_ENV (`deploy:prod`).
+  "env": {
+    "staging": {
+      "name": "tracky-oos-staging",
+      "workers_dev": true,
+      "observability": { "enabled": true },
+      "vars": { "APP_ENV": "staging" }
+    }
+  }
+}
