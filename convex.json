@@ -3,17 +3,31 @@
   "authKit": {
     "dev": {
       "configure": {
-        "redirectUris": [
-          "http://localhost:3000/callback",
-          "https://<your-worker>.<your-account>.workers.dev/callback"
-        ],
-        "appHomepageUrl": "https://<your-worker>.<your-account>.workers.dev",
-        "corsOrigins": ["http://localhost:3000", "https://<your-worker>.<your-account>.workers.dev"]
+        "redirectUris": ["http://localhost:3000/callback"],
+        "appHomepageUrl": "http://localhost:3000",
+        "corsOrigins": ["http://localhost:3000"]
       },
       "localEnvVars": {
         "WORKOS_CLIENT_ID": "${authEnv.WORKOS_CLIENT_ID}",
         "WORKOS_API_KEY": "${authEnv.WORKOS_API_KEY}",
         "WORKOS_REDIRECT_URI": "http://localhost:3000/callback"
+      }
+    },
+    "preview": {
+      "configure": {
+        "redirectUris": ["https://${buildEnv.APP_PUBLIC_URL}/callback"],
+        "appHomepageUrl": "https://${buildEnv.APP_PUBLIC_URL}",
+        "corsOrigins": ["https://${buildEnv.APP_PUBLIC_URL}"]
+      }
+    },
+    "prod": {
+      "environmentType": "production",
+      "configure": {
+        "redirectUris": [
+          "https://${buildEnv.APP_PUBLIC_URL}/callback"
+        ],
+        "appHomepageUrl": "https://${buildEnv.APP_PUBLIC_URL}",
+        "corsOrigins": ["https://${buildEnv.APP_PUBLIC_URL}"]
       }
     }
   }

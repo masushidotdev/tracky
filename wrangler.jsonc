@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tracky",
+  "name": "tracky-oos",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
@@ -12,7 +12,7 @@
   // name before deploying a public instance.
   "env": {
     "staging": {
-      "name": "tracky-staging",
+      "name": "tracky-oos-staging",
       "workers_dev": true,
       "observability": { "enabled": true },
       "vars": { "APP_ENV": "staging" }
