@@ -75,6 +75,11 @@
 
 ### Fixed
 
+- The AI Analyst section is now opt-in per environment: unless the frontend is
+  built with `VITE_ANALYST_ENABLED=true`, its sidebar and command-palette
+  entries stay hidden and `/app/analyst` shows a localized "feature disabled"
+  page instead of the chat.
+
 - New accounts now start with the default category set instead of an empty
   picker: categories are seeded when the profile is created, and existing
   accounts without any are repaired automatically at sign-in.
@@ -161,6 +166,11 @@
 - The side panel used to scroll as one piece, so a form taller than the window
   ran underneath its own buttons and the last fields could not be reached. The
   form scrolls now and the buttons stay put.
+
+- When Enable Banking is not configured on the instance, the Connect a bank
+  button in Settings → Bank connections is now disabled with a note instead of
+  opening a dialog full of raw server errors. Missing server configuration also
+  no longer leaks environment variable names to the client.
 
 - Transactions that the bank books a day or two late — common with some providers' card
   payments — were skipped and never appeared in the ledger. Sync now re-checks

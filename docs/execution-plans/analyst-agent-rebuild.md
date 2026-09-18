@@ -66,6 +66,19 @@ explicit approval before any write.
       prematurely resume generation, auto-deny sibling requests, or let a
       denied proposal be summarized as a successful write.
 
+## Frontend availability — 2026-09-18
+
+Assumption: availability must be selectable per frontend build without changing
+Convex authorization or backend jobs. See `../decisions/0016-analyst-env-gating.md`.
+
+1. Gate sidebar, command palette, and the Analyst route on the exact build-time
+   value `VITE_ANALYST_ENABLED=true`; keep the complete navigation catalog.
+2. Add EN/IT disabled copy, document the optional env flag, and amend bilingual
+   Analyst, Reports, and troubleshooting guidance.
+3. Verify TypeScript, scoped ESLint, knowledge-base invariants, and docs tests.
+
+Verification: `npx tsc --noEmit`, scoped ESLint, `vitest run convex/knowledge-base.test.ts` (3 passed), docs tests (8 passed) — all green 2026-09-18; no commit, push, or deployment is part of this change.
+
 ## Current Verification Evidence
 
 Automated checks completed on 2026-07-13 after RUN A, RUN B, RUN C, the
