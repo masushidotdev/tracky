@@ -28,6 +28,8 @@ The shared ledger also shows **Account**. Drag a column boundary to make it wide
 
 `DBIT` means money leaves the account, `CRDT` means money enters it, and `BOOK` means the movement is booked. Classifications are `expense`, `income`, `subscription`, `transfer`, `internal`, or `uncategorized`. A user correction has full confidence and takes priority over later automation.
 
+Every new account starts with the default category set, so the picker is never empty. Accounts created before this behavior was added receive the same set automatically at sign-in.
+
 ## Search, filter, and sort the whole ledger
 
 Use the single field above the table instead of separate filter dropdowns. As you type, it offers matching accounts, categories, payees, dates, statuses, and outflow or inflow amounts. Select more than one suggestion to combine conditions. An explicit status filter controls the table itself: for example, **Status: SCHD** keeps scheduled rows in the matching table results while the scheduled band remains available above.
