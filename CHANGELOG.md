@@ -68,6 +68,14 @@
 
 ### Internal
 
+- Dependencies updated to their latest Node 22-compatible versions and audit
+  findings reduced from 24 to 15: the `undici`, `ws`, `sharp`/libvips and
+  `@workos/authkit-session` advisories are resolved. The 15 remaining
+  advisories are transitive with no upstream fix (notably `toml` via
+  `remark-mdx-frontmatter`); major bumps with breaking peer ranges (`ai` 7,
+  `@convex-dev/agent` 0.7, `react-table` 9, `vitest` 5, `typescript` 7) are
+  held back. Nothing changes on screen.
+
 - Planned expenses and planned transfers were two tables describing the same
   thing: a movement you expect. They are now one, `plannedTransactions`, with the
   kind spelled out. Nothing changes on screen; the names in the app stay as they
