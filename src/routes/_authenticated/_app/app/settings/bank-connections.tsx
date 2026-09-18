@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from 'convex/react';
 import { LandmarkIcon } from 'lucide-react';
 
+import { api } from '../../../../../../convex/_generated/api';
 import { AccountsOverview } from '@/components/banking/accounts/accounts-view';
 import { BankConnectionStatus } from '@/components/banking/accounts/bank-connection-status';
 import { ConnectBankForm } from '@/components/banking/connect-bank-panel';
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { parseBankConnectionSearch } from '@/lib/bank-connection-search';
 import { useI18n } from '@/lib/i18n';
-import { api } from '../../../../../../convex/_generated/api';
 
 export const Route = createFileRoute('/_authenticated/_app/app/settings/bank-connections')({
   validateSearch: parseBankConnectionSearch,
