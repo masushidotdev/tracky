@@ -16,9 +16,9 @@
     "prod": {
       "environmentType": "production",
       "configure": {
-        "redirectUris": ["${buildEnv.APP_PUBLIC_URL}/callback"],
-        "appHomepageUrl": "${buildEnv.APP_PUBLIC_URL}",
-        "corsOrigins": ["${buildEnv.APP_PUBLIC_URL}"]
+        "redirectUris": ["https://${buildEnv.APP_PUBLIC_URL}/callback"],
+        "appHomepageUrl": "https://${buildEnv.APP_PUBLIC_URL}",
+        "corsOrigins": ["https://${buildEnv.APP_PUBLIC_URL}"]
       }
     }
   }
