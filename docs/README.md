@@ -27,6 +27,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0016-analyst-env-gating.md` - default-off build-time Analyst frontend gate and localized disabled route.
 - `decisions/0017-default-category-seeding.md` - default category seeding at profile creation and bootstrap self-heal.
 - `decisions/0018-deploy-environments.md` - shared dev/staging Convex deployment, production deployment, WorkOS profiles, Cloudflare workers, and the gitignored wrangler config.
+- `decisions/0019-devtools-dev-only.md` - TanStack devtools behind a dev-only lazy gate so production builds never ship the panel.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.
