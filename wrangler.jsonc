@@ -31,6 +31,11 @@
       "custom_domain": true,
     }
   ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    "APP_PUBLIC_URL": "www.trytracky.app",
+    "WORKOS_REDIRECT_URI": "https://www.trytracky.app/callback"
+  },
   // Staging deploys run with CLOUDFLARE_ENV=staging (see the `deploy`
   // script); without it both build and deploy target the top-level
   // production Worker `tracky-oos`. Production: no CLOUDFLARE_ENV (`deploy:prod`).
