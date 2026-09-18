@@ -27,8 +27,10 @@ preview deployments stay off until each gets its own backend.
 The local `wrangler.jsonc` defines a `staging` env. **Staging build and deploy
 must run with `CLOUDFLARE_ENV=staging`** — without it, Vite emits a config for
 the top-level name and Wrangler would deploy to production. The `deploy` npm
-script sets it for both steps. Production deploys run with **no**
-`CLOUDFLARE_ENV` (`deploy:prod` script), targeting the top-level Worker.
+script sets it for both steps. Production deploys explicitly clear it
+(`CLOUDFLARE_ENV= ` in the `deploy:prod` script — required because Workers
+Builds inherits staging's `CLOUDFLARE_ENV=staging` otherwise), targeting the
+top-level Worker.
 
 `@cloudflare/vite-plugin` runs the SSR environment on workerd in `vite dev`
 too, so local development and the deployed Worker resolve server-side env vars
@@ -54,9 +56,11 @@ Production: deploy from a release tag, which runs:
 - build: `npx convex deploy --cmd 'npm run build'`
 - deploy: `npx wrangler deploy`
 
-with only the production `CONVEX_DEPLOY_KEY` and **no** `CLOUDFLARE_ENV`, so
-both steps target the top-level Worker. If Workers Builds cannot trigger on
-tags, run `npm run deploy:prod` manually from a checkout on the tag.
+with only the production `CONVEX_DEPLOY_KEY` and `CLOUDFLARE_ENV` explicitly
+cleared (empty string selects the top-level Worker; an inherited
+`CLOUDFLARE_ENV=staging` would retarget both build and deploy to staging).
+If Workers Builds cannot trigger on tags, run `npm run deploy:prod` manually
+from a checkout on the tag.
 
 The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and

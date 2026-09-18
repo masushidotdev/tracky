@@ -18,7 +18,7 @@
     "diagnostics:enable-banking": "node scripts/enable-banking-dump.mjs",
     "start": "vite start",
     "deploy": "CLOUDFLARE_ENV=staging convex deploy --cmd 'npm run build' && CLOUDFLARE_ENV=staging wrangler deploy",
-    "deploy:prod": "convex deploy --cmd 'npm run build' && wrangler deploy",
+    "deploy:prod": "CLOUDFLARE_ENV= convex deploy --cmd 'npm run build' && CLOUDFLARE_ENV= wrangler deploy",
     "cf-typegen": "wrangler types",
     "format": "prettier --write .",
     "prepare": "git config core.hooksPath githooks",

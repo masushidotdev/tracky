@@ -47,8 +47,9 @@ return, they need their own backend each — one shared backend would mix data.
   env duplication, and cost with no data worth isolating. Revisit when staging
   holds real data or a second developer joins.
 - `env.production` named Worker instead of top-level: rejected — top-level is
-  the Wrangler default, so `deploy:prod` needs no `CLOUDFLARE_ENV`, and a
-  custom domain attaches cleanly to it.
+  the Wrangler default, so `deploy:prod` only clears `CLOUDFLARE_ENV`
+  (empty string selects top-level), and a custom domain attaches cleanly
+  to it.
 - `wrangler.jsonc` tracked with real names: rejected — public repo; real
   worker names and env blocks stay local, template stays committed.
 
