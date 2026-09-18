@@ -68,3 +68,6 @@ next-env.d.ts
 .claude/skills/
 .codex/
 convex/_generated/ai/
+
+# Local Cloudflare Worker config (real names/envs); template is wrangler.jsonc.example.
+wrangler.jsonc

@@ -7,7 +7,7 @@ resume from source-controlled context instead of chat history.
 ## Index
 
 - `architecture.md` - domain boundaries, backend/frontend responsibilities, and provider isolation.
-- `deployment.md` - Cloudflare Worker staging deploy, wrangler environment, secrets, and the shared-backend caveat.
+- `deployment.md` - staging and production deploys, wrangler environments, secrets, custom domain, and the shared-backend caveat.
 - `enable-banking-transaction-shapes.md` - sanitized live-payload audit and transaction counterparty mapping precedence.
 - `decisions/0001-mvp-assumptions.md` - current MVP assumptions made after the grill-me questions.
 - `decisions/0002-credit-facilities.md` - credit facilities, loan amortisation, settlement accounts, and contractual payoff rules.
@@ -26,6 +26,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0015-account-deletion-cancel.md` - reversible account deletion requests without promising an unimplemented erasure pipeline.
 - `decisions/0016-analyst-env-gating.md` - default-off build-time Analyst frontend gate and localized disabled route.
 - `decisions/0017-default-category-seeding.md` - default category seeding at profile creation and bootstrap self-heal.
+- `decisions/0018-deploy-environments.md` - shared dev/staging Convex deployment, production deployment, WorkOS profiles, Cloudflare workers, and the gitignored wrangler config.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.

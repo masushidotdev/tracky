@@ -81,6 +81,12 @@
   kind spelled out. Nothing changes on screen; the names in the app stay as they
   were.
 
+- Deploy environments are defined: staging on a gated `workers.dev` URL sharing
+  the dev Convex backend, production on `trytracky.app` with its own Convex
+  production deployment and WorkOS production environment. Nothing changes on
+  screen; contributors copy `wrangler.jsonc.example` to a gitignored local
+  `wrangler.jsonc`.
+
 ### Fixed
 
 - The AI Analyst section is now opt-in per environment: unless the frontend is
