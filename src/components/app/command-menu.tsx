@@ -14,7 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { allNavItems } from '@/lib/navigation';
+import { allNavItems, analystNavItem, isAnalystEnabled } from '@/lib/navigation';
 import { useBalancePrivacy } from '@/lib/balance-privacy-context';
 import { useI18n } from '@/lib/i18n';
 
@@ -50,6 +50,7 @@ export function CommandMenu() {
   const [query, setQuery] = React.useState('');
   const [docsResults, setDocsResults] = React.useState<Array<DocsSearchResult>>([]);
   const deferredQuery = React.useDeferredValue(query.trim());
+  const visibleNavItems = allNavItems.filter((item) => item !== analystNavItem || isAnalystEnabled());
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -157,7 +158,7 @@ export function CommandMenu() {
             </CommandGroup>
           ) : null}
           <CommandGroup heading={t('command.navigation')}>
-            {allNavItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const Icon = item.icon;
 
               return (

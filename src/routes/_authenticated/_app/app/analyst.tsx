@@ -4,6 +4,7 @@ import { AppPage } from '@/components/app/app-page';
 import { AnalystView } from '@/components/banking/analyst/analyst-view';
 import { PanelErrorBoundary } from '@/components/banking/panel-error-boundary';
 import { useI18n } from '@/lib/i18n';
+import { isAnalystEnabled } from '@/lib/navigation';
 
 export const Route = createFileRoute('/_authenticated/_app/app/analyst')({
   validateSearch: (search): { thread?: string } => ({
@@ -15,6 +16,14 @@ export const Route = createFileRoute('/_authenticated/_app/app/analyst')({
 function RouteComponent() {
   const { t } = useI18n();
   const search = Route.useSearch();
+
+  if (!isAnalystEnabled()) {
+    return (
+      <AppPage title={t('analyst.disabled.title')} description={t('analyst.disabled.description')}>
+        <p>{t('analyst.disabled.description')}</p>
+      </AppPage>
+    );
+  }
 
   return (
     <AppPage title={t('analyst.title')} description={t('analyst.description')}>
