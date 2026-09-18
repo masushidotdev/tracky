@@ -3,9 +3,9 @@
   "authKit": {
     "dev": {
       "configure": {
-        "redirectUris": ["http://localhost:3000/callback"],
-        "appHomepageUrl": "http://localhost:3000",
-        "corsOrigins": ["http://localhost:3000"]
+        "redirectUris": ["http://localhost:3000/callback", "https://tracky-oos-staging.masushi.workers.dev/callback"],
+        "appHomepageUrl": "https://tracky-oos-staging.masushi.workers.dev",
+        "corsOrigins": ["http://localhost:3000", "https://tracky-oos-staging.masushi.workers.dev"]
       },
       "localEnvVars": {
         "WORKOS_CLIENT_ID": "${authEnv.WORKOS_CLIENT_ID}",
@@ -13,21 +13,12 @@
         "WORKOS_REDIRECT_URI": "http://localhost:3000/callback"
       }
     },
-    "preview": {
-      "configure": {
-        "redirectUris": ["https://${buildEnv.APP_PUBLIC_URL}/callback"],
-        "appHomepageUrl": "https://${buildEnv.APP_PUBLIC_URL}",
-        "corsOrigins": ["https://${buildEnv.APP_PUBLIC_URL}"]
-      }
-    },
     "prod": {
       "environmentType": "production",
       "configure": {
-        "redirectUris": [
-          "https://${buildEnv.APP_PUBLIC_URL}/callback"
-        ],
-        "appHomepageUrl": "https://${buildEnv.APP_PUBLIC_URL}",
-        "corsOrigins": ["https://${buildEnv.APP_PUBLIC_URL}"]
+        "redirectUris": ["https://trytracky.app/callback"],
+        "appHomepageUrl": "https://trytracky.app",
+        "corsOrigins": ["https://trytracky.app"]
       }
     }
   }

@@ -1,30 +1,34 @@
 # Deployment
 
 Tracky deploys as a Cloudflare Worker frontend backed by a Convex deployment.
-The reference setup below mirrors the developer's staging environment; replace
-every `<...>` placeholder with your own values.
+Two environments: staging (gated) and production (public). See
+`decisions/0018-deploy-environments.md` for why.
+
+`wrangler.jsonc` is local-only (gitignored, real names); the repo tracks only
+`wrangler.jsonc.example`. Copy the example to `wrangler.jsonc` and fill in
+your names.
 
 ## Topology
 
-| Piece | Value |
-| --- | --- |
-| Frontend | Cloudflare Worker `<your-worker-name>` |
-| URL | `https://<your-worker-name>.<your-account>.workers.dev` |
-| Backend | Convex deployment `<your-convex-deployment>` |
-| Auth | WorkOS environment (Staging for development) |
-| Gate | Cloudflare Access, one-time PIN, allowed-email policy |
+| Piece    | Staging                                                     | Production                               |
+| -------- | ----------------------------------------------------------- | ---------------------------------------- |
+| Frontend | Worker `tracky-oos-staging`                                 | Top-level Worker `tracky-oos`            |
+| URL      | `https://tracky-oos-staging.masushi.workers.dev`            | `https://trytracky.app`                  |
+| Backend  | Convex dev `dev:woozy-antelope-583` (shared with local dev) | Convex production deployment             |
+| Auth     | WorkOS dev env (`authKit.dev` profile)                      | WorkOS prod env (`authKit.prod` profile) |
+| Gate     | Cloudflare Access, one-time PIN, allowed-email policy       | Public                                   |
 
-For a personal staging setup, a public URL gated to a single developer works
-well. It is not a production launch — there is no WorkOS Production
-environment, no Convex production deployment, and no data migration unless you
-create them.
+`convex.json` holds `authKit.dev` (localhost + staging URL) and `authKit.prod`
+(`https://trytracky.app`, `environmentType: production`). No `preview` profile:
+preview deployments stay off until each gets its own backend.
 
 ## Wrangler environment
 
-`wrangler.jsonc` defines a `staging` environment. **Both the build and the
-deploy must run with `CLOUDFLARE_ENV=staging`** — without it, Vite emits a
-config for the top-level name and Wrangler would create a second, unwanted
-Worker. The `deploy` npm script sets it for both steps.
+The local `wrangler.jsonc` defines a `staging` env. **Staging build and deploy
+must run with `CLOUDFLARE_ENV=staging`** — without it, Vite emits a config for
+the top-level name and Wrangler would deploy to production. The `deploy` npm
+script sets it for both steps. Production deploys run with **no**
+`CLOUDFLARE_ENV` (`deploy:prod` script), targeting the top-level Worker.
 
 `@cloudflare/vite-plugin` runs the SSR environment on workerd in `vite dev`
 too, so local development and the deployed Worker resolve server-side env vars
@@ -35,15 +39,24 @@ date is past 2025-04-01.
 
 ## Deploy
 
-Every push to `main` can trigger Workers Builds, connected to your repository,
-which runs:
+Staging: every push to `main` can trigger Workers Builds, connected to your
+repository, which runs:
 
 - build: `npx convex deploy --cmd 'npm run build'`
 - deploy: `npx wrangler deploy`
 
 with two build variables: `CLOUDFLARE_ENV=staging` and the encrypted
-`CONVEX_DEPLOY_KEY` (a deploy token scoped to the deployment, created with
-`npx convex deployment token create`).
+`CONVEX_DEPLOY_KEY` (a deploy token scoped to the dev deployment, created with
+`npx convex deployment token create`; save it in Cloudflare, redacted here).
+
+Production: deploy from a release tag, which runs:
+
+- build: `npx convex deploy --cmd 'npm run build'`
+- deploy: `npx wrangler deploy`
+
+with only the production `CONVEX_DEPLOY_KEY` and **no** `CLOUDFLARE_ENV`, so
+both steps target the top-level Worker. If Workers Builds cannot trigger on
+tags, run `npm run deploy:prod` manually from a checkout on the tag.
 
 The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and
@@ -55,18 +68,30 @@ drift from the backend functions it expects. Only `main` is built by default;
 enable preview deployments only if each preview gets its own backend, because
 a preview branch sharing one backend would talk to the same data.
 
-Manual deploy from a checkout: `npm run deploy`.
+Manual deploys from a checkout: `npm run deploy` (staging),
+`npm run deploy:prod` (production).
 
 ## Configuration
 
-Worker secrets (`wrangler secret put`, `CLOUDFLARE_ENV=staging`):
-`WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI`,
-`WORKOS_COOKIE_PASSWORD`. The cookie password should differ from the local one.
+Worker secrets:
+
+- staging (`CLOUDFLARE_ENV=staging wrangler secret put`):
+  `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI`
+  (`https://tracky-oos-staging.masushi.workers.dev/callback`),
+  `WORKOS_COOKIE_PASSWORD`.
+- production (`wrangler secret put`, no env flag):
+  same keys, `WORKOS_REDIRECT_URI=https://trytracky.app/callback`,
+  a different cookie password.
+
+Cookie passwords must differ per environment (and from local).
 
 WorkOS redirect URIs, homepage, and CORS origins are declared in `convex.json`
-under `authKit.dev.configure` and applied by `npx convex dev`. Both
-`http://localhost:3000` and the Worker URL are listed, so local development and
-the deployed app work at the same time.
+under `authKit.dev.configure` (localhost + staging URL) and
+`authKit.prod.configure` (`https://trytracky.app`), and applied by
+`npx convex dev` / `npx convex deploy`. Set the staging WorkOS Client ID and
+API key on the dev deployment and the production pair on the production
+deployment with `npx convex env set`; with a deploy-key auth the CLI refuses
+to auto-provision and fails instead, so the vars must exist first.
 
 `RESEND_WEBHOOK_SECRET` is mandatory on the Convex deployment for Resend delivery
 updates. Set it with `npx convex env set RESEND_WEBHOOK_SECRET <whsec_...>` using
@@ -76,19 +101,25 @@ Invalid webhook signatures return 401.
 
 ## Access gate
 
-Set the Worker URL (and any preview URL pattern) to **Restricted** in the
-Worker's Domains tab, which creates a Cloudflare Access self-hosted
-application for each. An allowlist policy (for example a single email via
-one-time PIN) stops visitors at the edge before the Worker runs. Signing in
-then takes two steps: Access first, then WorkOS.
+Staging only: set the staging Worker URL to **Restricted** in the Worker's
+Domains tab, which creates a Cloudflare Access self-hosted application. An
+allowlist policy (for example a single email via one-time PIN) stops visitors
+at the edge before the Worker runs. Signing in then takes two steps: Access
+first, then WorkOS. Production (`trytracky.app`) stays public.
 
 No inbound webhook hits the frontend (Enable Banking, Resend, Telegram, and
 WorkOS all call the `.convex.site` domain), so the gate breaks nothing.
 
+## Custom domain
+
+`trytracky.app` is attached to the top-level production Worker (Domains tab or
+`wrangler deploy --domain`), with its zone on Cloudflare. The staging Worker
+keeps its `workers.dev` URL.
+
 ## Shared-backend caveat
 
-Do not share one Convex deployment between local development and a deployed
-app with real data: a `npx convex dev` republishes functions to whatever
-backend it targets. For non-trivial work use a worktree —
+Staging shares the `dev:woozy-antelope-583` deployment with local development:
+a `npx convex dev` republishes functions to whatever backend it targets. For
+non-trivial work use a worktree —
 `scripts/init-worktree.sh` provisions a dedicated dev deployment per worktree —
 so the shared deployment changes only through pushes to `main`.
