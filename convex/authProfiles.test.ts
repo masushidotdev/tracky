@@ -4,9 +4,19 @@ import { convexTest } from 'convex-test';
 import workOSAuthKitTest from '@convex-dev/workos-authkit/test';
 import { describe, expect, test } from 'vitest';
 import { api, components, internal } from './_generated/api';
+import { DEFAULT_CATEGORIES } from './banking/categoryTaxonomy';
 import schema from './schema';
 
-const modules = import.meta.glob(['./_generated/*.js', './authProfiles.ts']);
+process.env.WORKOS_CLIENT_ID ??= 'client_test';
+process.env.WORKOS_API_KEY ??= 'sk_test';
+process.env.WORKOS_WEBHOOK_SECRET ??= 'whsec_test';
+
+const modules = import.meta.glob([
+  './_generated/*.js',
+  './auth.ts',
+  './authProfiles.ts',
+  './banking/categoryTaxonomy.ts',
+]);
 
 function createTest() {
   const t = convexTest(schema, modules);
@@ -65,6 +75,61 @@ describe('WorkOS user profile sync', () => {
       locale: 'it-IT',
       status: 'active',
     });
+  });
+
+  test('seeds default categories when a profile is created via the user.created event', async () => {
+    const t = createTest();
+    const authUserId = 'user_seeded_categories';
+    const timestamp = '2026-01-01T00:00:00.000Z';
+    await t.mutation(internal.auth.authKitEvent, {
+      event: 'user.created',
+      data: {
+        id: authUserId,
+        email: `${authUserId}@example.com`,
+        firstName: 'Seeded',
+        lastName: 'User',
+        emailVerified: true,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    });
+
+    const categories = await t.run(async (ctx) =>
+      ctx.db
+        .query('categories')
+        .withIndex('by_userId', (q) => q.eq('userId', authUserId))
+        .collect(),
+    );
+
+    expect(categories).toHaveLength(DEFAULT_CATEGORIES.length);
+    for (const definition of DEFAULT_CATEGORIES) {
+      expect(categories.some((category) => category.systemKey === definition.systemKey)).toBe(true);
+    }
+  });
+
+  test('self-heals missing categories on bootstrap for pre-seeding accounts', async () => {
+    const t = createTest();
+    const authUserId = 'user_preseding_no_categories';
+    await seedAuthKitUser(t, authUserId);
+    await t.run(async (ctx) => {
+      const categories = await ctx.db
+        .query('categories')
+        .withIndex('by_userId', (q) => q.eq('userId', authUserId))
+        .collect();
+      await Promise.all(categories.map((category) => ctx.db.delete('categories', category._id)));
+    });
+
+    await t
+      .withIdentity({ subject: authUserId })
+      .mutation(api.authProfiles.ensureCurrentUserProfile, {});
+
+    const categories = await t.run(async (ctx) =>
+      ctx.db
+        .query('categories')
+        .withIndex('by_userId', (q) => q.eq('userId', authUserId))
+        .collect(),
+    );
+    expect(categories).toHaveLength(DEFAULT_CATEGORIES.length);
   });
 
   test('does not erase trusted profile fields while the WorkOS component is awaiting sync', async () => {

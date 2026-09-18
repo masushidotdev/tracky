@@ -28,6 +28,8 @@ Il registro condiviso mostra anche **Conto**. Trascina il bordo di una colonna p
 
 `DBIT` indica un'uscita, `CRDT` un'entrata e `BOOK` un movimento contabilizzato. Le classificazioni sono `expense`, `income`, `subscription`, `transfer`, `internal` o `uncategorized`. Una correzione dell'utente ha confidenza piena e prevale sugli automatismi successivi.
 
+Ogni nuovo account parte con il set di categorie predefinite, quindi il selettore non è mai vuoto. Gli account creati prima di questo comportamento ricevono lo stesso set automaticamente all'accesso.
+
 ## Cercare, filtrare e ordinare l'intero registro
 
 Usa l'unico campo sopra la tabella al posto dei filtri separati. Mentre scrivi, Tracky propone conti, categorie, beneficiari, date, stati e importi di uscita o entrata compatibili. Puoi selezionare più suggerimenti per combinare le condizioni. Un filtro esplicito sullo stato controlla la tabella stessa: per esempio, **Stato: SCHD** mantiene le righe programmate fra i risultati corrispondenti, mentre la fascia delle transazioni programmate resta disponibile sopra.
