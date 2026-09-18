@@ -9,46 +9,46 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as CallbackRouteImport } from './routes/callback'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppAppIndexRouteImport } from './routes/_authenticated/_app/app/index'
-import { Route as AuthenticatedAppAppTransactionsRouteImport } from './routes/_authenticated/_app/app/transactions'
-import { Route as AuthenticatedAppAppSettingsRouteImport } from './routes/_authenticated/_app/app/settings'
-import { Route as AuthenticatedAppAppReportsRouteImport } from './routes/_authenticated/_app/app/reports'
-import { Route as AuthenticatedAppAppPlanningRouteImport } from './routes/_authenticated/_app/app/planning'
-import { Route as AuthenticatedAppAppPlanRouteImport } from './routes/_authenticated/_app/app/plan'
-import { Route as AuthenticatedAppAppImportRouteImport } from './routes/_authenticated/_app/app/import'
-import { Route as AuthenticatedAppAppGoalsRouteImport } from './routes/_authenticated/_app/app/goals'
-import { Route as AuthenticatedAppAppForecastRouteImport } from './routes/_authenticated/_app/app/forecast'
-import { Route as AuthenticatedAppAppDocsRouteImport } from './routes/_authenticated/_app/app/docs'
 import { Route as AuthenticatedAppAppAnalystRouteImport } from './routes/_authenticated/_app/app/analyst'
-import { Route as AuthenticatedAppAppSubscriptionsIndexRouteImport } from './routes/_authenticated/_app/app/subscriptions/index'
-import { Route as AuthenticatedAppAppSettingsIndexRouteImport } from './routes/_authenticated/_app/app/settings/index'
-import { Route as AuthenticatedAppAppDocsIndexRouteImport } from './routes/_authenticated/_app/app/docs/index'
+import { Route as AuthenticatedAppAppDocsRouteImport } from './routes/_authenticated/_app/app/docs'
+import { Route as AuthenticatedAppAppForecastRouteImport } from './routes/_authenticated/_app/app/forecast'
+import { Route as AuthenticatedAppAppGoalsRouteImport } from './routes/_authenticated/_app/app/goals'
+import { Route as AuthenticatedAppAppImportRouteImport } from './routes/_authenticated/_app/app/import'
+import { Route as AuthenticatedAppAppPlanRouteImport } from './routes/_authenticated/_app/app/plan'
+import { Route as AuthenticatedAppAppPlanningRouteImport } from './routes/_authenticated/_app/app/planning'
+import { Route as AuthenticatedAppAppReportsRouteImport } from './routes/_authenticated/_app/app/reports'
+import { Route as AuthenticatedAppAppSettingsRouteImport } from './routes/_authenticated/_app/app/settings'
+import { Route as AuthenticatedAppAppTransactionsRouteImport } from './routes/_authenticated/_app/app/transactions'
 import { Route as AuthenticatedAppAppAccountsIndexRouteImport } from './routes/_authenticated/_app/app/accounts/index'
-import { Route as AuthenticatedAppAppSubscriptionsCreateRouteImport } from './routes/_authenticated/_app/app/subscriptions/create'
-import { Route as AuthenticatedAppAppSettingsImportRouteImport } from './routes/_authenticated/_app/app/settings/import'
-import { Route as AuthenticatedAppAppSettingsCreditRouteImport } from './routes/_authenticated/_app/app/settings/credit'
-import { Route as AuthenticatedAppAppSettingsBankConnectionsRouteImport } from './routes/_authenticated/_app/app/settings/bank-connections'
-import { Route as AuthenticatedAppAppSettingsAccountsRouteImport } from './routes/_authenticated/_app/app/settings/accounts'
-import { Route as AuthenticatedAppAppLoansFacilityIdRouteImport } from './routes/_authenticated/_app/app/loans/$facilityId'
-import { Route as AuthenticatedAppAppDocsSlugRouteImport } from './routes/_authenticated/_app/app/docs/$slug'
 import { Route as AuthenticatedAppAppAccountsAccountIdRouteImport } from './routes/_authenticated/_app/app/accounts/$accountId'
+import { Route as AuthenticatedAppAppDocsIndexRouteImport } from './routes/_authenticated/_app/app/docs/index'
+import { Route as AuthenticatedAppAppDocsSlugRouteImport } from './routes/_authenticated/_app/app/docs/$slug'
+import { Route as AuthenticatedAppAppLoansFacilityIdRouteImport } from './routes/_authenticated/_app/app/loans/$facilityId'
+import { Route as AuthenticatedAppAppSettingsIndexRouteImport } from './routes/_authenticated/_app/app/settings/index'
+import { Route as AuthenticatedAppAppSettingsAccountsRouteImport } from './routes/_authenticated/_app/app/settings/accounts'
+import { Route as AuthenticatedAppAppSettingsBankConnectionsRouteImport } from './routes/_authenticated/_app/app/settings/bank-connections'
+import { Route as AuthenticatedAppAppSettingsCreditRouteImport } from './routes/_authenticated/_app/app/settings/credit'
+import { Route as AuthenticatedAppAppSettingsImportRouteImport } from './routes/_authenticated/_app/app/settings/import'
+import { Route as AuthenticatedAppAppSubscriptionsIndexRouteImport } from './routes/_authenticated/_app/app/subscriptions/index'
+import { Route as AuthenticatedAppAppSubscriptionsCreateRouteImport } from './routes/_authenticated/_app/app/subscriptions/create'
 
-const CallbackRoute = CallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CallbackRoute = CallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
@@ -61,39 +61,21 @@ const AuthenticatedAppAppIndexRoute =
     path: '/app/',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAppTransactionsRoute =
-  AuthenticatedAppAppTransactionsRouteImport.update({
-    id: '/app/transactions',
-    path: '/app/transactions',
+const AuthenticatedAppAppAnalystRoute =
+  AuthenticatedAppAppAnalystRouteImport.update({
+    id: '/app/analyst',
+    path: '/app/analyst',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAppSettingsRoute =
-  AuthenticatedAppAppSettingsRouteImport.update({
-    id: '/app/settings',
-    path: '/app/settings',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAppReportsRoute =
-  AuthenticatedAppAppReportsRouteImport.update({
-    id: '/app/reports',
-    path: '/app/reports',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAppPlanningRoute =
-  AuthenticatedAppAppPlanningRouteImport.update({
-    id: '/app/planning',
-    path: '/app/planning',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAppPlanRoute = AuthenticatedAppAppPlanRouteImport.update({
-  id: '/app/plan',
-  path: '/app/plan',
+const AuthenticatedAppAppDocsRoute = AuthenticatedAppAppDocsRouteImport.update({
+  id: '/app/docs',
+  path: '/app/docs',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AuthenticatedAppAppImportRoute =
-  AuthenticatedAppAppImportRouteImport.update({
-    id: '/app/import',
-    path: '/app/import',
+const AuthenticatedAppAppForecastRoute =
+  AuthenticatedAppAppForecastRouteImport.update({
+    id: '/app/forecast',
+    path: '/app/forecast',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppAppGoalsRoute =
@@ -102,27 +84,69 @@ const AuthenticatedAppAppGoalsRoute =
     path: '/app/goals',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAppForecastRoute =
-  AuthenticatedAppAppForecastRouteImport.update({
-    id: '/app/forecast',
-    path: '/app/forecast',
+const AuthenticatedAppAppImportRoute =
+  AuthenticatedAppAppImportRouteImport.update({
+    id: '/app/import',
+    path: '/app/import',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAppDocsRoute = AuthenticatedAppAppDocsRouteImport.update({
-  id: '/app/docs',
-  path: '/app/docs',
+const AuthenticatedAppAppPlanRoute = AuthenticatedAppAppPlanRouteImport.update({
+  id: '/app/plan',
+  path: '/app/plan',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AuthenticatedAppAppAnalystRoute =
-  AuthenticatedAppAppAnalystRouteImport.update({
-    id: '/app/analyst',
-    path: '/app/analyst',
+const AuthenticatedAppAppPlanningRoute =
+  AuthenticatedAppAppPlanningRouteImport.update({
+    id: '/app/planning',
+    path: '/app/planning',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAppSubscriptionsIndexRoute =
-  AuthenticatedAppAppSubscriptionsIndexRouteImport.update({
-    id: '/app/subscriptions/',
-    path: '/app/subscriptions/',
+const AuthenticatedAppAppReportsRoute =
+  AuthenticatedAppAppReportsRouteImport.update({
+    id: '/app/reports',
+    path: '/app/reports',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAppSettingsRoute =
+  AuthenticatedAppAppSettingsRouteImport.update({
+    id: '/app/settings',
+    path: '/app/settings',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAppTransactionsRoute =
+  AuthenticatedAppAppTransactionsRouteImport.update({
+    id: '/app/transactions',
+    path: '/app/transactions',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAppAccountsIndexRoute =
+  AuthenticatedAppAppAccountsIndexRouteImport.update({
+    id: '/app/accounts/',
+    path: '/app/accounts/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAppAccountsAccountIdRoute =
+  AuthenticatedAppAppAccountsAccountIdRouteImport.update({
+    id: '/app/accounts/$accountId',
+    path: '/app/accounts/$accountId',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAppDocsIndexRoute =
+  AuthenticatedAppAppDocsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppAppDocsRoute,
+  } as any)
+const AuthenticatedAppAppDocsSlugRoute =
+  AuthenticatedAppAppDocsSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => AuthenticatedAppAppDocsRoute,
+  } as any)
+const AuthenticatedAppAppLoansFacilityIdRoute =
+  AuthenticatedAppAppLoansFacilityIdRouteImport.update({
+    id: '/app/loans/$facilityId',
+    path: '/app/loans/$facilityId',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppAppSettingsIndexRoute =
@@ -131,34 +155,10 @@ const AuthenticatedAppAppSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAppAppSettingsRoute,
   } as any)
-const AuthenticatedAppAppDocsIndexRoute =
-  AuthenticatedAppAppDocsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedAppAppDocsRoute,
-  } as any)
-const AuthenticatedAppAppAccountsIndexRoute =
-  AuthenticatedAppAppAccountsIndexRouteImport.update({
-    id: '/app/accounts/',
-    path: '/app/accounts/',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAppSubscriptionsCreateRoute =
-  AuthenticatedAppAppSubscriptionsCreateRouteImport.update({
-    id: '/app/subscriptions/create',
-    path: '/app/subscriptions/create',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAppSettingsImportRoute =
-  AuthenticatedAppAppSettingsImportRouteImport.update({
-    id: '/import',
-    path: '/import',
-    getParentRoute: () => AuthenticatedAppAppSettingsRoute,
-  } as any)
-const AuthenticatedAppAppSettingsCreditRoute =
-  AuthenticatedAppAppSettingsCreditRouteImport.update({
-    id: '/credit',
-    path: '/credit',
+const AuthenticatedAppAppSettingsAccountsRoute =
+  AuthenticatedAppAppSettingsAccountsRouteImport.update({
+    id: '/accounts',
+    path: '/accounts',
     getParentRoute: () => AuthenticatedAppAppSettingsRoute,
   } as any)
 const AuthenticatedAppAppSettingsBankConnectionsRoute =
@@ -167,28 +167,28 @@ const AuthenticatedAppAppSettingsBankConnectionsRoute =
     path: '/bank-connections',
     getParentRoute: () => AuthenticatedAppAppSettingsRoute,
   } as any)
-const AuthenticatedAppAppSettingsAccountsRoute =
-  AuthenticatedAppAppSettingsAccountsRouteImport.update({
-    id: '/accounts',
-    path: '/accounts',
+const AuthenticatedAppAppSettingsCreditRoute =
+  AuthenticatedAppAppSettingsCreditRouteImport.update({
+    id: '/credit',
+    path: '/credit',
     getParentRoute: () => AuthenticatedAppAppSettingsRoute,
   } as any)
-const AuthenticatedAppAppLoansFacilityIdRoute =
-  AuthenticatedAppAppLoansFacilityIdRouteImport.update({
-    id: '/app/loans/$facilityId',
-    path: '/app/loans/$facilityId',
+const AuthenticatedAppAppSettingsImportRoute =
+  AuthenticatedAppAppSettingsImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedAppAppSettingsRoute,
+  } as any)
+const AuthenticatedAppAppSubscriptionsIndexRoute =
+  AuthenticatedAppAppSubscriptionsIndexRouteImport.update({
+    id: '/app/subscriptions/',
+    path: '/app/subscriptions/',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAppDocsSlugRoute =
-  AuthenticatedAppAppDocsSlugRouteImport.update({
-    id: '/$slug',
-    path: '/$slug',
-    getParentRoute: () => AuthenticatedAppAppDocsRoute,
-  } as any)
-const AuthenticatedAppAppAccountsAccountIdRoute =
-  AuthenticatedAppAppAccountsAccountIdRouteImport.update({
-    id: '/app/accounts/$accountId',
-    path: '/app/accounts/$accountId',
+const AuthenticatedAppAppSubscriptionsCreateRoute =
+  AuthenticatedAppAppSubscriptionsCreateRouteImport.update({
+    id: '/app/subscriptions/create',
+    path: '/app/subscriptions/create',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 
@@ -366,11 +366,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/callback': {
-      id: '/callback'
-      path: '/callback'
-      fullPath: '/callback'
-      preLoaderRoute: typeof CallbackRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -380,11 +380,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/callback': {
+      id: '/callback'
+      path: '/callback'
+      fullPath: '/callback'
+      preLoaderRoute: typeof CallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_app': {
@@ -401,60 +401,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/_app/app/transactions': {
-      id: '/_authenticated/_app/app/transactions'
-      path: '/app/transactions'
-      fullPath: '/app/transactions'
-      preLoaderRoute: typeof AuthenticatedAppAppTransactionsRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/settings': {
-      id: '/_authenticated/_app/app/settings'
-      path: '/app/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AuthenticatedAppAppSettingsRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/reports': {
-      id: '/_authenticated/_app/app/reports'
-      path: '/app/reports'
-      fullPath: '/app/reports'
-      preLoaderRoute: typeof AuthenticatedAppAppReportsRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/planning': {
-      id: '/_authenticated/_app/app/planning'
-      path: '/app/planning'
-      fullPath: '/app/planning'
-      preLoaderRoute: typeof AuthenticatedAppAppPlanningRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/plan': {
-      id: '/_authenticated/_app/app/plan'
-      path: '/app/plan'
-      fullPath: '/app/plan'
-      preLoaderRoute: typeof AuthenticatedAppAppPlanRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/import': {
-      id: '/_authenticated/_app/app/import'
-      path: '/app/import'
-      fullPath: '/app/import'
-      preLoaderRoute: typeof AuthenticatedAppAppImportRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/goals': {
-      id: '/_authenticated/_app/app/goals'
-      path: '/app/goals'
-      fullPath: '/app/goals'
-      preLoaderRoute: typeof AuthenticatedAppAppGoalsRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/forecast': {
-      id: '/_authenticated/_app/app/forecast'
-      path: '/app/forecast'
-      fullPath: '/app/forecast'
-      preLoaderRoute: typeof AuthenticatedAppAppForecastRouteImport
+    '/_authenticated/_app/app/analyst': {
+      id: '/_authenticated/_app/app/analyst'
+      path: '/app/analyst'
+      fullPath: '/app/analyst'
+      preLoaderRoute: typeof AuthenticatedAppAppAnalystRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/app/docs': {
@@ -464,18 +415,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAppDocsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/_app/app/analyst': {
-      id: '/_authenticated/_app/app/analyst'
-      path: '/app/analyst'
-      fullPath: '/app/analyst'
-      preLoaderRoute: typeof AuthenticatedAppAppAnalystRouteImport
+    '/_authenticated/_app/app/forecast': {
+      id: '/_authenticated/_app/app/forecast'
+      path: '/app/forecast'
+      fullPath: '/app/forecast'
+      preLoaderRoute: typeof AuthenticatedAppAppForecastRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/_app/app/subscriptions/': {
-      id: '/_authenticated/_app/app/subscriptions/'
-      path: '/app/subscriptions'
-      fullPath: '/app/subscriptions/'
-      preLoaderRoute: typeof AuthenticatedAppAppSubscriptionsIndexRouteImport
+    '/_authenticated/_app/app/goals': {
+      id: '/_authenticated/_app/app/goals'
+      path: '/app/goals'
+      fullPath: '/app/goals'
+      preLoaderRoute: typeof AuthenticatedAppAppGoalsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/import': {
+      id: '/_authenticated/_app/app/import'
+      path: '/app/import'
+      fullPath: '/app/import'
+      preLoaderRoute: typeof AuthenticatedAppAppImportRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/plan': {
+      id: '/_authenticated/_app/app/plan'
+      path: '/app/plan'
+      fullPath: '/app/plan'
+      preLoaderRoute: typeof AuthenticatedAppAppPlanRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/planning': {
+      id: '/_authenticated/_app/app/planning'
+      path: '/app/planning'
+      fullPath: '/app/planning'
+      preLoaderRoute: typeof AuthenticatedAppAppPlanningRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/reports': {
+      id: '/_authenticated/_app/app/reports'
+      path: '/app/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AuthenticatedAppAppReportsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/settings': {
+      id: '/_authenticated/_app/app/settings'
+      path: '/app/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AuthenticatedAppAppSettingsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/transactions': {
+      id: '/_authenticated/_app/app/transactions'
+      path: '/app/transactions'
+      fullPath: '/app/transactions'
+      preLoaderRoute: typeof AuthenticatedAppAppTransactionsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/accounts/': {
+      id: '/_authenticated/_app/app/accounts/'
+      path: '/app/accounts'
+      fullPath: '/app/accounts/'
+      preLoaderRoute: typeof AuthenticatedAppAppAccountsIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/accounts/$accountId': {
+      id: '/_authenticated/_app/app/accounts/$accountId'
+      path: '/app/accounts/$accountId'
+      fullPath: '/app/accounts/$accountId'
+      preLoaderRoute: typeof AuthenticatedAppAppAccountsAccountIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/app/docs/': {
+      id: '/_authenticated/_app/app/docs/'
+      path: '/'
+      fullPath: '/app/docs/'
+      preLoaderRoute: typeof AuthenticatedAppAppDocsIndexRouteImport
+      parentRoute: typeof AuthenticatedAppAppDocsRoute
+    }
+    '/_authenticated/_app/app/docs/$slug': {
+      id: '/_authenticated/_app/app/docs/$slug'
+      path: '/$slug'
+      fullPath: '/app/docs/$slug'
+      preLoaderRoute: typeof AuthenticatedAppAppDocsSlugRouteImport
+      parentRoute: typeof AuthenticatedAppAppDocsRoute
+    }
+    '/_authenticated/_app/app/loans/$facilityId': {
+      id: '/_authenticated/_app/app/loans/$facilityId'
+      path: '/app/loans/$facilityId'
+      fullPath: '/app/loans/$facilityId'
+      preLoaderRoute: typeof AuthenticatedAppAppLoansFacilityIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/app/settings/': {
@@ -485,39 +513,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAppSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedAppAppSettingsRoute
     }
-    '/_authenticated/_app/app/docs/': {
-      id: '/_authenticated/_app/app/docs/'
-      path: '/'
-      fullPath: '/app/docs/'
-      preLoaderRoute: typeof AuthenticatedAppAppDocsIndexRouteImport
-      parentRoute: typeof AuthenticatedAppAppDocsRoute
-    }
-    '/_authenticated/_app/app/accounts/': {
-      id: '/_authenticated/_app/app/accounts/'
-      path: '/app/accounts'
-      fullPath: '/app/accounts/'
-      preLoaderRoute: typeof AuthenticatedAppAppAccountsIndexRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/subscriptions/create': {
-      id: '/_authenticated/_app/app/subscriptions/create'
-      path: '/app/subscriptions/create'
-      fullPath: '/app/subscriptions/create'
-      preLoaderRoute: typeof AuthenticatedAppAppSubscriptionsCreateRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/app/settings/import': {
-      id: '/_authenticated/_app/app/settings/import'
-      path: '/import'
-      fullPath: '/app/settings/import'
-      preLoaderRoute: typeof AuthenticatedAppAppSettingsImportRouteImport
-      parentRoute: typeof AuthenticatedAppAppSettingsRoute
-    }
-    '/_authenticated/_app/app/settings/credit': {
-      id: '/_authenticated/_app/app/settings/credit'
-      path: '/credit'
-      fullPath: '/app/settings/credit'
-      preLoaderRoute: typeof AuthenticatedAppAppSettingsCreditRouteImport
+    '/_authenticated/_app/app/settings/accounts': {
+      id: '/_authenticated/_app/app/settings/accounts'
+      path: '/accounts'
+      fullPath: '/app/settings/accounts'
+      preLoaderRoute: typeof AuthenticatedAppAppSettingsAccountsRouteImport
       parentRoute: typeof AuthenticatedAppAppSettingsRoute
     }
     '/_authenticated/_app/app/settings/bank-connections': {
@@ -527,32 +527,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAppSettingsBankConnectionsRouteImport
       parentRoute: typeof AuthenticatedAppAppSettingsRoute
     }
-    '/_authenticated/_app/app/settings/accounts': {
-      id: '/_authenticated/_app/app/settings/accounts'
-      path: '/accounts'
-      fullPath: '/app/settings/accounts'
-      preLoaderRoute: typeof AuthenticatedAppAppSettingsAccountsRouteImport
+    '/_authenticated/_app/app/settings/credit': {
+      id: '/_authenticated/_app/app/settings/credit'
+      path: '/credit'
+      fullPath: '/app/settings/credit'
+      preLoaderRoute: typeof AuthenticatedAppAppSettingsCreditRouteImport
       parentRoute: typeof AuthenticatedAppAppSettingsRoute
     }
-    '/_authenticated/_app/app/loans/$facilityId': {
-      id: '/_authenticated/_app/app/loans/$facilityId'
-      path: '/app/loans/$facilityId'
-      fullPath: '/app/loans/$facilityId'
-      preLoaderRoute: typeof AuthenticatedAppAppLoansFacilityIdRouteImport
+    '/_authenticated/_app/app/settings/import': {
+      id: '/_authenticated/_app/app/settings/import'
+      path: '/import'
+      fullPath: '/app/settings/import'
+      preLoaderRoute: typeof AuthenticatedAppAppSettingsImportRouteImport
+      parentRoute: typeof AuthenticatedAppAppSettingsRoute
+    }
+    '/_authenticated/_app/app/subscriptions/': {
+      id: '/_authenticated/_app/app/subscriptions/'
+      path: '/app/subscriptions'
+      fullPath: '/app/subscriptions/'
+      preLoaderRoute: typeof AuthenticatedAppAppSubscriptionsIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/_app/app/docs/$slug': {
-      id: '/_authenticated/_app/app/docs/$slug'
-      path: '/$slug'
-      fullPath: '/app/docs/$slug'
-      preLoaderRoute: typeof AuthenticatedAppAppDocsSlugRouteImport
-      parentRoute: typeof AuthenticatedAppAppDocsRoute
-    }
-    '/_authenticated/_app/app/accounts/$accountId': {
-      id: '/_authenticated/_app/app/accounts/$accountId'
-      path: '/app/accounts/$accountId'
-      fullPath: '/app/accounts/$accountId'
-      preLoaderRoute: typeof AuthenticatedAppAppAccountsAccountIdRouteImport
+    '/_authenticated/_app/app/subscriptions/create': {
+      id: '/_authenticated/_app/app/subscriptions/create'
+      path: '/app/subscriptions/create'
+      fullPath: '/app/subscriptions/create'
+      preLoaderRoute: typeof AuthenticatedAppAppSubscriptionsCreateRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
   }
