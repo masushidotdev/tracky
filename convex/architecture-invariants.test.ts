@@ -40,6 +40,31 @@ function frontendSourceFiles() {
   return sourceFiles(srcRoot);
 }
 
+function frontendSourceAndTsxFiles() {
+  const files: Array<string> = [];
+
+  function walk(directory: string) {
+    for (const entry of readdirSync(directory)) {
+      if (entry.startsWith('.')) {
+        continue;
+      }
+
+      const path = join(directory, entry);
+      if (statSync(path).isDirectory()) {
+        walk(path);
+        continue;
+      }
+
+      if (/\.tsx?$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
+        files.push(path);
+      }
+    }
+  }
+
+  walk(srcRoot);
+  return files.sort();
+}
+
 function compactWhitespace(value: string) {
   return value.replace(/\s+/g, ' ');
 }
@@ -235,5 +260,32 @@ describe('architecture invariants', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  test('TanStack devtools never load in production builds', () => {
+    // The devtools panel was shipped to production as a static import in
+    // `src/routes/__root.tsx`. Devtools imports must live only in the
+    // dev-gated `src/components/devtools.tsx`, and the root route must gate
+    // the lazy import behind `import.meta.env.DEV` so Vite drops the chunk
+    // from production builds.
+    const devtoolsImport = /from\s+['"]@tanstack\/react-(?:form-|router-)?devtools['"]/;
+    const violations: Array<string> = [];
+
+    for (const file of frontendSourceAndTsxFiles()) {
+      const relativePath = relative(process.cwd(), file);
+      if (relativePath === join('src', 'components', 'devtools.tsx')) {
+        continue;
+      }
+      if (devtoolsImport.test(readFileSync(file, 'utf8'))) {
+        violations.push(relativePath);
+      }
+    }
+
+    expect(violations).toEqual([]);
+
+    const rootSource = readFileSync(join(srcRoot, 'routes', '__root.tsx'), 'utf8');
+    expect(devtoolsImport.test(rootSource)).toBe(false);
+    expect(rootSource).toContain('import.meta.env.DEV');
+    expect(rootSource).toContain('@/components/devtools');
   });
 });
