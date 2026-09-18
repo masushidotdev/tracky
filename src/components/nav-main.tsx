@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useSidebarGroupState } from '@/hooks/use-sidebar-group-state';
 import { useI18n } from '@/lib/i18n';
-import { appFooterNav, appPrimaryNav, appToolsNav, isNavItemActive } from '@/lib/navigation';
+import { analystNavItem, appFooterNav, appPrimaryNav, appToolsNav, isAnalystEnabled, isNavItemActive } from '@/lib/navigation';
 
 function NavItem({ item, pathname }: { item: AppNavItem; pathname: string }) {
   const { t } = useI18n();
@@ -84,12 +84,10 @@ export function NavFooter() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { setOpen } = useCommandMenu();
 
-  const analystItem = appFooterNav.find((item) => item.titleKey === 'nav.analyst');
-
   return (
     <SidebarMenu>
       {appFooterNav
-        .filter((item) => item.titleKey !== 'nav.analyst')
+        .filter((item) => item !== analystNavItem)
         .map((item) => (
           <SidebarMenuItem key={item.url}>
             <SidebarMenuButton tooltip={t(item.titleKey)} isActive={isNavItemActive(item, pathname)} asChild>
@@ -107,7 +105,7 @@ export function NavFooter() {
           <Kbd className="ml-auto group-data-[collapsible=icon]:hidden">⌘K</Kbd>
         </SidebarMenuButton>
       </SidebarMenuItem>
-      {analystItem ? <NavItem item={analystItem} pathname={pathname} /> : null}
+      {isAnalystEnabled() ? <NavItem item={analystNavItem} pathname={pathname} /> : null}
     </SidebarMenu>
   );
 }

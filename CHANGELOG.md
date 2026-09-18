@@ -75,6 +75,15 @@
 
 ### Fixed
 
+- The AI Analyst section is now opt-in per environment: unless the frontend is
+  built with `VITE_ANALYST_ENABLED=true`, its sidebar and command-palette
+  entries stay hidden and `/app/analyst` shows a localized "feature disabled"
+  page instead of the chat.
+
+- New accounts now start with the default category set instead of an empty
+  picker: categories are seeded when the profile is created, and existing
+  accounts without any are repaired automatically at sign-in.
+
 - Repository docs no longer contain real account data: execution plans and
   decisions now use synthetic example values instead of observed balances,
   product names, and statement amounts.

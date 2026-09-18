@@ -73,6 +73,16 @@ export const appToolsNav: { labelKey: TranslationKey; items: Array<AppNavItem> }
   ],
 };
 
+export function isAnalystEnabled(): boolean {
+  return import.meta.env.VITE_ANALYST_ENABLED === 'true';
+}
+
+export const analystNavItem: AppNavItem = {
+  titleKey: 'nav.analyst',
+  url: '/app/analyst',
+  icon: BotIcon,
+};
+
 export const appFooterNav: Array<AppNavItem> = [
   {
     titleKey: 'nav.settings',
@@ -84,11 +94,7 @@ export const appFooterNav: Array<AppNavItem> = [
     url: '/app/docs',
     icon: BookOpenIcon,
   },
-  {
-    titleKey: 'nav.analyst',
-    url: '/app/analyst',
-    icon: BotIcon,
-  },
+  analystNavItem,
 ];
 
 // Nested under Settings in the sidebar. `exact` so it does not claim /app/accounts/$accountId,

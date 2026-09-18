@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values';
 import { components } from './_generated/api';
 import { internalMutation, mutation, query } from './_generated/server';
+import { ensureDefaultCategoriesForUser } from './banking/categoryTaxonomy';
 import type { Id } from './_generated/dataModel';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 
@@ -159,7 +160,7 @@ async function upsertUserProfile(ctx: MutationCtx, args: ProfileSyncArgs): Promi
     return existing._id;
   }
 
-  return await ctx.db.insert('userProfiles', {
+  const profileId = await ctx.db.insert('userProfiles', {
     authUserId: args.authUserId,
     ...compactProfilePatch(patch),
     status: 'active',
@@ -167,6 +168,22 @@ async function upsertUserProfile(ctx: MutationCtx, args: ProfileSyncArgs): Promi
     updatedAtMs: now,
     lastSyncedAtMs: now,
   });
+  // New accounts start with the default taxonomy; without this the category
+  // picker and reports start empty until the first bank sync.
+  await ensureDefaultCategoriesForUser(ctx, args.authUserId);
+  return profileId;
+}
+
+// Self-heal for accounts created before profile-time seeding existed: one
+// indexed read when categories are present, a full seed only when empty.
+async function ensureUserHasDefaultCategories(ctx: MutationCtx, userId: string) {
+  const existing = await ctx.db
+    .query('categories')
+    .withIndex('by_userId', (q) => q.eq('userId', userId))
+    .take(1);
+  if (existing.length === 0) {
+    await ensureDefaultCategoriesForUser(ctx, userId);
+  }
 }
 
 export async function syncUserProfileFromWorkosUser(ctx: MutationCtx, user: WorkosUserProfilePayload): Promise<Id<'userProfiles'>> {
@@ -227,7 +244,9 @@ export const ensureCurrentUserProfile = mutation({
     );
 
     if (workosUser) {
-      return await syncUserProfileFromWorkosUser(ctx, workosUser);
+      const profileId = await syncUserProfileFromWorkosUser(ctx, workosUser);
+      await ensureUserHasDefaultCategories(ctx, identity.subject);
+      return profileId;
     }
 
     // Standard WorkOS access tokens intentionally contain session claims such
@@ -237,6 +256,8 @@ export const ensureCurrentUserProfile = mutation({
     // profile, fail closed so a stale JWT cannot recreate a deleted user.
     const existing = await getProfileByAuthUserId(ctx, identity.subject);
     if (existing) {
+      // No self-heal here: with no WorkOS data we cannot tell a pre-seeding
+      // account from a post-deletion one, so leave trusted data untouched.
       return existing._id;
     }
     throw new ConvexError('WorkOS profile sync pending');
