@@ -1,4 +1,4 @@
-# 0020: PostHog product analytics (opt-in, EU, client-only)
+# 0021: PostHog product analytics (opt-in, EU, client-only)
 
 Status: accepted
 
@@ -8,7 +8,7 @@ Client-only PostHog via `posthog-js`, lazy init after explicit opt-in banner:
 
 - Single EU project for staging+prod; `app_env` super-prop + hostname filter
   separate traffic (user decision: no separate staging project).
-- Managed proxy on neutral subdomain `px.trytracky.app` (`api_host`); `ui_host`
+- Managed proxy on neutral subdomain `e.trytracky.app` (`api_host`); `ui_host`
   `https://eu.posthog.com`. No custom Worker, no Convex secrets.
 - `opt_out_capturing_by_default: true` + localStorage gate (`unknown` default):
   zero beacons before accept. Kill-switch `VITE_POSTHOG_ENABLED=false`.

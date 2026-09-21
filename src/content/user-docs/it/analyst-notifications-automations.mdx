@@ -17,7 +17,7 @@ Quando abilitato, l'Analyst può leggere i dati Tracky autorizzati, spiegare pat
 
 ## Letture e modifiche
 
-Le operazioni di lettura possono consultare conti, transazioni, spesa, avanzamento del Piano, cashflow, money box, credito, sottoscrizioni e voci pianificate. Le modifiche sensibili richiedono un'anteprima e la tua approvazione: assegnazioni o target del Piano, money box, scadenze, memoria e ricategorizzazioni multiple. Negare lascia i dati invariati.
+Le operazioni di lettura possono consultare conti, transazioni, spesa, avanzamento del Piano, cashflow, money box, credito, sottoscrizioni e voci pianificate. Le modifiche sensibili richiedono un'anteprima e la tua approvazione: assegnazioni o target del Piano, money box, scadenze, memoria e ricategorizzazioni multiple. Negare lascia i dati invariati. Le richieste di approvazione possono mostrare un badge di rischio (sicuro, conferma, blocca) calcolato sull'impatto della scrittura; il badge è solo indicativo e non salta mai la tua approvazione.
 
 <Callout title="Controllo umano">
   Leggi sempre importi, valuta, conto, categoria, data e ricorrenza. Una risposta dell'Analyst può essere utile per
@@ -52,6 +52,8 @@ Ogni sei ore Tracky valuta:
 - sottoscrizioni attive e rate con scadenza nei prossimi sette giorni;
 - prima data negativa del cashflow;
 - sync in errore o consenso da rinnovare.
+
+Le anomalie di spesa vengono prima rilevate da una baseline statistica; solo gli scostamenti giudicati anche rilevanti e azionabili subito generano una push, gli altri restano visibili come digest silenzioso in casella. Le serie di sottoscrizioni vengono inoltre controllate per rincari e possibili addebiti dimenticati; quegli avvisi descrivono sempre l'evidenza e non disdicono mai nulla al posto tuo.
 
 Le notifiche usano chiavi di deduplicazione, quindi lo stesso evento non viene moltiplicato a ogni controllo. Puoi leggerle o ignorarle dall'interfaccia; correggi la causa nei dati sorgente.
 

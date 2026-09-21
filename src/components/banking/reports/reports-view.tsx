@@ -197,7 +197,6 @@ export function ReportsView() {
   const changeTab = (nextTab: ReportTab) => {
     setTab(nextTab);
     setChartType(chartTypeFor(nextTab, mode));
-    trackEvent(analyticsEvents.reportViewed, { report_type: nextTab, surface: 'reports' });
   };
 
   React.useEffect(() => {

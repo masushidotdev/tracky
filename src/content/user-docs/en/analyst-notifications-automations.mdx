@@ -17,7 +17,7 @@ When enabled, Analyst can read authorized Tracky data, explain patterns, simulat
 
 ## Reads and changes
 
-Read tools cover accounts, transactions, spending, Plan progress, cashflow, money boxes, credit, subscriptions, and planned items. Sensitive writes require a preview and your approval: Plan assignments or targets, money boxes, planned items, memory, and bulk recategorization. Denial leaves data unchanged.
+Read tools cover accounts, transactions, spending, Plan progress, cashflow, money boxes, credit, subscriptions, and planned items. Sensitive writes require a preview and your approval: Plan assignments or targets, money boxes, planned items, memory, and bulk recategorization. Denial leaves data unchanged. Approval requests may carry a risk badge (safe, confirm, block) computed from the write's blast radius; the badge is advisory only and never skips your approval.
 
 <Callout title="Human control">
   Always check amount, currency, account, category, date, and recurrence. Analyst is an exploration aid, not financial
@@ -52,6 +52,8 @@ Every six hours Tracky evaluates:
 - active subscriptions and installments due within seven days;
 - the first projected negative cashflow date;
 - failed sync or consent requiring renewal.
+
+Spending anomalies are detected from a statistical baseline first; only deviations that are also judged relevant and actionable right now generate a push, the rest stay visible as a quiet digest in the inbox. Subscription series are additionally checked for price increases and possibly forgotten recurring charges; those alerts always describe the evidence and never cancel anything on your behalf.
 
 Dedupe keys prevent the same event from multiplying on every evaluation. Read or dismiss a notification in the UI, then fix the underlying source data.
 

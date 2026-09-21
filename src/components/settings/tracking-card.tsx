@@ -1,14 +1,20 @@
 import * as React from 'react';
 
+import type { ConsentState } from '@/lib/analytics/events';
+import { analyticsEvents, readConsent, setAnalyticsConsent, trackEvent } from '@/lib/analytics/events';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { analyticsEvents, readConsent, setAnalyticsConsent, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 // Revocation surface (banner is opt-in, this is opt-out). Same consent store.
+// unknown initial state matches SSR so hydration never flashes a wrong button.
 export function TrackingCard() {
   const { t } = useI18n();
-  const [consent, setConsent] = React.useState(() => readConsent());
+  const [consent, setConsent] = React.useState<ConsentState>('unknown');
+
+  React.useEffect(() => {
+    setConsent(readConsent());
+  }, []);
 
   const decide = (accepted: boolean) => {
     setAnalyticsConsent(accepted);

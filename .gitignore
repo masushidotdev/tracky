@@ -68,3 +68,6 @@ next-env.d.ts
 .claude/skills/
 .codex/
 convex/_generated/ai/
+
+# jev discovery demos (synthetic data, live API key at runtime — never versioned).
+/experiments/

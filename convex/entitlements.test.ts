@@ -114,12 +114,12 @@ describe('entitlements', () => {
     expect(entitlementsForTier('free')).toEqual({
       tier: 'free',
       features: { 'analyst.longTermProjection': false, 'forecast.scenarios': false, 'plan.multiplePlans': false },
-      limits: { analystDailyMessages: 20 },
+      limits: { analystDailyMessages: 20, jevDecisionsDaily: 50 },
     });
     expect(entitlementsForTier('pro')).toEqual({
       tier: 'pro',
       features: { 'analyst.longTermProjection': true, 'forecast.scenarios': true, 'plan.multiplePlans': true },
-      limits: { analystDailyMessages: 100 },
+      limits: { analystDailyMessages: 100, jevDecisionsDaily: 500 },
     });
   });
 

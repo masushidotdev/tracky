@@ -130,6 +130,12 @@ export function getAnalyticsConfigSnapshot(): AnalyticsConfig {
   return readConfig();
 }
 
+// Public readiness probe for one-shot view effects: true only when a
+// trackEvent/trackPageview call would actually capture right now.
+export function isAnalyticsReady(): boolean {
+  return canTrack();
+}
+
 export function initAnalytics(): void {
   if (typeof window === 'undefined') return;
   if (initialized) return;
@@ -238,10 +244,12 @@ export function resetAnalyticsUser(): void {
 
 export function trackPageview(pathname: string, extra?: AnalyticsProperties): void {
   if (!canTrack()) return;
+  // route_id only: the raw pathname can embed Convex ids (/app/loans/abc123),
+  // so it must never leave the browser. Protected fields go after `extra`
+  // so callers cannot override them.
   posthog.capture('$pageview', {
-    path: pathname,
-    route_id: normalizeRouteId(pathname),
     ...extra,
+    route_id: normalizeRouteId(pathname),
   });
 }
 

@@ -12,6 +12,7 @@ export type FeatureKey = keyof typeof FEATURES;
 
 export const LIMITS = {
   analystDailyMessages: { free: 20, pro: 100 },
+  jevDecisionsDaily: { free: 50, pro: 500 },
 } as const satisfies Record<string, TierValues<number>>;
 
 export type Entitlements = {
@@ -19,6 +20,7 @@ export type Entitlements = {
   features: Record<FeatureKey, boolean>;
   limits: {
     analystDailyMessages: number;
+    jevDecisionsDaily: number;
   };
 };
 
@@ -36,6 +38,7 @@ export function entitlementsForTier(tier: PlanTier): Entitlements {
     },
     limits: {
       analystDailyMessages: LIMITS.analystDailyMessages[tier],
+      jevDecisionsDaily: LIMITS.jevDecisionsDaily[tier],
     },
   };
 }

@@ -1,6 +1,8 @@
 import { makeFunctionReference } from 'convex/server';
 import { v } from 'convex/values';
 import { internalAction, internalMutation } from '../../_generated/server';
+import { decide, jevChoice, jevNoul, minimizeJevText } from '../../lib/jev';
+import { anomalyGateQuestions, routeAnomalyGate } from './jevGates';
 import { detectSpendingAnomalies, toPersistedSpendingAnomaly } from './anomalyCore';
 import { computeHealthScore } from './healthScoreCore';
 import { formatSubscriptionReviewSummary, reviewSubscriptions } from './subscriptionReviewCore';
@@ -60,7 +62,7 @@ const refs = {
   saveHealth: makeFunctionReference<'mutation', { userId: string; computedAtDate: string; currency: string; score: number; components: ReturnType<typeof computeHealthScore>['components'] }, unknown>(
     'analyst/proactive/mutations:saveHealthSnapshot',
   ),
-  persistAnomalies: makeFunctionReference<'mutation', { userId: string; period: string; anomalies: Array<{ scope: 'category' | 'merchant'; key: string; label: string; currency: string; currentAmount: number; mean: number; zScore: number; percentAboveBaseline: number }> }, unknown>(
+  persistAnomalies: makeFunctionReference<'mutation', { userId: string; period: string; anomalies: Array<{ scope: 'category' | 'merchant'; key: string; label: string; currency: string; currentAmount: number; mean: number; zScore: number; percentAboveBaseline: number; jevNotify?: boolean; jevSeverity?: 'info' | 'warning' | 'critical' }> }, unknown>(
     'analyst/proactive/mutations:persistAnomalyNotifications',
   ),
   persistSubscriptionReview: makeFunctionReference<'mutation', { userId: string; period: string; locale: string; summary: string; reviews: Array<{ currency: string; monthlyTotal: number; actionableCount: number; shouldNotify: boolean }> }, unknown>(
@@ -404,6 +406,10 @@ export const computeHealthScoreForUser = internalAction({
       const result = computeHealthScore(input);
       if (result.insufficientData) continue;
       if (!(await renew())) return;
+      // E2 removed: the health-driver decide() call had no repository-visible
+      // consumer (saveHealthSnapshot persists score + components only), so it
+      // paid latency + cost per currency without changing anything. Re-add it
+      // together with driver persistence + downstream reads, not before.
       await ctx.runMutation(refs.saveHealth, {
         userId: job.userId,
         computedAtDate: job.asOfDate,
@@ -425,13 +431,47 @@ export const detectSpendingAnomaliesForUser = internalAction({
     const anomalies = detectSpendingAnomalies(series)
       .slice(0, 10)
       .map(toPersistedSpendingAnomaly);
+    // UC4: jev notification gate per anomaly. Failures fall closed to the
+    // deterministic z-score path; a negative gate only suppresses the push,
+    // the digest row is still persisted.
+    const gated: Array<{
+      anomaly: (typeof anomalies)[number];
+      notify: boolean;
+      severity: 'info' | 'warning' | 'critical';
+    }> = [];
+    for (const anomaly of anomalies) {
+      let verdict = { notify: true, severity: (anomaly.zScore >= 4 ? 'critical' : 'warning') as 'info' | 'warning' | 'critical' };
+      try {
+        const decision = await decide(
+          {
+            scope: anomaly.scope,
+            label: minimizeJevText(anomaly.label, 120),
+            currency: anomaly.currency,
+            currentPeriod: job.asOfDate.slice(0, 7),
+            currentAmount: anomaly.currentAmount,
+            mean: anomaly.mean,
+            zScore: anomaly.zScore,
+            percentAboveBaseline: anomaly.percentAboveBaseline,
+          },
+          anomalyGateQuestions,
+        );
+        const notifyValue = jevNoul(decision.answers.notify_now);
+        const tone = jevChoice(decision.answers.tone);
+        const toneValue = tone?.choice;
+        const toneConf = tone?.confidence;
+        verdict = routeAnomalyGate({ notifyNow: notifyValue, tone: toneValue, toneConfidence: toneConf });
+      } catch {
+        // Keep the deterministic verdict above.
+      }
+      gated.push({ anomaly, notify: verdict.notify, severity: verdict.severity });
+    }
     if (!(await renew())) return;
     await runProactiveJobStep(
       'SPENDING_ANOMALY_PERSIST_FAILED',
       async () => await ctx.runMutation(refs.persistAnomalies, {
         userId: job.userId,
         period: job.asOfDate.slice(0, 7),
-        anomalies,
+        anomalies: gated.map(({ anomaly, notify, severity }) => ({ ...anomaly, jevNotify: notify, jevSeverity: severity })),
       }),
     );
   }),

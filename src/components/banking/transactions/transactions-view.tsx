@@ -806,10 +806,10 @@ export function TransactionsView({
             transactionIds: transactions.map((transaction) => transaction._id),
             ...(mode === 'add' ? { addTagIds: tagIds } : { removeTagIds: tagIds }),
           });
-          trackEvent(analyticsEvents.transactionTagged, { surface: 'transactions', mode: 'bulk' });
           if (result.skipped.length > 0) {
             throw new Error(t('transactions.bulk.partial', { count: result.skipped.length }));
           }
+          trackEvent(analyticsEvents.transactionTagged, { surface: 'transactions', mode: 'bulk' });
         },
         {
           success: mode === 'add' ? t('transactions.bulk.tagsAdded') : t('transactions.bulk.tagsRemoved'),

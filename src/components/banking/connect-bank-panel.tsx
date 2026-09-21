@@ -210,11 +210,16 @@ export function ConnectBankForm() {
       'connect-submit',
       async () => {
         // provider_slug would leak the bank; country + psu type are enough for funnel analysis.
-        trackEvent(analyticsEvents.bankConnectionStarted, {
-          country: selectedAspsp.country,
-          psu_type: psuType,
-          surface: 'bank-connections',
-        });
+        // sendBeacon: the bank redirect unloads the page before XHR flushes.
+        trackEvent(
+          analyticsEvents.bankConnectionStarted,
+          {
+            country: selectedAspsp.country,
+            psu_type: psuType,
+            surface: 'bank-connections',
+          },
+          { sendBeacon: true },
+        );
         const result = await startConnection({
           aspspName: selectedAspsp.name,
           aspspCountry: selectedAspsp.country,

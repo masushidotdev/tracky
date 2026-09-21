@@ -58,6 +58,12 @@ export default defineSchema({
       }),
     ),
     deletionRequestedAtMs: v.optional(v.number()),
+    jevTriageUsage: v.optional(
+      v.object({
+        date: v.string(),
+        count: v.number(),
+      }),
+    ),
     forecastProfile: v.optional(
       v.object({
         birthYear: v.number(),
@@ -822,6 +828,20 @@ export default defineSchema({
   })
     .index('by_userId_and_computedAtDate', ['userId', 'computedAtDate'])
     .index('by_userId_and_currency_and_computedAtDate', ['userId', 'currency', 'computedAtDate']),
+
+  // UC5 write-guard badge cache: advisory risk badge per approval request,
+  // computed once when the approval is created, read when rendering it.
+  writeGuardBadges: defineTable({
+    userId: v.string(),
+    threadId: v.string(),
+    approvalId: v.string(),
+    toolName: v.string(),
+    badge: v.union(v.literal('safe'), v.literal('confirm'), v.literal('block')),
+    recordCount: v.number(),
+    createdAtMs: v.number(),
+  })
+    .index('by_threadId_and_approvalId', ['threadId', 'approvalId'])
+    .index('by_userId', ['userId']),
 
   agentReports: defineTable({
     userId: v.string(),

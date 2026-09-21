@@ -137,6 +137,7 @@ export function ChatPanel({
               <MessageParts
                 key={message.key}
                 message={message}
+                threadId={threadId}
                 approvalPending={approvalPending}
                 onApproval={onApproval}
               />

@@ -23,7 +23,7 @@ import { RecentTransactionsCard } from '@/components/banking/dashboard/recent-tr
 import { UpcomingPaymentsCard } from '@/components/banking/dashboard/upcoming-payments-card';
 import { Input } from '@/components/ui/input';
 import { accountLabel } from '@/lib/accounts';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
+import { analyticsEvents, isAnalyticsReady, trackEvent } from '@/lib/analytics/events';
 import { categoryDisplayName } from '@/lib/categories';
 import { currentPeriod } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
@@ -145,18 +145,22 @@ export function DashboardView() {
     );
   }, [accountId, cashflow, selectedCashflowGroup]);
 
+  // Deferred until consent: the effect reruns on every render and
+  // isAnalyticsReady() flips true on late accept, so the view records once.
   React.useEffect(() => {
     if (pageviewSent.current) return;
+    if (!isAnalyticsReady()) return;
     pageviewSent.current = true;
     trackEvent(analyticsEvents.dashboardViewed, {});
-  }, []);
+  });
 
   React.useEffect(() => {
     if (emptyStateSent.current) return;
     if (accounts === undefined || accounts.length > 0) return;
+    if (!isAnalyticsReady()) return;
     emptyStateSent.current = true;
     trackEvent(analyticsEvents.onboardingEmptyStateViewed, { surface: 'dashboard' });
-  }, [accounts]);
+  });
 
   return (
     <div className="flex flex-col gap-4">

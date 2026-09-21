@@ -147,7 +147,7 @@ describe('CSV transaction import', () => {
       ],
     });
 
-    expect(result).toEqual({ imported: 2, skippedDuplicates: 0, failed: [] });
+    expect(result).toEqual({ imported: 2, skippedDuplicates: 0, failed: [], triageQueued: 1 });
     const stored = await t.run(async (ctx) => {
       const transactions = await ctx.db
         .query('transactions')
@@ -176,7 +176,26 @@ describe('CSV transaction import', () => {
       accountId: fixture.accountId,
       rows: [row('csv|existing'), row('csv|new'), row('csv|new')],
     });
-    expect(result).toEqual({ imported: 1, skippedDuplicates: 2, failed: [] });
+    expect(result).toEqual({ imported: 1, skippedDuplicates: 2, failed: [], triageQueued: 0 });
+  });
+
+  test('preserves unmatchable rows as uncategorized residue for jev triage', async () => {
+    const t = createTest();
+    const fixture = await seedFixture(t);
+    const result = await fixture.asUser.mutation(api.banking.csvImport.importManualTransactionsBatch, {
+      accountId: fixture.accountId,
+      rows: [row('csv|cryptic', { description: 'XQZ 9917 TRN' })],
+    });
+    expect(result.triageQueued).toBe(1);
+    const transaction = await t.run(async (ctx) =>
+      ctx.db
+        .query('transactions')
+        .withIndex('by_accountId_and_dedupeKey', (q) =>
+          q.eq('accountId', fixture.accountId).eq('dedupeKey', 'csv|cryptic'),
+        )
+        .unique(),
+    );
+    expect(transaction).toMatchObject({ classificationKind: 'uncategorized', classificationSource: 'system' });
   });
 
   test('reports a currency mismatch as a failed row', async () => {
