@@ -4,6 +4,13 @@
 
 ### Added
 
+- Opt-in product analytics. Tracky can now collect pseudonymous usage
+  statistics — pages visited and features used, never amounts, balances,
+  notes, account names, or message text — through a EU-hosted PostHog
+  project, and only after you press **Accept** on the banner. The **Usage
+  analytics** card in Settings shows the current choice and lets you change
+  it anytime; rejecting keeps everything local and nothing is sent.
+
 - Mortgages and loans. Add Account now asks what kind of account you are adding
   first — cash, credit, or a mortgage, car loan or personal loan — and a loan is
   described the way the lender describes it: outstanding balance, interest rate,

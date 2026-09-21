@@ -8,11 +8,10 @@ import { useCallback, useMemo } from 'react';
 import { routeTree } from './routeTree.gen';
 
 export function getRouter() {
-  const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
-  if (!CONVEX_URL) {
-    throw new Error('missing VITE_CONVEX_URL env var');
-  }
-  const convex = new ConvexReactClient(CONVEX_URL);
+  // Marketing pages must SSR without a backend: Convex is optional here and
+  // only required once an authenticated Convex hook mounts under /app/*.
+  const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL as string | undefined;
+  const convex = new ConvexReactClient(CONVEX_URL ?? 'https://127.0.0.1:1');
   const convexQueryClient = new ConvexQueryClient(convex);
 
   const queryClient = new QueryClient({

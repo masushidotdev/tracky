@@ -1,0 +1,426 @@
+@import '@fontsource/archivo-black';
+@import '@fontsource-variable/space-grotesk';
+
+/* Vivi maximal theme — scoped under .mk so the app shell is untouched. */
+.mk {
+  --mk-acid: #d8ff3e;
+  --mk-viol: #7b5cff;
+  --mk-ink: #0d0d12;
+  --mk-paper: #f2efe6;
+  --mk-pink: #ff6ec7;
+  --mk-r: 20px;
+  --mk-font-display: 'Archivo Black', 'Arial Black', sans-serif;
+  --mk-font-body: 'Space Grotesk Variable', 'Space Grotesk', -apple-system, 'Segoe UI', sans-serif;
+  background: var(--mk-paper);
+  color: var(--mk-ink);
+  font-family: var(--mk-font-body);
+  overflow-x: clip;
+}
+
+.mk .disp {
+  font-family: var(--mk-font-display);
+}
+
+.mk-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 5px;
+  width: 0;
+  z-index: 99;
+  background: linear-gradient(90deg, var(--mk-viol), var(--mk-pink), var(--mk-acid));
+}
+
+.mk-nav {
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--mk-ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 10px 10px 26px;
+  margin-top: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+}
+
+.mk-nav a {
+  color: #bbb;
+  text-decoration: none;
+  font-size: 14px;
+}
+.mk-nav a:hover {
+  color: #fff;
+}
+
+.mk-btn {
+  background: var(--mk-acid);
+  color: var(--mk-ink);
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 13px 30px;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.2s;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: inherit;
+}
+.mk-btn:hover {
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.mk-big-cta {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  background: var(--mk-viol);
+  color: #fff;
+  border: 3px solid var(--mk-ink);
+  border-radius: 16px;
+  padding: 20px 48px;
+  text-decoration: none;
+  box-shadow: 8px 8px 0 var(--mk-ink);
+  display: inline-block;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.mk-big-cta:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 12px 12px 0 var(--mk-ink);
+}
+
+.mk-hero {
+  padding: 70px 0 30px;
+  position: relative;
+}
+
+.mk-hero h1 {
+  font-family: var(--mk-font-display);
+  font-size: clamp(56px, 11vw, 150px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.mk-hero h1 .stroke {
+  color: transparent;
+  -webkit-text-stroke: 3px var(--mk-ink);
+}
+.mk-hero h1 .hl {
+  background: var(--mk-acid);
+  padding: 0 18px;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+  border: 3px solid var(--mk-ink);
+  box-shadow: 7px 7px 0 var(--mk-ink);
+}
+
+.mk-dek {
+  font-size: 21px;
+  max-width: 620px;
+  margin: 26px 0;
+}
+.mk-dek b {
+  background: var(--mk-ink);
+  color: var(--mk-acid);
+  padding: 0 8px;
+}
+
+.mk-stickers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.mk-stk {
+  position: absolute;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--mk-ink);
+  box-shadow: 3px 3px 0 var(--mk-ink);
+  animation: mk-float 6s ease-in-out infinite;
+}
+@keyframes mk-float {
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+
+.mk-band {
+  background: var(--mk-ink);
+  color: #fff;
+  transform: rotate(-1.2deg) scale(1.02);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 14px 0;
+  margin: 56px 0;
+  font-size: 18px;
+  font-family: var(--mk-font-display);
+}
+.mk-band > div {
+  display: inline-block;
+  animation: mk-tk 22s linear infinite;
+}
+.mk-band .a {
+  color: var(--mk-acid);
+  margin: 0 12px 0 34px;
+}
+@keyframes mk-tk {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.mk-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0 0;
+}
+.mk-badge {
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid var(--mk-ink);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--mk-ink);
+}
+.mk-badge.solid {
+  background: var(--mk-ink);
+  color: var(--mk-acid);
+}
+
+.mk-shot {
+  border: 3px solid var(--mk-ink);
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 8px 8px 0 var(--mk-ink);
+}
+.mk-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.mk-shot figcaption {
+  padding: 12px 18px;
+  font-size: 13px;
+  color: #555;
+  border-top: 3px solid var(--mk-ink);
+}
+
+.mk-strip {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 30px 4px 40px;
+  scroll-snap-type: x mandatory;
+  cursor: grab;
+}
+.mk-strip::-webkit-scrollbar {
+  height: 10px;
+}
+.mk-strip::-webkit-scrollbar-thumb {
+  background: var(--mk-ink);
+  border-radius: 99px;
+}
+.mk-card {
+  min-width: 300px;
+  max-width: 300px;
+  scroll-snap-align: start;
+  border: 3px solid var(--mk-ink);
+  border-radius: var(--mk-r);
+  padding: 28px;
+  background: #fff;
+  box-shadow: 6px 6px 0 var(--mk-ink);
+  transition: transform 0.25s;
+}
+.mk-card:nth-child(odd) {
+  transform: rotate(-1.2deg);
+}
+.mk-card:nth-child(even) {
+  transform: rotate(1.2deg);
+  background: var(--mk-ink);
+  color: #fff;
+}
+.mk-card:hover {
+  transform: rotate(0) translateY(-8px);
+}
+.mk-card .e {
+  font-size: 38px;
+}
+.mk-card h3 {
+  font-family: var(--mk-font-display);
+  font-size: 20px;
+  margin: 12px 0 8px;
+}
+.mk-card p {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.mk-duel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 30px;
+}
+.mk-d {
+  border: 3px solid var(--mk-ink);
+  border-radius: 22px;
+  padding: 34px;
+}
+.mk-d.bad {
+  background: #ffdfe0;
+}
+.mk-d.good {
+  background: var(--mk-acid);
+}
+.mk-d h3 {
+  font-family: var(--mk-font-display);
+  font-size: 26px;
+  margin-bottom: 14px;
+}
+.mk-d li {
+  margin: 10px 0 10px 20px;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.mk-quotes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 30px;
+}
+.mk-q {
+  border: 3px solid var(--mk-ink);
+  border-radius: var(--mk-r);
+  padding: 26px;
+  background: #fff;
+  font-size: 16px;
+  box-shadow: 5px 5px 0 var(--mk-viol);
+}
+.mk-q b {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.mk details {
+  border: 3px solid var(--mk-ink);
+  border-radius: 14px;
+  padding: 16px 22px;
+  margin: 0 auto 12px;
+  max-width: 760px;
+  background: #fff;
+}
+.mk summary {
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.mk-final {
+  background: var(--mk-viol);
+  border: 3px solid var(--mk-ink);
+  border-radius: 30px;
+  box-shadow: 10px 10px 0 var(--mk-ink);
+  padding: 76px 32px;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.mk-final h2 {
+  color: #fff;
+}
+
+.mk-section {
+  padding: 80px 0;
+}
+.mk-h2 {
+  font-family: var(--mk-font-display);
+  font-size: clamp(38px, 6vw, 76px);
+  line-height: 0.95;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.mk-h2 .u {
+  text-decoration: underline;
+  text-decoration-color: var(--mk-acid);
+  text-decoration-thickness: 8px;
+}
+.mk-sub {
+  color: #444;
+  font-size: 18px;
+  margin: 14px 0 6px;
+  max-width: 640px;
+}
+
+.mk-footer {
+  padding: 30px 0 60px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: #555;
+}
+.mk-footer a {
+  color: inherit;
+}
+
+.mk-sticky {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: none;
+}
+
+.mk-rv {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s, transform 0.7s;
+}
+.mk-rv.on {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .mk-duel,
+  .mk-quotes {
+    grid-template-columns: 1fr;
+  }
+  .mk-links {
+    display: none;
+  }
+  .mk-sticky {
+    display: block;
+  }
+  .mk-hero h1 .stroke {
+    -webkit-text-stroke: 2px var(--mk-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-band > div,
+  .mk-stk,
+  .mk-rv {
+    animation: none;
+    transition: none;
+  }
+  .mk-rv {
+    opacity: 1;
+    transform: none;
+  }
+}

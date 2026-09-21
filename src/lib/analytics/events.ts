@@ -59,6 +59,9 @@ export const analyticsEvents = {
   commandMenuOpened: 'command_menu_opened',
   notificationOpened: 'notification_opened',
   upgradeCtaClicked: 'upgrade_cta_clicked',
+  // Impression-only until the paywall ships: the CTA button is disabled, so
+  // mounts record a view, never a click (keeps conversion data clean).
+  upgradeCtaViewed: 'upgrade_cta_viewed',
   errorShown: 'error_shown',
 } as const;
 

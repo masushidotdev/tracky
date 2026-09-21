@@ -15,13 +15,12 @@ export function UpgradeCta({
   const { t } = useI18n();
   const sent = React.useRef(false);
 
-  // Impression semantics: the CTA button is disabled (no paywall yet), so the
-  // mount event names the surface shown, not a click. Rename to a click event
-  // when the button becomes enabled.
+  // Impression-only: the CTA button is disabled (no paywall yet), so mount
+  // records a view. Switch to upgradeCtaClicked in a click handler on launch.
   React.useEffect(() => {
     if (sent.current) return;
     sent.current = true;
-    trackEvent(analyticsEvents.upgradeCtaClicked, { surface, daily_limit_reached: dailyLimitReached });
+    trackEvent(analyticsEvents.upgradeCtaViewed, { surface, daily_limit_reached: dailyLimitReached });
   }, [dailyLimitReached, surface]);
 
   return (

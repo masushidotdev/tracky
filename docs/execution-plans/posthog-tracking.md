@@ -25,9 +25,10 @@ MVP funnel + core (~25 events), opt-in banner, client-only EU capture:
 - `login_completed` emitted at app bootstrap on first userId (WorkOS
   redirect breaks client session continuity); `signup_completed` not
   separately observable — signup and login share the callback path.
-- `upgrade_cta_clicked` renamed to impression semantics: the CTA button is
-  `disabled` (no paywall yet), so the event fires on view with
-  `{surface, daily_limit_reached}`. Rename on paywall launch.
+- `upgrade_cta_viewed` added for impression semantics: the CTA button is
+  `disabled` (no paywall yet), so mounts record a view with
+  `{surface, daily_limit_reached}`. `upgrade_cta_clicked` is reserved for the
+  enabled-button click handler on paywall launch.
 - `goal_created`/`goal_contribution_added` were dropped as separate names:
   goals reuse `MoneyBoxFormDialog`/`RegisterContributionDialog`, so goals
   surface emits `money_box_created`/`money_box_funded` (+ `goal_created`

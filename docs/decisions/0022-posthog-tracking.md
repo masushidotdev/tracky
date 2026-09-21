@@ -1,4 +1,4 @@
-# 0021: PostHog product analytics (opt-in, EU, client-only)
+# 0022: PostHog product analytics (opt-in, EU, client-only)
 
 Status: accepted
 
