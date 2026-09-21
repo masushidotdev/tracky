@@ -169,6 +169,14 @@ export async function confirmTransferCandidateMatch(
   args: {
     userId: string;
     transferMatchId: Id<'transferMatches'>;
+    // System-provenance mode for jev arbitration: records calibrated system
+    // confidence + note instead of claiming user confirmation. Defaults to the
+    // historical user path so existing callers are unaffected.
+    provenance?: {
+      source: 'system';
+      confidence: number;
+      note: string;
+    };
   },
 ) {
   const match = await ctx.db.get('transferMatches', args.transferMatchId);
@@ -191,25 +199,29 @@ export async function confirmTransferCandidateMatch(
   }
 
   const now = Date.now();
+  const systemProvenance = args.provenance?.source === 'system' ? args.provenance : undefined;
+  const provenanceSource = systemProvenance ? ('system' as const) : ('user' as const);
+  const provenanceConfidence = systemProvenance ? systemProvenance.confidence : 1;
   await ctx.db.patch('transferMatches', match._id, {
     status: 'confirmed',
-    source: 'user',
-    confidence: 1,
+    source: provenanceSource,
+    confidence: provenanceConfidence,
+    ...(systemProvenance ? { notes: systemProvenance.note.slice(0, 500) } : {}),
     updatedAtMs: now,
   });
 
   await ctx.db.patch('transactions', outgoing._id, {
     classificationKind: 'transfer',
-    classificationSource: 'user',
-    classificationConfidence: 1,
+    classificationSource: provenanceSource,
+    classificationConfidence: provenanceConfidence,
     transferMatchId: match._id,
     updatedAtMs: now,
   });
 
   await ctx.db.patch('transactions', incoming._id, {
     classificationKind: 'transfer',
-    classificationSource: 'user',
-    classificationConfidence: 1,
+    classificationSource: provenanceSource,
+    classificationConfidence: provenanceConfidence,
     transferMatchId: match._id,
     updatedAtMs: now,
   });

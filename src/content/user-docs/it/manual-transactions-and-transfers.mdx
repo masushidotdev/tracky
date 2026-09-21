@@ -42,7 +42,7 @@ Un movimento una tantum con data futura compare nella fascia delle Transazioni p
 
 Alla creazione, Tracky cerca una parte opposta su un altro conto: stessa valuta e data entro sette giorni prima o dopo. La tolleranza sull'importo è `min(max(2% dell'importo, 300 unità minori), 1000 unità minori)`.
 
-La confidenza parte da `0,90` per importo identico, `0,82` per differenza fino a 300 unità minori e `0,72` negli altri casi ammessi, meno `0,02` per ogni giorno di distanza, con minimo `0,60`. Gli abbinamenti più affidabili vengono confermati automaticamente; gli altri appaiono in Revisione.
+La confidenza parte da `0,90` per importo identico, `0,82` per differenza fino a 300 unità minori e `0,72` negli altri casi ammessi, meno `0,02` per ogni giorno di distanza, con minimo `0,60`. Gli abbinamenti più affidabili vengono confermati automaticamente; gli altri appaiono in Revisione. Le coppie ambigue nella fascia intermedia possono essere ricontrollate da un'ulteriore revisione calibrata prima della conferma; quelle che restano incerte rimangono in Revisione per la tua decisione.
 
 ## Modifica ed eliminazione
 

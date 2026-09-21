@@ -1,5 +1,7 @@
 import { getToolName } from 'ai';
+import { useQuery } from 'convex/react';
 
+import { api } from '../../../../convex/_generated/api';
 import { ChartPart } from './chart-part';
 import { TablePart } from './table-part';
 import { ToolConfirmation } from './tool-confirmation';
@@ -60,21 +62,30 @@ function SearchResultSources({ output }: { output: unknown }) {
 
 export function ToolPart({
   part,
+  threadId,
   approvalPending,
   onApproval,
 }: {
   part: AnyToolPart;
+  threadId?: string;
   approvalPending: boolean;
   onApproval: (approvalId: string, approve: boolean) => void;
 }) {
   const { t } = useI18n();
   const name = getToolName(part);
   const label = t(toolKeys[name] ?? 'analyst.tool.activity');
+  // UC5 badge lookup is best-effort: skip rules keep hooks unconditional,
+  // and a missing badge renders no badge. Approval is always required.
+  const badgeRow = useQuery(
+    api.analyst.writeGuard.getBadgeForApproval,
+    part.state === 'approval-requested' && threadId ? { threadId, approvalId: part.approval.id } : 'skip',
+  );
   if (part.state === 'approval-requested') {
     return (
       <ToolConfirmation
         toolName={name}
         input={part.input}
+        badge={badgeRow?.badge}
         disabled={approvalPending}
         onRespond={(approve) => onApproval(part.approval.id, approve)}
       />

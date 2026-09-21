@@ -30,11 +30,13 @@ function SummaryLine({ label, children }: { label: string; children: React.React
 export function ToolConfirmation({
   toolName,
   input,
+  badge,
   disabled,
   onRespond,
 }: {
   toolName: string;
   input: unknown;
+  badge?: 'safe' | 'confirm' | 'block';
   disabled: boolean;
   onRespond: (approve: boolean) => void;
 }) {
@@ -86,10 +88,23 @@ export function ToolConfirmation({
         : values.behaviour === 'balanceBy'
           ? t('analyst.approval.behaviour.balanceBy')
           : '—';
+  const badgeLabel =
+    badge === 'safe'
+      ? t('analyst.approval.risk.safe')
+      : badge === 'block'
+        ? t('analyst.approval.risk.block')
+        : badge === 'confirm'
+          ? t('analyst.approval.risk.confirm')
+          : null;
   return (
     <Confirmation>
       <ConfirmationTitle>{t('analyst.approval.title')}</ConfirmationTitle>
       <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+      {badgeLabel ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {t('analyst.approval.risk')}: {badgeLabel}
+        </p>
+      ) : null}
       <dl className="mt-3 rounded-2xl bg-background/70 px-3 text-sm">
         {toolName === 'rememberFact' ? (
           <>

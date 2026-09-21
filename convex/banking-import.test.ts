@@ -17,6 +17,7 @@ const modules = import.meta.glob([
   './banking/categoryRules.ts',
   './banking/categoryTaxonomy.ts',
   './banking/enableBankingTransactionMapping.ts',
+  './banking/importTriage.ts',
   './banking/providerMutations.ts',
   './banking/providerQueries.ts',
   './banking/transferCore.ts',
@@ -990,7 +991,9 @@ describe('banking import', () => {
     });
 
     expect(transactions).toHaveLength(2);
-    expect(transactions[0]?.classificationKind).toBe('expense');
+    // First occurrence has no same-merchant prior: uncategorized residue for
+    // jev triage (UC1). The second sees the prior and takes the subscription path.
+    expect(transactions[0]?.classificationKind).toBe('uncategorized');
     expect(transactions[1]?.classificationKind).toBe('subscription');
     expect(transactions[1]?.classificationSource).toBe('system');
     expect(transactions[1]?.classificationConfidence).toBeGreaterThan(0.8);

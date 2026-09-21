@@ -3,9 +3,12 @@
 import { makeFunctionReference } from 'convex/server';
 import { v } from 'convex/values';
 import { internalAction } from '../../_generated/server';
+import { decide, jevNoul } from '../../lib/jev';
 import { makeProactiveAnalystAgent } from '../agent';
 import { DEFAULT_MODEL } from '../models';
 import { createAnalystTelemetry } from '../telemetry';
+import { detectSpendingAnomalies } from './anomalyCore';
+import { reportSkipQuestions, routeReportSkip } from './jevGates';
 import type { Doc, Id } from '../../_generated/dataModel';
 
 const refs = {
@@ -20,6 +23,9 @@ const refs = {
   ),
   complete: makeFunctionReference<'mutation', { reportId: Id<'agentReports'>; userId: string; threadId: string; summary: string }, unknown>(
     'analyst/proactive/mutations:completeReport',
+  ),
+  anomaliesForSkip: makeFunctionReference<'query', { userId: string; asOfDate: string }, Parameters<typeof detectSpendingAnomalies>[0]>(
+    'analyst/proactive/queries:spendingSeriesForUser',
   ),
   fail: makeFunctionReference<'mutation', { reportId: Id<'agentReports'>; userId: string; errorMessage: string }, unknown>(
     'analyst/proactive/mutations:failReport',
@@ -94,6 +100,59 @@ export const generateMonthlyReportForUser = internalAction({
         threadTitle: job.locale.toLowerCase().startsWith('it') ? 'Report mensili' : 'Monthly reports',
       });
       const threadId = delivery.threadId;
+
+      // E1: jev report-skip gate. A quiet month completes with a deterministic
+      // template instead of an LLM generation. Only the gate evaluation is
+      // fallible: completion mutations run outside the try/catch, guarded by
+      // skipWithTemplate, so a failure after completion cannot fall through
+      // to a second LLM generation with a different summary.
+      let skipWithTemplate = false;
+      let templateSummary = '';
+      try {
+        const series = await ctx.runQuery(refs.anomaliesForSkip, { userId: job.userId, asOfDate: job.asOfDate });
+        const top = detectSpendingAnomalies(series).slice(0, 3);
+        const decision = await decide(
+          {
+            period: job.period,
+            anomalyCount: top.length,
+            topAnomalies: top.map((anomaly) => ({
+              label: anomaly.label.slice(0, 120),
+              currency: anomaly.currency,
+              currentAmount: anomaly.currentAmount,
+              mean: anomaly.mean,
+              percentAboveBaseline: Math.round(anomaly.percentAboveBaseline),
+            })),
+          },
+          reportSkipQuestions,
+        );
+        const actionable = decision.answers.actionable;
+        const actionableValue = jevNoul(actionable);
+        if (routeReportSkip(actionableValue) === 'template') {
+          const italian = job.locale.toLowerCase().startsWith('it');
+          templateSummary = italian
+            ? `Report ${job.period}: mese tranquillo, nessuna variazione rilevante da segnalare. Le tue spese sono in linea con i mesi precedenti.`
+            : `Report ${job.period}: quiet month, no material change to report. Your spending is in line with previous months.`;
+          skipWithTemplate = true;
+        }
+      } catch {
+        // Fall closed to the LLM generation path below.
+      }
+      if (skipWithTemplate) {
+        await ctx.runMutation(refs.complete, {
+          reportId: claim.reportId,
+          userId: job.userId,
+          threadId,
+          summary: templateSummary,
+        });
+        completed = true;
+        try {
+          await ctx.runMutation(refs.email, { reportId: claim.reportId, userId: job.userId });
+        } catch {
+          // Email is optional; the completed in-app report remains authoritative.
+        }
+        await ctx.runMutation(refs.completeJob, args);
+        return null;
+      }
 
       const telemetryContext = createAnalystTelemetry({
         userId: job.userId,
