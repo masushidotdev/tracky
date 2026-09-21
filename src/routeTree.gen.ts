@@ -15,6 +15,7 @@ import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ForCouplesAndFamiliesRouteImport } from './routes/for-couples-and-families'
 import { Route as ForFreelancersRouteImport } from './routes/for-freelancers'
+import { Route as OgRouteImport } from './routes/og'
 import { Route as OpenSourceRouteImport } from './routes/open-source'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as VsSpreadsheetsRouteImport } from './routes/vs-spreadsheets'
@@ -93,6 +94,11 @@ const ForCouplesAndFamiliesRoute = ForCouplesAndFamiliesRouteImport.update({
 const ForFreelancersRoute = ForFreelancersRouteImport.update({
   id: '/for-freelancers',
   path: '/for-freelancers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgRoute = OgRouteImport.update({
+  id: '/og',
+  path: '/og',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpenSourceRoute = OpenSourceRouteImport.update({
@@ -379,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/for-couples-and-families': typeof ForCouplesAndFamiliesRoute
   '/for-freelancers': typeof ForFreelancersRoute
+  '/og': typeof OgRoute
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/for-couples-and-families': typeof ForCouplesAndFamiliesRoute
   '/for-freelancers': typeof ForFreelancersRoute
+  '/og': typeof OgRoute
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
@@ -491,6 +499,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/for-couples-and-families': typeof ForCouplesAndFamiliesRoute
   '/for-freelancers': typeof ForFreelancersRoute
+  '/og': typeof OgRoute
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
@@ -550,6 +559,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/for-couples-and-families'
     | '/for-freelancers'
+    | '/og'
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/for-couples-and-families'
     | '/for-freelancers'
+    | '/og'
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
@@ -661,6 +672,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/for-couples-and-families'
     | '/for-freelancers'
+    | '/og'
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
@@ -720,6 +732,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   ForCouplesAndFamiliesRoute: typeof ForCouplesAndFamiliesRoute
   ForFreelancersRoute: typeof ForFreelancersRoute
+  OgRoute: typeof OgRoute
   OpenSourceRoute: typeof OpenSourceRoute
   PricingRoute: typeof PricingRoute
   VsSpreadsheetsRoute: typeof VsSpreadsheetsRoute
@@ -790,6 +803,13 @@ declare module '@tanstack/react-router' {
       path: '/for-freelancers'
       fullPath: '/for-freelancers'
       preLoaderRoute: typeof ForFreelancersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og': {
+      id: '/og'
+      path: '/og'
+      fullPath: '/og'
+      preLoaderRoute: typeof OgRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/open-source': {
@@ -1253,6 +1273,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   ForCouplesAndFamiliesRoute: ForCouplesAndFamiliesRoute,
   ForFreelancersRoute: ForFreelancersRoute,
+  OgRoute: OgRoute,
   OpenSourceRoute: OpenSourceRoute,
   PricingRoute: PricingRoute,
   VsSpreadsheetsRoute: VsSpreadsheetsRoute,

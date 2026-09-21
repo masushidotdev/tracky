@@ -98,8 +98,24 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
   };
 }
 
+const OG_FILES: Record<string, string> = {
+  home: 'og-home.png',
+  pricing: 'og-pricing.png',
+  faq: 'og-faq.png',
+  'feature-plan': 'og-feature-plan.png',
+  'feature-cashflow': 'og-feature-cashflow.png',
+  'feature-banksync': 'og-feature-banksync.png',
+  'feature-analyst': 'og-feature-analyst.png',
+  'feature-reports': 'og-feature-reports.png',
+  'for-couples': 'og-for-couples.png',
+  'for-freelancers': 'og-for-freelancers.png',
+  'open-source': 'og-open-source.png',
+  'vs-spreadsheets': 'og-vs-spreadsheets.png',
+  'guide-budget': 'og-guide-budget.png',
+  'guide-cashflow': 'og-guide-cashflow.png',
+  'guide-subscriptions': 'og-guide-subscriptions.png',
+};
+
 export function ogImageFor(key: string): string {
-  if (key === 'pricing') return `${SITE_ORIGIN}/og/og-pricing.png`;
-  if (key === 'home') return `${SITE_ORIGIN}/og/og-home.png`;
-  return `${SITE_ORIGIN}/og/og-default.png`;
+  return `${SITE_ORIGIN}/og/${OG_FILES[key] ?? 'og-default.png'}`;
 }

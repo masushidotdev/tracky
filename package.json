@@ -14,7 +14,9 @@
   },
   "scripts": {
     "dev": "convex dev --start 'vite dev'",
-    "build": "node scripts/generate-sitemap.mjs && vite build",
+    "build": "node scripts/generate-sitemap.mjs && node scripts/og-images.mjs && vite build",
+    "og": "node scripts/og-images.mjs",
+    "og:force": "node scripts/og-images.mjs --force",
     "diagnostics:enable-banking": "node scripts/enable-banking-dump.mjs",
     "start": "vite start",
     "deploy": "CLOUDFLARE_ENV=staging convex deploy --cmd 'npm run build' && CLOUDFLARE_ENV=staging wrangler deploy",

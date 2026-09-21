@@ -84,9 +84,11 @@ describe('buildMarketingHead', () => {
     expect(crumbs['@type']).toBe('BreadcrumbList');
   });
 
-  test('OG image fallback', () => {
+  test('OG image per-page mapping', () => {
     expect(ogImageFor('home')).toContain('og-home.png');
     expect(ogImageFor('pricing')).toContain('og-pricing.png');
-    expect(ogImageFor('feature-plan')).toContain('og-default.png');
+    expect(ogImageFor('feature-plan')).toContain('og-feature-plan.png');
+    expect(ogImageFor('faq')).toContain('og-faq.png');
+    expect(ogImageFor('unknown-key')).toContain('og-default.png');
   });
 });
