@@ -45,12 +45,19 @@ if (!accountId || !apiToken) {
   process.exit(0);
 }
 
-// Require an explicit origin when generation is enabled: defaulting to prod
+// Require an explicit origin for explicit --force runs: defaulting to prod
 // would screenshot a stale deploy on first rollout (previous build still live)
-// and then skip regeneration on later runs.
+// and then skip regeneration on later runs. In all other cases (including CI,
+// where Cloudflare creds may exist without OG_BASE_URL) skip quietly so the
+// build stays hermetic — PNGs are committed artifacts, generation is an
+// explicit maintainer step.
 const base = process.env.OG_BASE_URL;
 if (!base) {
-  throw new Error('og-images: OG_BASE_URL is required when screenshot generation is enabled');
+  if (force) {
+    throw new Error('og-images: OG_BASE_URL is required for --force generation (the deployed origin serving /og)');
+  }
+  console.log('og-images: OG_BASE_URL missing — keeping existing PNGs (set it to enable generation).');
+  process.exit(0);
 }
 
 let done = 0;
