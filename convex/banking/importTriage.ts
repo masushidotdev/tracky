@@ -12,8 +12,6 @@ import { JEV_IMPORT } from '../lib/jevThresholds';
 import { normalizeMerchantKey } from './subscriptionDetection';
 import type { Id } from '../_generated/dataModel';
 
-export const JEV_TRIAGE_NOTE_PREFIX = 'jev:triage:v1';
-
 const triageQuestions = {
   kind: {
     type: 'choice' as const,
@@ -173,13 +171,17 @@ export const triageRow = internalAction({
           : 'queue';
       // Quota was reserved atomically in requestRowTriage before scheduling,
       // so no second spend here: exactly one slot per scheduled row.
+      // Telemetry (model/cost/latency) goes to console, never to the user's
+      // memo field: triage must not scribble on user-visible data.
+      console.log(
+        `[jev:triage:v1] model=${decision.model} cost=${decision.usage?.cost ?? '?'} latencyMs=${decision.latencyMs} routing=${routing}`,
+      );
       await ctx.runMutation(internal.banking.importTriage.applyTriageVerdict, {
         userId: args.userId,
         transactionId: args.transactionId,
         routing,
         kind: kind?.choice,
         confidence: kind?.confidence,
-        note: `${JEV_TRIAGE_NOTE_PREFIX} model=${decision.model} cost=${decision.usage?.cost ?? '?'} latencyMs=${decision.latencyMs}`,
       });
     } catch {
       // Fail closed: the row stays uncategorized for human review.
@@ -195,7 +197,6 @@ export const applyTriageVerdict = internalMutation({
     routing: v.union(v.literal('auto'), v.literal('suggest'), v.literal('queue')),
     kind: v.optional(v.string()),
     confidence: v.optional(v.number()),
-    note: v.string(),
   },
   handler: async (ctx, args) => {
     const transaction = await ctx.db.get('transactions', args.transactionId);
@@ -210,10 +211,10 @@ export const applyTriageVerdict = internalMutation({
     if (!kind) return transaction._id;
     if (args.routing === 'suggest') {
       // Suggestion is advisory only: confidence recorded, kind untouched, so the
-      // review queue — not an overwrite — owns the decision.
+      // review queue — not an overwrite — owns the decision. The memo field is
+      // never touched: user-visible data stays clean.
       await ctx.db.patch('transactions', transaction._id, {
         classificationConfidence: args.confidence ?? transaction.classificationConfidence,
-        note: [transaction.note, `${args.note} suggest=${kind}`].filter(Boolean).join(' ').slice(0, 500),
         updatedAtMs: now,
       });
       return transaction._id;
@@ -222,7 +223,6 @@ export const applyTriageVerdict = internalMutation({
       classificationKind: kind,
       classificationSource: 'system',
       classificationConfidence: args.confidence ?? 0.8,
-      note: [transaction.note, args.note].filter(Boolean).join(' ').slice(0, 500),
       updatedAtMs: now,
     });
     return transaction._id;

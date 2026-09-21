@@ -5,7 +5,7 @@ import { convexTest } from 'convex-test';
 import { describe, expect, test } from 'vitest';
 import { api, components, internal } from './_generated/api';
 import schema from './schema';
-import { JEV_TRIAGE_NOTE_PREFIX, routeTriage } from './banking/importTriage';
+import { routeTriage } from './banking/importTriage';
 
 process.env.WORKOS_CLIENT_ID ??= 'client_test';
 process.env.WORKOS_API_KEY ??= 'sk_test';
@@ -59,9 +59,6 @@ describe('jev import triage routing', () => {
     expect(routeTriage({ choice: 'expense', confidence: 0.3, autoApply: 0.2 })).toBe('queue');
   });
 
-  test('uses a stable note prefix for traceability without a new source literal', () => {
-    expect(JEV_TRIAGE_NOTE_PREFIX).toBe('jev:triage:v1');
-  });
 });
 
 describe('jev triage quota reservation', () => {
