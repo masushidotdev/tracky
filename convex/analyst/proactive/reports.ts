@@ -102,7 +102,12 @@ export const generateMonthlyReportForUser = internalAction({
       const threadId = delivery.threadId;
 
       // E1: jev report-skip gate. A quiet month completes with a deterministic
-      // template instead of an LLM generation; failures fall closed to generate.
+      // template instead of an LLM generation. Only the gate evaluation is
+      // fallible: completion mutations run outside the try/catch, guarded by
+      // skipWithTemplate, so a failure after completion cannot fall through
+      // to a second LLM generation with a different summary.
+      let skipWithTemplate = false;
+      let templateSummary = '';
       try {
         const series = await ctx.runQuery(refs.anomaliesForSkip, { userId: job.userId, asOfDate: job.asOfDate });
         const top = detectSpendingAnomalies(series).slice(0, 3);
@@ -124,21 +129,29 @@ export const generateMonthlyReportForUser = internalAction({
         const actionableValue = jevNoul(actionable);
         if (routeReportSkip(actionableValue) === 'template') {
           const italian = job.locale.toLowerCase().startsWith('it');
-          const summary = italian
+          templateSummary = italian
             ? `Report ${job.period}: mese tranquillo, nessuna variazione rilevante da segnalare. Le tue spese sono in linea con i mesi precedenti.`
             : `Report ${job.period}: quiet month, no material change to report. Your spending is in line with previous months.`;
-          await ctx.runMutation(refs.complete, { reportId: claim.reportId, userId: job.userId, threadId, summary });
-          completed = true;
-          try {
-            await ctx.runMutation(refs.email, { reportId: claim.reportId, userId: job.userId });
-          } catch {
-            // Email is optional; the completed in-app report remains authoritative.
-          }
-          await ctx.runMutation(refs.completeJob, args);
-          return null;
+          skipWithTemplate = true;
         }
       } catch {
         // Fall closed to the LLM generation path below.
+      }
+      if (skipWithTemplate) {
+        await ctx.runMutation(refs.complete, {
+          reportId: claim.reportId,
+          userId: job.userId,
+          threadId,
+          summary: templateSummary,
+        });
+        completed = true;
+        try {
+          await ctx.runMutation(refs.email, { reportId: claim.reportId, userId: job.userId });
+        } catch {
+          // Email is optional; the completed in-app report remains authoritative.
+        }
+        await ctx.runMutation(refs.completeJob, args);
+        return null;
       }
 
       const telemetryContext = createAnalystTelemetry({

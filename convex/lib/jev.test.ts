@@ -68,6 +68,7 @@ describe('jev client', () => {
   });
 
   test('redacts IBAN-like strings', () => {
-    expect(minimizeJevText(`BONIFICO IT60X0542811101000000123${'4'.repeat(3)}`)).not.toContain('IT60X');
+    const redacted = minimizeJevText(`BONIFICO IT60X0542811101000000123${'4'.repeat(3)}`);
+    expect(redacted).toBe('BONIFICO [IBAN]');
   });
 });

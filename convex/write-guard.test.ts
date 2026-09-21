@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, test } from 'vitest';
-import { routeWriteGuardBadge } from './analyst/writeGuard';
+
+import { routeWriteGuardBadge } from './analyst/writeGuardBadge';
 
 describe('jev write-guard badges', () => {
   test('blocks high-risk writes and large blast radii', () => {

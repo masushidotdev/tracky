@@ -1,6 +1,9 @@
 import { ConvexError, v } from 'convex/values';
 import { paginationOptsValidator } from 'convex/server';
+import { internal } from '../_generated/api';
 import { internalMutation } from '../_generated/server';
+import { entitlementsForTier, resolveTier } from '../lib/entitlements';
+import { JEV_IMPORT } from '../lib/jevThresholds';
 import { absoluteMinorUnits, decimalStringToMinorUnits } from '../lib/money';
 import { bankProviderValidator, transactionStatusValidator } from '../lib/validators';
 import {
@@ -309,6 +312,25 @@ function inferImportedTransactionClassification(args: {
     }
   }
 
+  // UC1: the weakest heuristic bucket (generic "other" category, low
+  // confidence) stays `uncategorized` residue for jev triage instead of a
+  // blind expense fallback — unless a same-merchant prior exists, in which
+  // case the subscription path below still gets its chance. Confident
+  // mappings keep their kind.
+  const sameMerchantPrior = args.priorTransactions.some(
+    (prior) =>
+      prior.direction === 'DBIT' &&
+      prior.amount.currency === args.currency &&
+      normalizeMerchantKey(prior.counterpartyName ?? prior.description) === merchantKey,
+  );
+  if (inferredCategorySystemKey === 'expense:other' && !sameMerchantPrior) {
+    return {
+      classificationKind: 'uncategorized' as const,
+      classificationSource: 'system' as const,
+      classificationConfidence: 0.45,
+      categoryId: undefined,
+    };
+  }
   return {
     classificationKind: 'expense' as const,
     classificationSource: 'system' as const,
@@ -915,6 +937,7 @@ export const upsertTransactions = internalMutation({
     let imported = 0;
     let latestBookedDate = syncState.lastBookedDate;
     const affectedDates: Array<string | undefined> = [];
+    const triageTransactionIds: Array<Id<'transactions'>> = [];
     const categoryIdsBySystemKey = await ensureDefaultCategoriesForUser(ctx, account.userId);
     // One read for the whole batch. Rows imported below are appended so a recurrence can still be
     // spotted against a transaction that arrived in this same sync.
@@ -1022,6 +1045,11 @@ export const upsertTransactions = internalMutation({
           ...patch,
         });
         affectedDates.push(bookingDate);
+        // UC1: uncategorized residue (weak heuristic, no rule) is triageable.
+        // Scheduling happens after the batch via requestRowTriage (see below).
+        if (classification.classificationKind === 'uncategorized' && !matchingRule) {
+          triageTransactionIds.push(transactionId);
+        }
         const insertedTransaction = await ctx.db.get('transactions', transactionId);
         if (insertedTransaction) priorTransactions.push(insertedTransaction);
         await linkImportedTransactionToExistingSubscription(ctx, {
@@ -1046,6 +1074,23 @@ export const upsertTransactions = internalMutation({
     }
 
     await invalidatePlanSnapshots(ctx, account.userId, affectedDates);
+    // UC1: schedule jev triage for the uncategorized residue, bounded per
+    // batch (Q5) and per tier-day (Q2) via requestRowTriage.
+    const settings = await ctx.db
+      .query('userSettings')
+      .withIndex('by_userId', (q) => q.eq('userId', account.userId))
+      .unique();
+    const dailyBudget = entitlementsForTier(resolveTier(settings)).limits.jevDecisionsDaily;
+    let triageQueued = 0;
+    for (const transactionId of triageTransactionIds.slice(0, JEV_IMPORT.maxRowsPerBatch)) {
+      const result = await ctx.runMutation(internal.banking.importTriage.requestRowTriage, {
+        userId: account.userId,
+        transactionId,
+        today,
+        dailyBudget,
+      });
+      if (result.queued) triageQueued += 1;
+    }
     const nextSyncAfterMs = now + syncState.syncCadenceHours * 60 * 60 * 1000;
     await ctx.db.patch('accountSyncStates', syncState._id, {
       status: 'active',
@@ -1067,6 +1112,7 @@ export const upsertTransactions = internalMutation({
       imported,
       seen: args.transactions.length,
       latestBookedDate: latestBookedDate ?? null,
+      triageQueued,
     };
   },
 });

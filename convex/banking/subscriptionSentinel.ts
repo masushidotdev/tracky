@@ -16,8 +16,11 @@ export const sentinelSeriesForUser = internalQuery({
   handler: async (ctx, args) => {
     const transaction = await ctx.db.get('transactions', args.transactionId);
     if (!transaction || transaction.userId !== args.userId) return null;
+    // findRelatedSubscriptionTransactions already includes the anchor
+    // transaction in every branch, so prepending it would duplicate the row
+    // and let two distinct charges pass the minCharges gate.
     const related = await findRelatedSubscriptionTransactions(ctx, transaction);
-    const series = [transaction, ...related]
+    const series = related
       .filter((row) => row.userId === args.userId)
       .sort((left, right) => left.bookingDate.localeCompare(right.bookingDate))
       .slice(-8);

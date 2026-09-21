@@ -105,6 +105,7 @@ describe('jev transfer arbitration gate', () => {
         q.eq('userId', userId).eq('status', 'candidate'),
       ).collect();
     });
+    expect(candidates).toHaveLength(1);
     // Deterministic auto-confirm (>=0.88) must not fire here; arbitration owns the band.
     for (const candidate of candidates) {
       expect(candidate.confidence ?? 0).toBeLessThan(0.88);

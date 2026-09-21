@@ -26,6 +26,16 @@ export type JevDecision = {
   latencyMs: number;
 };
 
+// JSON-safe serialization: Convex money travels as bigint, which JSON.stringify
+// rejects. Bigints serialize losslessly as { $bigint: "<digits>" }; the jev
+// states we build only carry counts, codes, and text, never raw bigints, but
+// the client stays total so a future caller cannot throw inside decide().
+export function jevJsonStringify(value: unknown): string {
+  return JSON.stringify(value, (_key, nested: unknown) =>
+    typeof nested === 'bigint' ? { $bigint: nested.toString() } : (nested),
+  );
+}
+
 export class JevError extends Error {
   constructor(
     readonly code: 'JEV_MISSING_KEY' | 'JEV_HTTP' | 'JEV_TIMEOUT' | 'JEV_SHAPE',
@@ -85,7 +95,7 @@ export async function decide(
   const apiKey = options?.apiKey ?? process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new JevError('JEV_MISSING_KEY', 'OPENROUTER_API_KEY is not configured');
   const timeoutMs = options?.timeoutMs ?? JEV_TIMEOUT_MS;
-  const body = JSON.stringify({ model: options?.model ?? JEV_PINNED_MODEL, state, questions });
+  const body = jevJsonStringify({ model: options?.model ?? JEV_PINNED_MODEL, state, questions });
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const controller = new AbortController();
@@ -100,10 +110,14 @@ export async function decide(
       });
       const latencyMs = Date.now() - started;
       if (response.status === 429 || response.status === 529) {
-        const retryAfter = Number(response.headers.get('retry-after') ?? NaN);
-        await new Promise((resolve) =>
-          setTimeout(resolve, Number.isFinite(retryAfter) ? retryAfter * 1_000 : 1_000 * 2 ** attempt),
-        );
+        // Clamp retry-after: the AbortController budget covers fetch, not this
+        // sleep. Negative values normalize to zero, positives cap at 5s so a
+        // hostile header cannot stall the Node action past its request budget.
+        const retryAfterSeconds = Number(response.headers.get('retry-after') ?? NaN);
+        const retryDelayMs = Number.isFinite(retryAfterSeconds)
+          ? Math.min(Math.max(retryAfterSeconds, 0) * 1_000, 5_000)
+          : 1_000 * 2 ** attempt;
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
         continue;
       }
       if (!response.ok) {

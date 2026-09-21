@@ -2,7 +2,7 @@ import { makeFunctionReference } from 'convex/server';
 import { v } from 'convex/values';
 import { internalAction, internalMutation } from '../../_generated/server';
 import { decide, jevChoice, jevNoul, minimizeJevText } from '../../lib/jev';
-import { anomalyGateQuestions, healthDriverQuestions, routeAnomalyGate } from './jevGates';
+import { anomalyGateQuestions, routeAnomalyGate } from './jevGates';
 import { detectSpendingAnomalies, toPersistedSpendingAnomaly } from './anomalyCore';
 import { computeHealthScore } from './healthScoreCore';
 import { formatSubscriptionReviewSummary, reviewSubscriptions } from './subscriptionReviewCore';
@@ -406,21 +406,10 @@ export const computeHealthScoreForUser = internalAction({
       const result = computeHealthScore(input);
       if (result.insufficientData) continue;
       if (!(await renew())) return;
-      // E2: jev health-driver selector. The deterministic score is saved
-      // unchanged; jev only names the narrative driver for downstream reports.
-      try {
-        const decision = await decide(
-          {
-            score: result.score,
-            components: result.components,
-            warnings: result.warnings.slice(0, 5),
-          },
-          healthDriverQuestions,
-        );
-        void decision;
-      } catch {
-        // Driver is advisory only; the snapshot below is unaffected.
-      }
+      // E2 removed: the health-driver decide() call had no repository-visible
+      // consumer (saveHealthSnapshot persists score + components only), so it
+      // paid latency + cost per currency without changing anything. Re-add it
+      // together with driver persistence + downstream reads, not before.
       await ctx.runMutation(refs.saveHealth, {
         userId: job.userId,
         computedAtDate: job.asOfDate,

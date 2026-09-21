@@ -199,11 +199,17 @@ export const applyArbitrationVerdict = internalMutation({
     if (args.verdict === 'confirm') {
       // UC6 uses the same composite gate; planning pairs confirm through the
       // identical path as transfer legs (transferMatches row already exists).
+      // System provenance: the match records jev confidence + note, never a
+      // fake user confirmation.
       if (
         args.confidence >= JEV_PLANNING_RECONCILE.autoConfirmActionConfidence ||
         args.confidence >= AUTO_CONFIRM_TRANSFER_CONFIDENCE
       ) {
-        return await confirmTransferCandidateMatch(ctx, { userId: args.userId, transferMatchId: match._id });
+        return await confirmTransferCandidateMatch(ctx, {
+          userId: args.userId,
+          transferMatchId: match._id,
+          provenance: { source: 'system', confidence: args.confidence, note: args.note },
+        });
       }
       await ctx.db.patch('transferMatches', match._id, {
         confidence: args.confidence,

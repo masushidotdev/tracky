@@ -10,10 +10,12 @@ import { useI18n } from '@/lib/i18n';
 
 export function MessageParts({
   message,
+  threadId,
   approvalPending,
   onApproval,
 }: {
   message: UIMessage;
+  threadId?: string;
   approvalPending: boolean;
   onApproval: (approvalId: string, approve: boolean) => void;
 }) {
@@ -36,7 +38,7 @@ export function MessageParts({
               );
             if (isToolUIPart(part))
               return (
-                <ToolPart key={part.toolCallId} part={part} approvalPending={approvalPending} onApproval={onApproval} />
+                <ToolPart key={part.toolCallId} part={part} threadId={threadId} approvalPending={approvalPending} onApproval={onApproval} />
               );
             return null;
           })}

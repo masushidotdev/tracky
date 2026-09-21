@@ -1,6 +1,7 @@
 'use node';
 
 import { v } from 'convex/values';
+import { internal } from '../_generated/api';
 import { internalAction } from '../_generated/server';
 import { makeAnalystAgent } from './agent';
 import { modelIdValidator } from './models';
@@ -47,6 +48,17 @@ export const streamReply = internalAction({
         { saveStreamDeltas: true, contextOptions: { recentMessages: 30 } },
       );
       await result.consumeStream();
+      // UC5: after the turn, scan for new approval requests and cache one
+      // advisory badge each for the approval UI. Best-effort: badge failures
+      // never fail the turn, and pending rows already hold 'confirm'.
+      try {
+        await ctx.runMutation(internal.analyst.writeGuard.scanApprovalsForThread, {
+          userId: args.userId,
+          threadId: args.threadId,
+        });
+      } catch {
+        // Badge cache is advisory-only.
+      }
       return null;
     } finally {
       try {

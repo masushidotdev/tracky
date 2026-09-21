@@ -26,6 +26,9 @@ tokens free — measured live 19/09/2026, see `experiments/jev/REPORT.md`
   `convex/lib/jevThresholds.ts` (JEV_THRESHOLDS_VERSION).
 - Classification source reuses `system` + confidence (Q4); jev traceability via
   `jev:*` note prefixes. No new source literal, no migrations.
+- Transfer confirms via jev carry system provenance
+  (`confirmTransferCandidateMatch` provenance mode: `source: 'system'`,
+  calibrated confidence, jev note) instead of masquerading as user confirms.
 - Daily decision budget per tier in entitlements (`jevDecisionsDaily` free 50 /
   pro 500, Q2); import triage additionally capped at 100 rows/batch + 300/day
   (Q5). Over budget fails closed to determinism.
@@ -40,15 +43,25 @@ tokens free — measured live 19/09/2026, see `experiments/jev/REPORT.md`
 
 1. UC2 transfer arbiter + UC6 planning-reconcile: heuristic band [0.6, 0.88) in
    `transferCandidates.ts` schedules `transferArbitration.ts`; confirm only on
-   the composite gate. Zero schema change.
-2. UC1 import triage (`banking/importTriage.ts`, residue-only after regex/rules)
-   + E3 memory dedup (`analyst/memoryDedup.ts`, pre-embedding gate).
-3. UC4 anomaly notifier gate + E1 report-skip + E2 health-driver (same proactive
-   workers, `analyst/proactive/jevGates.ts`).
+   the composite gate, with jev system provenance on the match and both legs.
+   Zero schema change (no new tables).
+2. UC1 import triage (`banking/importTriage.ts`): CSV rows without explicit
+   kind/category/rule stay `uncategorized` residue; bank imports map the weak
+   `expense:other` heuristic to `uncategorized` when no same-merchant prior
+   exists (recurring candidates keep the subscription path). Both import paths
+   schedule `requestRowTriage` under tier budget (free 50 / pro 500 per day).
+   E3 memory dedup (`analyst/memoryDedup.ts`) runs inline in `rememberFact`
+   before `embedMemoryText` via `ctx.runAction`.
+3. UC4 anomaly notifier gate + E1 report-skip (same proactive workers,
+   `analyst/proactive/jevGates.ts`). E2 health-driver removed: the decision had
+   no persistence or downstream read, so it only paid latency + cost.
 4. UC3 subscription sentinel (`banking/subscriptionSentinel.ts`, advisory notes,
    never auto-cancel).
-5. UC5 write-guard badge-only (`analyst/writeGuard.ts`, Q3): advisory badge on
-   the existing approval flow; blast radius computed in code.
+5. UC5 write-guard badge-only (`analyst/writeGuard.ts`, Q3): `scanApprovalsForThread`
+   (mutation, post-turn) caches one pending row per approval request and
+   schedules `adviseWriteBadges` (action) to fill badges via jev, fail-closed
+   to confirm; `ToolConfirmation` renders the badge from
+   `getBadgeForApproval`. Approval stays mandatory; blast radius in code.
 
 ## Excluded (Q8)
 

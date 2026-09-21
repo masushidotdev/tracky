@@ -74,20 +74,8 @@ export function routeReportSkip(actionableNoul: number | undefined): 'generate' 
   return (actionableNoul ?? 0) >= JEV_REPORT_SKIP.actionableNoul ? 'generate' : 'template';
 }
 
-export const healthDriverQuestions = {
-  driver: {
-    type: 'choice' as const,
-    instructions: 'Which single health component best explains the score change?',
-    criteria: {
-      savingsRate: 'Income vs outflow moved',
-      budgetAdherence: 'Budget overspend or discipline moved',
-      debtLoad: 'Debt payments vs income moved',
-      liquidityMonths: 'Liquid buffer vs essentials moved',
-      subscriptionLoad: 'Subscriptions vs income moved',
-    },
-  },
-};
-
+// E2 removed with its call site: the driver decision had no persistence or
+// downstream read. Kept out until driver persistence + report reads land.
 export const subscriptionSentinelQuestions = {
   status: {
     type: 'choice' as const,
