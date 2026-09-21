@@ -88,10 +88,11 @@ export function normalizeRouteId(pathname: string): string {
 // Defense-in-depth for SDK-added URL props: posthog-js attaches $current_url,
 // $pathname, $host etc. to every capture even with autocapture off, so the
 // before_send hook rewrites them to the normalized route id (no raw Convex
-// ids, query, hash, or referrer ever leaves the browser).
-export function sanitizeEventUrls(
-  event: { properties?: Record<string, unknown> | null } | null,
-): typeof event {
+// ids, query, hash, or referrer ever leaves the browser). Generic so both the
+// SDK's CaptureResult and unit-test fixtures satisfy the parameter type.
+export function sanitizeEventUrls<T extends { properties?: Record<string, unknown> | null }>(
+  event: T | null,
+): T | null {
   if (!event || !event.properties) return event;
   const props = event.properties;
   const rawPath = typeof props.$pathname === 'string' ? props.$pathname : null;

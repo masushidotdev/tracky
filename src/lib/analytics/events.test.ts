@@ -87,7 +87,9 @@ describe('sanitizeEventUrls', () => {
   });
 
   test('drops URL props when no pathname is present', () => {
-    const event = { properties: { $current_url: 'https://example.com/', foo: 'bar' } };
+    const event: { properties: Record<string, unknown> } = {
+      properties: { $current_url: 'https://example.com/', foo: 'bar' },
+    };
     sanitizeEventUrls(event);
     expect(event.properties.$current_url).toBeUndefined();
     expect(event.properties.$pathname).toBeUndefined();
