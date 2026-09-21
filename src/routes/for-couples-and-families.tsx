@@ -3,7 +3,29 @@ import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-re
 
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, DragStrip, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
-import { breadcrumbJsonLd, buildMarketingHead, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+
+const INTRO = "You share the rent, the fridge, and the school run, yet money still sparks the same old argument: you both spent with good intentions and neither of you saw the full picture. If you searched for a budget app for couples families, this is the problem Tracky removes. Your household gets one Plan with the same balances and the same buckets, visible to both of you at the same table.\n\nBig bills stop being surprises. You give school fees, insurance, and holidays their own buckets with a target and a due date, and Tracky estimates what to set aside this month. Skip a month and next month's ask grows by itself. Money boxes are virtual envelopes that pre-fund the same goals, and you can link one to a Plan bucket so Tracky counts it as already set aside.\n\nDay to day, you both spend from the same grocery bucket and the activity lists every movement in one ledger, so nobody interrogates receipts. Income lands in Ready to Assign, and you give every euro a job until it reaches zero. Try the Free demo with no card: sit down together, look at the same numbers, and settle the month in a single sitting.";
+
+const BLOCKS = [
+  { h: "Two wallets, one blind spot",
+    p: "One of you pays the rent, the other covers groceries, and both of you guess what is left. The school fee lands in September like an ambush, the holiday gets booked on hope, and the big bill arrives exactly when the account is thinnest. Then comes the nightly audit: who spent what, and why did nobody see it coming?\n\nNobody in this story is careless. You simply never had one place where every euro already had a job before the month began.", },
+  { h: "A day in the life with this budget app for couples families",
+    p: "Morning: you open one Plan and both see the same Available in every bucket — house, groceries, school, holidays. You shop, your partner shops, and the activity lists every movement in one shared ledger, so trust replaces interrogation. Annual bills fund themselves month by month: an insurance due in March asks for less once the bucket fills, and skipped months raise the next ask automatically, as an estimate that adjusts.\n\nEvening: money boxes show school and holidays growing virtually, already counted as set aside inside their Plan buckets. Income arrives in Ready to Assign and you assign it together, down toward zero, ending the day on the same numbers.", },
+  { h: "One table, same numbers tonight",
+    p: "Start with the Free demo — no card, just your household and a few honest minutes. Create one Plan over the accounts you share, add buckets for house, groceries, school, and holidays, and give annual bills a target with its due date. Link any savings you already hold as a virtual money box so the bucket counts them as already set aside.\n\nThen fund the month together: assign income until Ready to Assign reaches zero, starting with buckets in the red and targets due soon. From tonight, every purchase has a bucket and every bucket is visible to both of you.", },
+];
+
+const PAGE_FAQ = [
+  { q: "Why choose Tracky as your budget app for couples families?",
+    a: "Because you stop negotiating between two versions of the truth. One Plan shows both of you the same balances, the same buckets, and every movement in a single activity ledger. Annual bills get targets with due dates, school and holidays grow in virtual money boxes, and income gets a job together until Ready to Assign hits zero.", },
+  { q: "How do we save for school fees and holidays without panic?",
+    a: "Give each one a money box — virtual, with a target amount and date — and link it to its Plan bucket so the saved amount counts as already set aside. The bucket then asks only for what is still missing, as an estimate that adjusts every month. No double saving, no September ambush.", },
+  { q: "What happens when one of us spends too much?",
+    a: "The bucket turns red and you both see it — no blame game, just a decision. Move Available money from another bucket to cover cash overspending, or fund the card's payment bucket when the card funded the purchase. If you do nothing, the shortfall lowers next month's Ready to Assign instead.", },
+  { q: "How do we start together this week?",
+    a: "Open the Free demo — no card required — and build one Plan over the accounts you share. Add buckets for house, groceries, school, and holidays, then assign income together until Ready to Assign reaches zero. Sit at one table, look at the same numbers, and agree the month in a single evening.", },
+];
 
 export const Route = createFileRoute('/for-couples-and-families')({
   loader: async () => {
@@ -28,6 +50,7 @@ export const Route = createFileRoute('/for-couples-and-families')({
       ogImage: ogImageFor('for-couples'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/for-couples-and-families', inLanguage: ['en', 'it'] }),
+        faqJsonLd(PAGE_FAQ.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/' },
           { name: 'For couples & families', path: '/for-couples-and-families' },
@@ -59,6 +82,11 @@ function CouplesEn() {
           <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Try the demo →'}</MagnetCta>
         </Reveal>
       </header>
+      <section className="mk-section" style={{ paddingTop: 0 }}>
+        <Reveal>
+          <p className="mk-sub" style={{ maxWidth: 720 }}>{INTRO}</p>
+        </Reveal>
+      </section>
       <MarqueeBand items={['ONE PLAN', 'SAME BUCKETS', 'MONEY BOXES', 'SCHOOL + HOLIDAYS', 'NO FIGHTS']} />
       <section className="mk-section" style={{ paddingTop: 0 }}>
         <Reveal>
@@ -69,6 +97,27 @@ function CouplesEn() {
             <div className="mk-card"><div className="e">🏖️</div><h3>HOLIDAYS</h3><p>A little every month. Booked when funded, not when hoped.</p></div>
           </DragStrip>
         </Reveal>
+      </section>
+      <section className="mk-section" style={{ paddingTop: 0 }}>
+        {BLOCKS.map((block) => (
+          <Reveal key={block.h}>
+            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
+            <p className="mk-sub" style={{ maxWidth: 700 }}>{block.p}</p>
+          </Reveal>
+        ))}
+      </section>
+      <section className="mk-section" style={{ paddingTop: 0 }}>
+        <Reveal>
+          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>Questions, answered.</h2>
+        </Reveal>
+        {PAGE_FAQ.map((entry) => (
+          <Reveal key={entry.q}>
+            <details>
+              <summary>{entry.q}</summary>
+              <p style={{ marginTop: 8 }}>{entry.a}</p>
+            </details>
+          </Reveal>
+        ))}
       </section>
       <section className="mk-section" style={{ paddingTop: 0 }}>
         <Reveal>
