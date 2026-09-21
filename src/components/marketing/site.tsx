@@ -98,7 +98,7 @@ export function MarketingSite({
               >
                 {locale === 'it' ? 'Gratis →' : 'Free →'}
               </a>
-            )}
+            ) : null}
           </div>
         </nav>
         <main>{children}</main>
