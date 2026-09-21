@@ -58,10 +58,11 @@ tokens free — measured live 19/09/2026, see `experiments/jev/REPORT.md`
 4. UC3 subscription sentinel (`banking/subscriptionSentinel.ts`, advisory notes,
    never auto-cancel).
 5. UC5 write-guard badge-only (`analyst/writeGuard.ts`, Q3): `scanApprovalsForThread`
-   (mutation, post-turn) caches one pending row per approval request and
-   schedules `adviseWriteBadges` (action) to fill badges via jev, fail-closed
-   to confirm; `ToolConfirmation` renders the badge from
-   `getBadgeForApproval`. Approval stays mandatory; blast radius in code.
+   (mutation, post-turn) inserts one deterministically-routed badge row per
+   approval request from a toolName allowlist + recordCount; `ToolConfirmation`
+   renders the badge from `getBadgeForApproval`. No approval input is
+   serialized or sent externally (Q6/CWE-359). Approval stays mandatory;
+   blast radius in code.
 
 ## Excluded (Q8)
 

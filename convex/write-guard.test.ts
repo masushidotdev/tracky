@@ -19,3 +19,15 @@ describe('jev write-guard badges', () => {
     expect(routeWriteGuardBadge({ risk: 'unexpected-label', autoApprove: 0.99, recordCount: 1 })).toBe('confirm');
   });
 });
+
+describe('jev write-guard allowlist routing', () => {
+  test('routes known tools deterministically without external calls', async () => {
+    const { riskForTool, recordCountForApproval } = await import('./analyst/writeGuardBadge');
+    expect(riskForTool('rememberFact')).toBe('low');
+    expect(riskForTool('setPlanTarget')).toBe('needs-confirmation');
+    expect(riskForTool('unknownTool')).toBe('needs-confirmation');
+    expect(recordCountForApproval('bulkRecategorize', { changes: [1, 2, 3] })).toBe(3);
+    expect(recordCountForApproval('bulkRecategorize', { changes: Array.from({ length: 99 }) })).toBe(50);
+    expect(recordCountForApproval('setPlanTarget', {})).toBe(1);
+  });
+});

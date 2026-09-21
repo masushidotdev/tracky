@@ -34,8 +34,8 @@ extras 1-3 in / 4-6 out.
 - Phase 4: `convex/banking/subscriptionSentinel.ts` (series from related
   directly, no anchor duplication, advisory note, never auto-cancel).
 - Phase 5: `convex/analyst/writeGuard.ts` + `writeGuardBadge.ts` (badge-only,
-  blast radius in code, fail-closed to confirm): `scanApprovalsForThread`
-  caches pending rows post-turn, `adviseWriteBadges` fills via jev,
+  deterministic, zero external calls): `scanApprovalsForThread` inserts one
+  allowlist-routed badge row per approval request post-turn;
   `ToolConfirmation` renders from `getBadgeForApproval`; approval mandatory.
 - Schema: new table `writeGuardBadges`; `userSettings.jevTriageUsage`.
 - Generated types: `convex/_generated/api.d.ts` manually extended for the new
