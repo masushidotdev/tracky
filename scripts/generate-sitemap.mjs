@@ -16,20 +16,25 @@ function extractConst(name) {
 
 const origin = extractConst('SITE_ORIGIN');
 const lastmod = extractConst('MARKETING_LASTMOD');
-const paths = [...source.matchAll(/(?:en|it): '([^']+)'/g)].map((m) => m[1]);
 
-// Priority/changefreq live next to each entry; keep static 0.8/monthly for
-// non-home and 1.0/weekly for home + pricing.
-const priorities = { '/': '1.0', '/pricing': '0.9' };
+// Mirror the marketingPages registry: each entry yields both localized URLs
+// with that entry's own priority/changefreq (no path-based defaults).
+const entries = [...source.matchAll(/en: '([^']+)',\s*it: '([^']+)',\s*priority: ([0-9.]+),\s*changefreq: '(\w+)'/g)].map(
+  (m) => ({ en: m[1], it: m[2], priority: m[3], changefreq: m[4] }),
+);
+if (entries.length === 0) throw new Error('no marketingPages entries parsed');
 
-const urls = paths
-  .map((path) => {
-    const priority = priorities[path] ?? '0.8';
-    const changefreq = path === '/' || path === '/it/' || path === '/pricing' ? 'weekly' : 'monthly';
-    return `  <url>\n    <loc>${origin}${path}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
-  })
+const urls = entries
+  .flatMap((entry) => [
+    { path: entry.en, priority: entry.priority, changefreq: entry.changefreq },
+    { path: entry.it, priority: entry.priority, changefreq: entry.changefreq },
+  ])
+  .map(
+    (entry) =>
+      `  <url>\n    <loc>${origin}${entry.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${entry.changefreq}</changefreq>\n    <priority>${entry.priority}</priority>\n  </url>`,
+  )
   .join('\n');
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 writeFileSync(join(root, 'public/sitemap.xml'), xml);
-console.log(`sitemap.xml: ${paths.length} urls`);
+console.log(`sitemap.xml: ${entries.length * 2} urls`);

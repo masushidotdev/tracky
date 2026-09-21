@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
+import { loadMarketingAuth } from '@/lib/marketing/auth';
 
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
@@ -30,18 +30,7 @@ const seoFaq: Array<{ q: string; a: string }> = [
 ];
 
 export const Route = createFileRoute('/pricing')({
-  loader: async () => {
-    let auth: { user: unknown | null; signInUrl: string; signUpUrl: string } = { user: null, signInUrl: '/app', signUpUrl: '/app' };
-    try {
-      const { user } = await getAuth();
-      const signInUrl = await getSignInUrl({ data: { returnPathname: '/app' } });
-      const signUpUrl = await getSignUpUrl({ data: { returnPathname: '/app' } });
-      auth = { user, signInUrl, signUpUrl };
-    } catch {
-      // No WorkOS secrets on this worker (e.g. staging): degrade to logged-out.
-    }
-    return auth;
-  },
+  loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
       title: 'Pricing — Free forever, Pro coming soon · Tracky',

@@ -15,7 +15,6 @@ const outDir = join(root, 'public', 'og');
 mkdirSync(outDir, { recursive: true });
 
 const force = process.argv.includes('--force');
-const base = process.env.OG_BASE_URL ?? 'https://www.trytracky.app';
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
@@ -43,6 +42,14 @@ const cards = {
 if (!accountId || !apiToken) {
   console.log('og-images: CLOUDFLARE_ACCOUNT_ID/CLOUDFLARE_API_TOKEN missing — keeping existing PNGs.');
   process.exit(0);
+}
+
+// Require an explicit origin when generation is enabled: defaulting to prod
+// would screenshot a stale deploy on first rollout (previous build still live)
+// and then skip regeneration on later runs.
+const base = process.env.OG_BASE_URL;
+if (!base) {
+  throw new Error('og-images: OG_BASE_URL is required when screenshot generation is enabled');
 }
 
 let done = 0;

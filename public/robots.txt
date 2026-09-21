@@ -2,6 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /app
 Disallow: /callback
-Disallow: /og
+Disallow: /og$
 
 Sitemap: https://www.trytracky.app/sitemap.xml
