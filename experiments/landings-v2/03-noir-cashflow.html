@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracky — Dove finiscono i tuoi soldi? | Cash-flow predittivo + Piano zero-based</title>
+<meta name="description" content="Ogni mese la stessa domanda: dove sono finiti? Tracky assegna ogni euro, prevede il saldo e ti avvisa prima. Gratis, italiano, senza carta.">
+<link rel="canonical" href="https://tracky.example.com/dove-finiscono/">
+<meta property="og:title" content="Tracky — dove finiscono i tuoi soldi? Trovalo in 5 minuti.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Tracky","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"inLanguage":"it"}</script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0a09;--cream:#ede6d6;--mut:#a39e93;--gold:#d4a853;--red:#c8402e;--r:18px}
+*{margin:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--cream);font-family:Inter,-apple-system,sans-serif;overflow-x:hidden}
+.serif{font-family:Fraunces,Georgia,serif}
+#rain{position:fixed;inset:0;z-index:0;opacity:.5}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+nav{display:flex;justify-content:space-between;align-items:center;padding:24px 0;font-size:14px}
+.logo{font-family:Fraunces,serif;font-size:24px;font-style:italic}.logo b{font-style:normal}
+.links{display:flex;gap:28px}.links a{color:var(--mut);text-decoration:none}.links a:hover{color:var(--cream)}
+.btn{background:var(--cream);color:#0c0a09;font-weight:700;border-radius:999px;padding:14px 34px;text-decoration:none;display:inline-block;transition:.3s;border:none;cursor:pointer}
+.btn:hover{background:var(--gold);transform:translateY(-2px)}
+.hero{min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:40px 0 70px;text-align:center}
+.kick{color:var(--gold);letter-spacing:.3em;font-size:12px;text-transform:uppercase}
+h1{font-family:Fraunces,serif;font-weight:400;font-size:clamp(46px,8vw,110px);line-height:1;letter-spacing:-2px;margin:24px 0}
+h1 em{font-style:italic;color:var(--gold)}
+h1 .strike{position:relative;display:inline-block}
+h1 .strike::after{content:"";position:absolute;left:-2%;right:-2%;top:54%;height:5px;background:var(--red);transform:rotate(-2deg)}
+.leak{font-family:Fraunces,serif;font-style:italic;color:var(--mut);font-size:19px;max-width:560px;margin:0 auto 30px}
+.money{position:relative;height:0}
+.m{position:absolute;top:-10px;font-family:Fraunces,serif;color:var(--gold);opacity:0;animation:fall 4s linear infinite;user-select:none}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0);opacity:0}10%{opacity:.9}100%{transform:translateY(46vh) rotate(40deg);opacity:0}}
+.evidence{border:1px solid rgba(237,230,214,.16);border-radius:24px;background:rgba(255,255,255,.025);backdrop-filter:blur(8px);padding:34px;max-width:880px;margin:48px auto 0;text-align:left}
+.evidence .tag{color:var(--gold);font-size:12px;letter-spacing:.25em;text-transform:uppercase}
+.dossier{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:20px}
+.suspect{border:1px solid rgba(237,230,214,.14);border-radius:14px;padding:20px;display:flex;gap:16px;align-items:center;transition:.3s}
+.suspect:hover{border-color:var(--red);transform:translateX(6px)}
+.suspect .ph{font-size:34px}
+.suspect b{font-size:17px}.suspect p{color:var(--mut);font-size:14px}
+.suspect .amt{margin-left:auto;font-family:Fraunces,serif;font-size:22px;color:var(--red);white-space:nowrap}
+section{padding:84px 0}
+h2{font-family:Fraunces,serif;font-weight:400;font-size:clamp(32px,4.6vw,58px);letter-spacing:-1.5px;text-align:center}
+h2 em{font-style:italic;color:var(--gold)}
+.sec-sub{text-align:center;color:var(--mut);margin:14px 0 44px;font-size:18px}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.act{border:1px solid rgba(237,230,214,.14);border-radius:var(--r);padding:32px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent);transition:.35s;position:relative;overflow:hidden}
+.act:hover{transform:translateY(-8px);border-color:var(--gold)}
+.act .n{font-family:Fraunces,serif;font-style:italic;color:var(--gold);font-size:15px;letter-spacing:.2em}
+.act h3{font-family:Fraunces,serif;font-size:26px;margin:12px 0 10px;font-weight:500}
+.act p{color:var(--mut);font-size:15px}
+.confess{max-width:760px;margin:0 auto;border-left:3px solid var(--gold);padding:6px 0 6px 32px}
+.confess blockquote{font-family:Fraunces,serif;font-style:italic;font-size:clamp(22px,3vw,30px);line-height:1.35}
+.confess cite{display:block;margin-top:16px;color:var(--mut);font-style:normal;font-family:Inter;font-size:14px}
+.verdict{background:linear-gradient(180deg,#141110,#0c0a09);border:1px solid rgba(212,168,83,.35);border-radius:28px;padding:72px 40px;text-align:center;position:relative;overflow:hidden}
+.verdict::before{content:"§";position:absolute;font-family:Fraunces,serif;font-size:420px;opacity:.05;top:-120px;right:-20px}
+details{max-width:720px;margin:0 auto 10px;border:1px solid rgba(237,230,214,.16);border-radius:12px;padding:16px 22px;background:rgba(255,255,255,.02)}
+summary{cursor:pointer;font-weight:600}details p{color:var(--mut);margin-top:8px;font-size:15px}
+footer{padding:32px 0 50px;color:var(--mut);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rv{opacity:0;transform:translateY(30px);transition:.9s cubic-bezier(.2,.7,.2,1)}.rv.on{opacity:1;transform:none}
+@media(max-width:900px){.acts,.dossier{grid-template-columns:1fr}.links{display:none}}
+</style>
+</head>
+<body>
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="wrap">
+<nav><div class="logo">tracky <b>· dossier n.27</b></div><div class="links"><a href="#prove">Le prove</a><a href="#metodo">Il metodo</a><a href="#confessioni">Confessioni</a></div><a class="btn" href="#verdetto">Risolvi il caso</a></nav>
+<header class="hero">
+<div class="money" id="money" aria-hidden="true"></div>
+<p class="kick">Un giallo finanziario in 3 atti</p>
+<h1>Dove sono finiti<br><span class="strike">€ 816</span> <em>quest'anno?</em></h1>
+<p class="leak">Sottoscrizioni dimenticate, scoperti silenziosi, “piccole” spese. Tracky raccoglie le prove, nomina i colpevoli e ti restituisce il maltolto. Caso medio risolto in 5 minuti.</p>
+<div><a class="btn" href="#verdetto">Apri il dossier — gratis →</a></div>
+<p style="margin-top:14px;font-size:13px;color:var(--mut)">Senza carta · Italiano + English · Disdici in 1 clic</p>
+<div class="evidence rv" id="prove">
+<span class="tag">Reperto A — movimenti sospetti, ultimo mese</span>
+<div class="dossier">
+<div class="suspect"><div class="ph">🎬</div><div><b>Netflix ×2</b><p>Due addebiti, un solo divano</p></div><div class="amt">−€25,98</div></div>
+<div class="suspect"><div class="ph">🏋️</div><div><b>Palestra fantasma</b><p>Ultimo ingresso: 214 giorni fa</p></div><div class="amt">−€39,00</div></div>
+<div class="suspect"><div class="ph">🏦</div><div><b>Commissione scoperto</b><p>Il 27, come ogni mese</p></div><div class="amt">−€47,00</div></div>
+<div class="suspect"><div class="ph">☁️</div><div><b>Cloud che non usi</b><p>2 TB di “magari un giorno”</p></div><div class="amt">−€9,99</div></div>
+</div>
+<p style="margin-top:18px;color:var(--mut);font-size:15px">Totale indiziato: <b style="color:var(--red);font-family:Fraunces,serif;font-size:20px">€ 121,97/mese = € 1.463/anno.</b> L'analyst di Tracky li trova da solo. Tu firmi la condanna.</p>
+</div>
+</header>
+<section id="metodo"><h2 class="rv">Il metodo, <em>atto per atto.</em></h2><p class="sec-sub rv">Nessuna tortura. Solo numeri.</p>
+<div class="acts">
+<div class="act rv"><div class="n">ATTO I</div><h3>Il sopralluogo</h3><p>Colleghi la banca via PSD2 o crei un conto manuale. Saldi, valute e date di aggiornamento: tutto sul tavolo, niente sotto il tappeto.</p></div>
+<div class="act rv"><div class="n">ATTO II</div><h3>L'interrogatorio</h3><p>L'analyst interroga ogni movimento: ricorrenze, doppioni, anomalie. Le sottoscrizioni confessano. I trasferimenti vengono smascherati.</p></div>
+<div class="act rv"><div class="n">ATTO III</div><h3>La sentenza</h3><p>Il Piano assegna ogni euro a un lavoro. Il cash-flow prevede il movente del prossimo rosso. Il bot Telegram ti avvisa prima che colpisca ancora.</p></div>
+</div></section>
+<section id="confessioni"><h2 class="rv">Confessioni <em>spontanee.</em></h2><p class="sec-sub rv">Voci verbali, casi chiusi.</p>
+<div style="display:grid;gap:36px;margin-top:10px">
+<div class="confess rv"><blockquote>“Pensavo di spendere 200 euro al mese in stupidaggini. Erano 480. Ho pianto, poi ho assegnato ogni euro. Ora risparmio 312 al mese.”</blockquote><cite>— E. F., Bologna · caso n. 1184, chiuso in 60 giorni ★★★★★</cite></div>
+<div class="confess rv"><blockquote>“Il bot mi ha scritto di giovedì: il 27 vai sotto di 120 euro. Ho spostato la rata. Non sono mai andato sotto.”</blockquote><cite>— M. R., Torino · caso n. 2311, zero recidive ★★★★★</cite></div>
+</div></section>
+<section style="max-width:760px;margin:0 auto"><h2 class="rv">Obiezioni, <em>respinte.</em></h2><div style="height:26px"></div>
+<details class="rv"><summary>“Non ho tempo per un'altra app.”</summary><p>20 minuti al mese dopo un setup da 5. Meno di una puntata.</p></details>
+<details class="rv"><summary>“Devo collegare la banca?”</summary><p>No. Manuali + CSV bastano. La sync PSD2 è un'arma in più, revocabile.</p></details>
+<details class="rv"><summary>“E se non funziona per me?”</summary><p>Base gratis, senza carta. Se non trovi almeno €100 di sprechi, non hai guardato i reperti.</p></details></section>
+<section id="verdetto"><div class="verdict rv"><p class="kick">Il verdetto</p><h2>Colpevole: il caos.<br><em>Pena: l'ordine.</em></h2><p style="color:var(--mut);margin:16px 0 30px">Gratis · 5 minuti · senza carta</p><a class="btn" href="https://tracky.example.com/signup?utm_source=landing&utm_medium=noir&utm_campaign=seo">Emetti la sentenza — gratis →</a></div></section>
+</div>
+<footer class="wrap"><span>© 2026 Tracky · tutti i casi sono veri, i nomi no</span><span>Privacy · Termini</span></footer>
+<script>
+const mc=document.getElementById('money'),sym=['€','$','€','£','€'];
+setInterval(()=>{const s=document.createElement('span');s.className='m';s.textContent=sym[Math.floor(Math.random()*sym.length)];s.style.left=(10+Math.random()*80)+'%';s.style.fontSize=(16+Math.random()*26)+'px';s.style.animationDuration=(3+Math.random()*3)+'s';mc.appendChild(s);setTimeout(()=>s.remove(),6500)},700);
+const c=document.getElementById('rain'),x=c.getContext('2d');let W,H;function rs(){W=c.width=innerWidth;H=c.height=innerHeight}rs();addEventListener('resize',rs);
+const D=Array.from({length:90},()=>({x:Math.random(),y:Math.random(),l:.2+Math.random()*.5,s:.0006+Math.random()*.0018}));
+(function loop(){x.clearRect(0,0,W,H);x.strokeStyle='rgba(212,168,83,.28)';x.lineWidth=1;D.forEach(d=>{d.y+=d.s;if(d.y>1.05)d.y=-.05;const x0=d.x*W,y0=d.y*H;x.beginPath();x.moveTo(x0,y0);x.lineTo(x0-4,y0+d.l*90);x.stroke()});requestAnimationFrame(loop)})();
+const io=new IntersectionObserver(e=>e.forEach(v=>v.isIntersecting&&v.target.classList.add('on')),{threshold:.12});document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

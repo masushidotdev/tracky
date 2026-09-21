@@ -29,6 +29,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0018-deploy-environments.md` - shared dev/staging Convex deployment, production deployment, WorkOS profiles, Cloudflare workers, and the gitignored wrangler config.
 - `decisions/0019-devtools-dev-only.md` - TanStack devtools behind a dev-only lazy gate so production builds never ship the panel.
 - `decisions/0020-jev-decision-layer.md` - calibrated jev decision gates (OpenRouter, advisory-only, composite thresholds, tier budgets) across transfer, import, proactive, subscription, and write-guard flows.
+- `decisions/0021-public-marketing-seo.md` - public Vivi marketing pages, EN-root + /it/ URLs, hreflang/sitemap/robots, OOS-honest copy.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.

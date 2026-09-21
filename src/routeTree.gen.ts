@@ -12,7 +12,36 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as CallbackRouteImport } from './routes/callback'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as ForCouplesAndFamiliesRouteImport } from './routes/for-couples-and-families'
+import { Route as ForFreelancersRouteImport } from './routes/for-freelancers'
+import { Route as OpenSourceRouteImport } from './routes/open-source'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as VsSpreadsheetsRouteImport } from './routes/vs-spreadsheets'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
+import { Route as FeaturesAiAnalystRouteImport } from './routes/features/ai-analyst'
+import { Route as FeaturesBankConnectionsRouteImport } from './routes/features/bank-connections'
+import { Route as FeaturesCashFlowRouteImport } from './routes/features/cash-flow'
+import { Route as FeaturesReportsRouteImport } from './routes/features/reports'
+import { Route as FeaturesZeroBasedPlanRouteImport } from './routes/features/zero-based-plan'
+import { Route as GuidesCancelUnusedSubscriptionsRouteImport } from './routes/guides/cancel-unused-subscriptions'
+import { Route as GuidesCashFlowForecastRouteImport } from './routes/guides/cash-flow-forecast'
+import { Route as GuidesZeroBasedBudgetingRouteImport } from './routes/guides/zero-based-budgeting'
+import { Route as ItIndexRouteImport } from './routes/it/index'
+import { Route as ItDomandeFrequentiRouteImport } from './routes/it/domande-frequenti'
+import { Route as ItOpenSourceRouteImport } from './routes/it/open-source'
+import { Route as ItPerCoppieEFamiglieRouteImport } from './routes/it/per-coppie-e-famiglie'
+import { Route as ItPerFreelanceEPartitaIvaRouteImport } from './routes/it/per-freelance-e-partita-iva'
+import { Route as ItPrezziRouteImport } from './routes/it/prezzi'
+import { Route as ItVsFogliDiCalcoloRouteImport } from './routes/it/vs-fogli-di-calcolo'
+import { Route as ItFunzioniAnalystAiRouteImport } from './routes/it/funzioni/analyst-ai'
+import { Route as ItFunzioniCollegamentoBancarioRouteImport } from './routes/it/funzioni/collegamento-bancario'
+import { Route as ItFunzioniFlussoDiCassaRouteImport } from './routes/it/funzioni/flusso-di-cassa'
+import { Route as ItFunzioniPianoZeroBasedRouteImport } from './routes/it/funzioni/piano-zero-based'
+import { Route as ItFunzioniReportRouteImport } from './routes/it/funzioni/report'
+import { Route as ItGuideBudgetZeroBasedRouteImport } from './routes/it/guide/budget-zero-based'
+import { Route as ItGuideCancellaAbbonamentiInutiliRouteImport } from './routes/it/guide/cancella-abbonamenti-inutili'
+import { Route as ItGuidePrevisioneFlussoDiCassaRouteImport } from './routes/it/guide/previsione-flusso-di-cassa'
 import { Route as AuthenticatedAppAppIndexRouteImport } from './routes/_authenticated/_app/app/index'
 import { Route as AuthenticatedAppAppAnalystRouteImport } from './routes/_authenticated/_app/app/analyst'
 import { Route as AuthenticatedAppAppDocsRouteImport } from './routes/_authenticated/_app/app/docs'
@@ -51,10 +80,162 @@ const CallbackRoute = CallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForCouplesAndFamiliesRoute = ForCouplesAndFamiliesRouteImport.update({
+  id: '/for-couples-and-families',
+  path: '/for-couples-and-families',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForFreelancersRoute = ForFreelancersRouteImport.update({
+  id: '/for-freelancers',
+  path: '/for-freelancers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenSourceRoute = OpenSourceRouteImport.update({
+  id: '/open-source',
+  path: '/open-source',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VsSpreadsheetsRoute = VsSpreadsheetsRouteImport.update({
+  id: '/vs-spreadsheets',
+  path: '/vs-spreadsheets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/_app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const FeaturesAiAnalystRoute = FeaturesAiAnalystRouteImport.update({
+  id: '/features/ai-analyst',
+  path: '/features/ai-analyst',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesBankConnectionsRoute = FeaturesBankConnectionsRouteImport.update({
+  id: '/features/bank-connections',
+  path: '/features/bank-connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesCashFlowRoute = FeaturesCashFlowRouteImport.update({
+  id: '/features/cash-flow',
+  path: '/features/cash-flow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesReportsRoute = FeaturesReportsRouteImport.update({
+  id: '/features/reports',
+  path: '/features/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesZeroBasedPlanRoute = FeaturesZeroBasedPlanRouteImport.update({
+  id: '/features/zero-based-plan',
+  path: '/features/zero-based-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesCancelUnusedSubscriptionsRoute =
+  GuidesCancelUnusedSubscriptionsRouteImport.update({
+    id: '/guides/cancel-unused-subscriptions',
+    path: '/guides/cancel-unused-subscriptions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const GuidesCashFlowForecastRoute = GuidesCashFlowForecastRouteImport.update({
+  id: '/guides/cash-flow-forecast',
+  path: '/guides/cash-flow-forecast',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesZeroBasedBudgetingRoute =
+  GuidesZeroBasedBudgetingRouteImport.update({
+    id: '/guides/zero-based-budgeting',
+    path: '/guides/zero-based-budgeting',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ItIndexRoute = ItIndexRouteImport.update({
+  id: '/it/',
+  path: '/it/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItDomandeFrequentiRoute = ItDomandeFrequentiRouteImport.update({
+  id: '/it/domande-frequenti',
+  path: '/it/domande-frequenti',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItOpenSourceRoute = ItOpenSourceRouteImport.update({
+  id: '/it/open-source',
+  path: '/it/open-source',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItPerCoppieEFamiglieRoute = ItPerCoppieEFamiglieRouteImport.update({
+  id: '/it/per-coppie-e-famiglie',
+  path: '/it/per-coppie-e-famiglie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItPerFreelanceEPartitaIvaRoute =
+  ItPerFreelanceEPartitaIvaRouteImport.update({
+    id: '/it/per-freelance-e-partita-iva',
+    path: '/it/per-freelance-e-partita-iva',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ItPrezziRoute = ItPrezziRouteImport.update({
+  id: '/it/prezzi',
+  path: '/it/prezzi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItVsFogliDiCalcoloRoute = ItVsFogliDiCalcoloRouteImport.update({
+  id: '/it/vs-fogli-di-calcolo',
+  path: '/it/vs-fogli-di-calcolo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItFunzioniAnalystAiRoute = ItFunzioniAnalystAiRouteImport.update({
+  id: '/it/funzioni/analyst-ai',
+  path: '/it/funzioni/analyst-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItFunzioniCollegamentoBancarioRoute =
+  ItFunzioniCollegamentoBancarioRouteImport.update({
+    id: '/it/funzioni/collegamento-bancario',
+    path: '/it/funzioni/collegamento-bancario',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ItFunzioniFlussoDiCassaRoute = ItFunzioniFlussoDiCassaRouteImport.update({
+  id: '/it/funzioni/flusso-di-cassa',
+  path: '/it/funzioni/flusso-di-cassa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItFunzioniPianoZeroBasedRoute =
+  ItFunzioniPianoZeroBasedRouteImport.update({
+    id: '/it/funzioni/piano-zero-based',
+    path: '/it/funzioni/piano-zero-based',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ItFunzioniReportRoute = ItFunzioniReportRouteImport.update({
+  id: '/it/funzioni/report',
+  path: '/it/funzioni/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItGuideBudgetZeroBasedRoute = ItGuideBudgetZeroBasedRouteImport.update({
+  id: '/it/guide/budget-zero-based',
+  path: '/it/guide/budget-zero-based',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItGuideCancellaAbbonamentiInutiliRoute =
+  ItGuideCancellaAbbonamentiInutiliRouteImport.update({
+    id: '/it/guide/cancella-abbonamenti-inutili',
+    path: '/it/guide/cancella-abbonamenti-inutili',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ItGuidePrevisioneFlussoDiCassaRoute =
+  ItGuidePrevisioneFlussoDiCassaRouteImport.update({
+    id: '/it/guide/previsione-flusso-di-cassa',
+    path: '/it/guide/previsione-flusso-di-cassa',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAppAppIndexRoute =
   AuthenticatedAppAppIndexRouteImport.update({
     id: '/app/',
@@ -195,6 +376,35 @@ const AuthenticatedAppAppSubscriptionsCreateRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/callback': typeof CallbackRoute
+  '/faq': typeof FaqRoute
+  '/for-couples-and-families': typeof ForCouplesAndFamiliesRoute
+  '/for-freelancers': typeof ForFreelancersRoute
+  '/open-source': typeof OpenSourceRoute
+  '/pricing': typeof PricingRoute
+  '/vs-spreadsheets': typeof VsSpreadsheetsRoute
+  '/features/ai-analyst': typeof FeaturesAiAnalystRoute
+  '/features/bank-connections': typeof FeaturesBankConnectionsRoute
+  '/features/cash-flow': typeof FeaturesCashFlowRoute
+  '/features/reports': typeof FeaturesReportsRoute
+  '/features/zero-based-plan': typeof FeaturesZeroBasedPlanRoute
+  '/guides/cancel-unused-subscriptions': typeof GuidesCancelUnusedSubscriptionsRoute
+  '/guides/cash-flow-forecast': typeof GuidesCashFlowForecastRoute
+  '/guides/zero-based-budgeting': typeof GuidesZeroBasedBudgetingRoute
+  '/it/domande-frequenti': typeof ItDomandeFrequentiRoute
+  '/it/open-source': typeof ItOpenSourceRoute
+  '/it/per-coppie-e-famiglie': typeof ItPerCoppieEFamiglieRoute
+  '/it/per-freelance-e-partita-iva': typeof ItPerFreelanceEPartitaIvaRoute
+  '/it/prezzi': typeof ItPrezziRoute
+  '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
+  '/it/': typeof ItIndexRoute
+  '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
+  '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
+  '/it/funzioni/flusso-di-cassa': typeof ItFunzioniFlussoDiCassaRoute
+  '/it/funzioni/piano-zero-based': typeof ItFunzioniPianoZeroBasedRoute
+  '/it/funzioni/report': typeof ItFunzioniReportRoute
+  '/it/guide/budget-zero-based': typeof ItGuideBudgetZeroBasedRoute
+  '/it/guide/cancella-abbonamenti-inutili': typeof ItGuideCancellaAbbonamentiInutiliRoute
+  '/it/guide/previsione-flusso-di-cassa': typeof ItGuidePrevisioneFlussoDiCassaRoute
   '/app/analyst': typeof AuthenticatedAppAppAnalystRoute
   '/app/docs': typeof AuthenticatedAppAppDocsRouteWithChildren
   '/app/forecast': typeof AuthenticatedAppAppForecastRoute
@@ -222,6 +432,35 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/callback': typeof CallbackRoute
+  '/faq': typeof FaqRoute
+  '/for-couples-and-families': typeof ForCouplesAndFamiliesRoute
+  '/for-freelancers': typeof ForFreelancersRoute
+  '/open-source': typeof OpenSourceRoute
+  '/pricing': typeof PricingRoute
+  '/vs-spreadsheets': typeof VsSpreadsheetsRoute
+  '/features/ai-analyst': typeof FeaturesAiAnalystRoute
+  '/features/bank-connections': typeof FeaturesBankConnectionsRoute
+  '/features/cash-flow': typeof FeaturesCashFlowRoute
+  '/features/reports': typeof FeaturesReportsRoute
+  '/features/zero-based-plan': typeof FeaturesZeroBasedPlanRoute
+  '/guides/cancel-unused-subscriptions': typeof GuidesCancelUnusedSubscriptionsRoute
+  '/guides/cash-flow-forecast': typeof GuidesCashFlowForecastRoute
+  '/guides/zero-based-budgeting': typeof GuidesZeroBasedBudgetingRoute
+  '/it/domande-frequenti': typeof ItDomandeFrequentiRoute
+  '/it/open-source': typeof ItOpenSourceRoute
+  '/it/per-coppie-e-famiglie': typeof ItPerCoppieEFamiglieRoute
+  '/it/per-freelance-e-partita-iva': typeof ItPerFreelanceEPartitaIvaRoute
+  '/it/prezzi': typeof ItPrezziRoute
+  '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
+  '/it': typeof ItIndexRoute
+  '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
+  '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
+  '/it/funzioni/flusso-di-cassa': typeof ItFunzioniFlussoDiCassaRoute
+  '/it/funzioni/piano-zero-based': typeof ItFunzioniPianoZeroBasedRoute
+  '/it/funzioni/report': typeof ItFunzioniReportRoute
+  '/it/guide/budget-zero-based': typeof ItGuideBudgetZeroBasedRoute
+  '/it/guide/cancella-abbonamenti-inutili': typeof ItGuideCancellaAbbonamentiInutiliRoute
+  '/it/guide/previsione-flusso-di-cassa': typeof ItGuidePrevisioneFlussoDiCassaRoute
   '/app/analyst': typeof AuthenticatedAppAppAnalystRoute
   '/app/forecast': typeof AuthenticatedAppAppForecastRoute
   '/app/goals': typeof AuthenticatedAppAppGoalsRoute
@@ -249,7 +488,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/callback': typeof CallbackRoute
+  '/faq': typeof FaqRoute
+  '/for-couples-and-families': typeof ForCouplesAndFamiliesRoute
+  '/for-freelancers': typeof ForFreelancersRoute
+  '/open-source': typeof OpenSourceRoute
+  '/pricing': typeof PricingRoute
+  '/vs-spreadsheets': typeof VsSpreadsheetsRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
+  '/features/ai-analyst': typeof FeaturesAiAnalystRoute
+  '/features/bank-connections': typeof FeaturesBankConnectionsRoute
+  '/features/cash-flow': typeof FeaturesCashFlowRoute
+  '/features/reports': typeof FeaturesReportsRoute
+  '/features/zero-based-plan': typeof FeaturesZeroBasedPlanRoute
+  '/guides/cancel-unused-subscriptions': typeof GuidesCancelUnusedSubscriptionsRoute
+  '/guides/cash-flow-forecast': typeof GuidesCashFlowForecastRoute
+  '/guides/zero-based-budgeting': typeof GuidesZeroBasedBudgetingRoute
+  '/it/domande-frequenti': typeof ItDomandeFrequentiRoute
+  '/it/open-source': typeof ItOpenSourceRoute
+  '/it/per-coppie-e-famiglie': typeof ItPerCoppieEFamiglieRoute
+  '/it/per-freelance-e-partita-iva': typeof ItPerFreelanceEPartitaIvaRoute
+  '/it/prezzi': typeof ItPrezziRoute
+  '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
+  '/it/': typeof ItIndexRoute
+  '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
+  '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
+  '/it/funzioni/flusso-di-cassa': typeof ItFunzioniFlussoDiCassaRoute
+  '/it/funzioni/piano-zero-based': typeof ItFunzioniPianoZeroBasedRoute
+  '/it/funzioni/report': typeof ItFunzioniReportRoute
+  '/it/guide/budget-zero-based': typeof ItGuideBudgetZeroBasedRoute
+  '/it/guide/cancella-abbonamenti-inutili': typeof ItGuideCancellaAbbonamentiInutiliRoute
+  '/it/guide/previsione-flusso-di-cassa': typeof ItGuidePrevisioneFlussoDiCassaRoute
   '/_authenticated/_app/app/analyst': typeof AuthenticatedAppAppAnalystRoute
   '/_authenticated/_app/app/docs': typeof AuthenticatedAppAppDocsRouteWithChildren
   '/_authenticated/_app/app/forecast': typeof AuthenticatedAppAppForecastRoute
@@ -279,6 +547,35 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/callback'
+    | '/faq'
+    | '/for-couples-and-families'
+    | '/for-freelancers'
+    | '/open-source'
+    | '/pricing'
+    | '/vs-spreadsheets'
+    | '/features/ai-analyst'
+    | '/features/bank-connections'
+    | '/features/cash-flow'
+    | '/features/reports'
+    | '/features/zero-based-plan'
+    | '/guides/cancel-unused-subscriptions'
+    | '/guides/cash-flow-forecast'
+    | '/guides/zero-based-budgeting'
+    | '/it/domande-frequenti'
+    | '/it/open-source'
+    | '/it/per-coppie-e-famiglie'
+    | '/it/per-freelance-e-partita-iva'
+    | '/it/prezzi'
+    | '/it/vs-fogli-di-calcolo'
+    | '/it/'
+    | '/it/funzioni/analyst-ai'
+    | '/it/funzioni/collegamento-bancario'
+    | '/it/funzioni/flusso-di-cassa'
+    | '/it/funzioni/piano-zero-based'
+    | '/it/funzioni/report'
+    | '/it/guide/budget-zero-based'
+    | '/it/guide/cancella-abbonamenti-inutili'
+    | '/it/guide/previsione-flusso-di-cassa'
     | '/app/analyst'
     | '/app/docs'
     | '/app/forecast'
@@ -306,6 +603,35 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/callback'
+    | '/faq'
+    | '/for-couples-and-families'
+    | '/for-freelancers'
+    | '/open-source'
+    | '/pricing'
+    | '/vs-spreadsheets'
+    | '/features/ai-analyst'
+    | '/features/bank-connections'
+    | '/features/cash-flow'
+    | '/features/reports'
+    | '/features/zero-based-plan'
+    | '/guides/cancel-unused-subscriptions'
+    | '/guides/cash-flow-forecast'
+    | '/guides/zero-based-budgeting'
+    | '/it/domande-frequenti'
+    | '/it/open-source'
+    | '/it/per-coppie-e-famiglie'
+    | '/it/per-freelance-e-partita-iva'
+    | '/it/prezzi'
+    | '/it/vs-fogli-di-calcolo'
+    | '/it'
+    | '/it/funzioni/analyst-ai'
+    | '/it/funzioni/collegamento-bancario'
+    | '/it/funzioni/flusso-di-cassa'
+    | '/it/funzioni/piano-zero-based'
+    | '/it/funzioni/report'
+    | '/it/guide/budget-zero-based'
+    | '/it/guide/cancella-abbonamenti-inutili'
+    | '/it/guide/previsione-flusso-di-cassa'
     | '/app/analyst'
     | '/app/forecast'
     | '/app/goals'
@@ -332,7 +658,36 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/callback'
+    | '/faq'
+    | '/for-couples-and-families'
+    | '/for-freelancers'
+    | '/open-source'
+    | '/pricing'
+    | '/vs-spreadsheets'
     | '/_authenticated/_app'
+    | '/features/ai-analyst'
+    | '/features/bank-connections'
+    | '/features/cash-flow'
+    | '/features/reports'
+    | '/features/zero-based-plan'
+    | '/guides/cancel-unused-subscriptions'
+    | '/guides/cash-flow-forecast'
+    | '/guides/zero-based-budgeting'
+    | '/it/domande-frequenti'
+    | '/it/open-source'
+    | '/it/per-coppie-e-famiglie'
+    | '/it/per-freelance-e-partita-iva'
+    | '/it/prezzi'
+    | '/it/vs-fogli-di-calcolo'
+    | '/it/'
+    | '/it/funzioni/analyst-ai'
+    | '/it/funzioni/collegamento-bancario'
+    | '/it/funzioni/flusso-di-cassa'
+    | '/it/funzioni/piano-zero-based'
+    | '/it/funzioni/report'
+    | '/it/guide/budget-zero-based'
+    | '/it/guide/cancella-abbonamenti-inutili'
+    | '/it/guide/previsione-flusso-di-cassa'
     | '/_authenticated/_app/app/analyst'
     | '/_authenticated/_app/app/docs'
     | '/_authenticated/_app/app/forecast'
@@ -362,6 +717,35 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CallbackRoute: typeof CallbackRoute
+  FaqRoute: typeof FaqRoute
+  ForCouplesAndFamiliesRoute: typeof ForCouplesAndFamiliesRoute
+  ForFreelancersRoute: typeof ForFreelancersRoute
+  OpenSourceRoute: typeof OpenSourceRoute
+  PricingRoute: typeof PricingRoute
+  VsSpreadsheetsRoute: typeof VsSpreadsheetsRoute
+  FeaturesAiAnalystRoute: typeof FeaturesAiAnalystRoute
+  FeaturesBankConnectionsRoute: typeof FeaturesBankConnectionsRoute
+  FeaturesCashFlowRoute: typeof FeaturesCashFlowRoute
+  FeaturesReportsRoute: typeof FeaturesReportsRoute
+  FeaturesZeroBasedPlanRoute: typeof FeaturesZeroBasedPlanRoute
+  GuidesCancelUnusedSubscriptionsRoute: typeof GuidesCancelUnusedSubscriptionsRoute
+  GuidesCashFlowForecastRoute: typeof GuidesCashFlowForecastRoute
+  GuidesZeroBasedBudgetingRoute: typeof GuidesZeroBasedBudgetingRoute
+  ItDomandeFrequentiRoute: typeof ItDomandeFrequentiRoute
+  ItOpenSourceRoute: typeof ItOpenSourceRoute
+  ItPerCoppieEFamiglieRoute: typeof ItPerCoppieEFamiglieRoute
+  ItPerFreelanceEPartitaIvaRoute: typeof ItPerFreelanceEPartitaIvaRoute
+  ItPrezziRoute: typeof ItPrezziRoute
+  ItVsFogliDiCalcoloRoute: typeof ItVsFogliDiCalcoloRoute
+  ItIndexRoute: typeof ItIndexRoute
+  ItFunzioniAnalystAiRoute: typeof ItFunzioniAnalystAiRoute
+  ItFunzioniCollegamentoBancarioRoute: typeof ItFunzioniCollegamentoBancarioRoute
+  ItFunzioniFlussoDiCassaRoute: typeof ItFunzioniFlussoDiCassaRoute
+  ItFunzioniPianoZeroBasedRoute: typeof ItFunzioniPianoZeroBasedRoute
+  ItFunzioniReportRoute: typeof ItFunzioniReportRoute
+  ItGuideBudgetZeroBasedRoute: typeof ItGuideBudgetZeroBasedRoute
+  ItGuideCancellaAbbonamentiInutiliRoute: typeof ItGuideCancellaAbbonamentiInutiliRoute
+  ItGuidePrevisioneFlussoDiCassaRoute: typeof ItGuidePrevisioneFlussoDiCassaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -387,12 +771,215 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-couples-and-families': {
+      id: '/for-couples-and-families'
+      path: '/for-couples-and-families'
+      fullPath: '/for-couples-and-families'
+      preLoaderRoute: typeof ForCouplesAndFamiliesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-freelancers': {
+      id: '/for-freelancers'
+      path: '/for-freelancers'
+      fullPath: '/for-freelancers'
+      preLoaderRoute: typeof ForFreelancersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/open-source': {
+      id: '/open-source'
+      path: '/open-source'
+      fullPath: '/open-source'
+      preLoaderRoute: typeof OpenSourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vs-spreadsheets': {
+      id: '/vs-spreadsheets'
+      path: '/vs-spreadsheets'
+      fullPath: '/vs-spreadsheets'
+      preLoaderRoute: typeof VsSpreadsheetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_app': {
       id: '/_authenticated/_app'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/features/ai-analyst': {
+      id: '/features/ai-analyst'
+      path: '/features/ai-analyst'
+      fullPath: '/features/ai-analyst'
+      preLoaderRoute: typeof FeaturesAiAnalystRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/bank-connections': {
+      id: '/features/bank-connections'
+      path: '/features/bank-connections'
+      fullPath: '/features/bank-connections'
+      preLoaderRoute: typeof FeaturesBankConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/cash-flow': {
+      id: '/features/cash-flow'
+      path: '/features/cash-flow'
+      fullPath: '/features/cash-flow'
+      preLoaderRoute: typeof FeaturesCashFlowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/reports': {
+      id: '/features/reports'
+      path: '/features/reports'
+      fullPath: '/features/reports'
+      preLoaderRoute: typeof FeaturesReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/zero-based-plan': {
+      id: '/features/zero-based-plan'
+      path: '/features/zero-based-plan'
+      fullPath: '/features/zero-based-plan'
+      preLoaderRoute: typeof FeaturesZeroBasedPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/cancel-unused-subscriptions': {
+      id: '/guides/cancel-unused-subscriptions'
+      path: '/guides/cancel-unused-subscriptions'
+      fullPath: '/guides/cancel-unused-subscriptions'
+      preLoaderRoute: typeof GuidesCancelUnusedSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/cash-flow-forecast': {
+      id: '/guides/cash-flow-forecast'
+      path: '/guides/cash-flow-forecast'
+      fullPath: '/guides/cash-flow-forecast'
+      preLoaderRoute: typeof GuidesCashFlowForecastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/zero-based-budgeting': {
+      id: '/guides/zero-based-budgeting'
+      path: '/guides/zero-based-budgeting'
+      fullPath: '/guides/zero-based-budgeting'
+      preLoaderRoute: typeof GuidesZeroBasedBudgetingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/': {
+      id: '/it/'
+      path: '/it'
+      fullPath: '/it/'
+      preLoaderRoute: typeof ItIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/domande-frequenti': {
+      id: '/it/domande-frequenti'
+      path: '/it/domande-frequenti'
+      fullPath: '/it/domande-frequenti'
+      preLoaderRoute: typeof ItDomandeFrequentiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/open-source': {
+      id: '/it/open-source'
+      path: '/it/open-source'
+      fullPath: '/it/open-source'
+      preLoaderRoute: typeof ItOpenSourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/per-coppie-e-famiglie': {
+      id: '/it/per-coppie-e-famiglie'
+      path: '/it/per-coppie-e-famiglie'
+      fullPath: '/it/per-coppie-e-famiglie'
+      preLoaderRoute: typeof ItPerCoppieEFamiglieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/per-freelance-e-partita-iva': {
+      id: '/it/per-freelance-e-partita-iva'
+      path: '/it/per-freelance-e-partita-iva'
+      fullPath: '/it/per-freelance-e-partita-iva'
+      preLoaderRoute: typeof ItPerFreelanceEPartitaIvaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/prezzi': {
+      id: '/it/prezzi'
+      path: '/it/prezzi'
+      fullPath: '/it/prezzi'
+      preLoaderRoute: typeof ItPrezziRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/vs-fogli-di-calcolo': {
+      id: '/it/vs-fogli-di-calcolo'
+      path: '/it/vs-fogli-di-calcolo'
+      fullPath: '/it/vs-fogli-di-calcolo'
+      preLoaderRoute: typeof ItVsFogliDiCalcoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/funzioni/analyst-ai': {
+      id: '/it/funzioni/analyst-ai'
+      path: '/it/funzioni/analyst-ai'
+      fullPath: '/it/funzioni/analyst-ai'
+      preLoaderRoute: typeof ItFunzioniAnalystAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/funzioni/collegamento-bancario': {
+      id: '/it/funzioni/collegamento-bancario'
+      path: '/it/funzioni/collegamento-bancario'
+      fullPath: '/it/funzioni/collegamento-bancario'
+      preLoaderRoute: typeof ItFunzioniCollegamentoBancarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/funzioni/flusso-di-cassa': {
+      id: '/it/funzioni/flusso-di-cassa'
+      path: '/it/funzioni/flusso-di-cassa'
+      fullPath: '/it/funzioni/flusso-di-cassa'
+      preLoaderRoute: typeof ItFunzioniFlussoDiCassaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/funzioni/piano-zero-based': {
+      id: '/it/funzioni/piano-zero-based'
+      path: '/it/funzioni/piano-zero-based'
+      fullPath: '/it/funzioni/piano-zero-based'
+      preLoaderRoute: typeof ItFunzioniPianoZeroBasedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/funzioni/report': {
+      id: '/it/funzioni/report'
+      path: '/it/funzioni/report'
+      fullPath: '/it/funzioni/report'
+      preLoaderRoute: typeof ItFunzioniReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/guide/budget-zero-based': {
+      id: '/it/guide/budget-zero-based'
+      path: '/it/guide/budget-zero-based'
+      fullPath: '/it/guide/budget-zero-based'
+      preLoaderRoute: typeof ItGuideBudgetZeroBasedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/guide/cancella-abbonamenti-inutili': {
+      id: '/it/guide/cancella-abbonamenti-inutili'
+      path: '/it/guide/cancella-abbonamenti-inutili'
+      fullPath: '/it/guide/cancella-abbonamenti-inutili'
+      preLoaderRoute: typeof ItGuideCancellaAbbonamentiInutiliRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/guide/previsione-flusso-di-cassa': {
+      id: '/it/guide/previsione-flusso-di-cassa'
+      path: '/it/guide/previsione-flusso-di-cassa'
+      fullPath: '/it/guide/previsione-flusso-di-cassa'
+      preLoaderRoute: typeof ItGuidePrevisioneFlussoDiCassaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_app/app/': {
       id: '/_authenticated/_app/app/'
@@ -663,6 +1250,36 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CallbackRoute: CallbackRoute,
+  FaqRoute: FaqRoute,
+  ForCouplesAndFamiliesRoute: ForCouplesAndFamiliesRoute,
+  ForFreelancersRoute: ForFreelancersRoute,
+  OpenSourceRoute: OpenSourceRoute,
+  PricingRoute: PricingRoute,
+  VsSpreadsheetsRoute: VsSpreadsheetsRoute,
+  FeaturesAiAnalystRoute: FeaturesAiAnalystRoute,
+  FeaturesBankConnectionsRoute: FeaturesBankConnectionsRoute,
+  FeaturesCashFlowRoute: FeaturesCashFlowRoute,
+  FeaturesReportsRoute: FeaturesReportsRoute,
+  FeaturesZeroBasedPlanRoute: FeaturesZeroBasedPlanRoute,
+  GuidesCancelUnusedSubscriptionsRoute: GuidesCancelUnusedSubscriptionsRoute,
+  GuidesCashFlowForecastRoute: GuidesCashFlowForecastRoute,
+  GuidesZeroBasedBudgetingRoute: GuidesZeroBasedBudgetingRoute,
+  ItDomandeFrequentiRoute: ItDomandeFrequentiRoute,
+  ItOpenSourceRoute: ItOpenSourceRoute,
+  ItPerCoppieEFamiglieRoute: ItPerCoppieEFamiglieRoute,
+  ItPerFreelanceEPartitaIvaRoute: ItPerFreelanceEPartitaIvaRoute,
+  ItPrezziRoute: ItPrezziRoute,
+  ItVsFogliDiCalcoloRoute: ItVsFogliDiCalcoloRoute,
+  ItIndexRoute: ItIndexRoute,
+  ItFunzioniAnalystAiRoute: ItFunzioniAnalystAiRoute,
+  ItFunzioniCollegamentoBancarioRoute: ItFunzioniCollegamentoBancarioRoute,
+  ItFunzioniFlussoDiCassaRoute: ItFunzioniFlussoDiCassaRoute,
+  ItFunzioniPianoZeroBasedRoute: ItFunzioniPianoZeroBasedRoute,
+  ItFunzioniReportRoute: ItFunzioniReportRoute,
+  ItGuideBudgetZeroBasedRoute: ItGuideBudgetZeroBasedRoute,
+  ItGuideCancellaAbbonamentiInutiliRoute:
+    ItGuideCancellaAbbonamentiInutiliRoute,
+  ItGuidePrevisioneFlussoDiCassaRoute: ItGuidePrevisioneFlussoDiCassaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

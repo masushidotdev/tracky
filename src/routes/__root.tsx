@@ -55,15 +55,21 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
   notFoundComponent: NotFoundPage,
   beforeLoad: async (ctx) => {
-    const { userId, token } = await fetchWorkosAuth();
+    // Marketing pages must SSR for crawlers without WorkOS/Convex: a failed
+    // auth fetch degrades to logged-out instead of 500ing the page.
+    try {
+      const { userId, token } = await fetchWorkosAuth();
 
-    // During SSR only (the only time serverHttpClient exists),
-    // set the WorkOS auth token to make HTTP queries with.
-    if (token) {
-      ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
+      // During SSR only (the only time serverHttpClient exists),
+      // set the WorkOS auth token to make HTTP queries with.
+      if (token) {
+        ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
+      }
+
+      return { userId, token };
+    } catch {
+      return { userId: null, token: null };
     }
-
-    return { userId, token };
   },
 });
 

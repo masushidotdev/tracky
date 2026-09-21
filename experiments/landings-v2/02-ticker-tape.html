@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracky — Mai più in rosso a fine mese | Piano budget + cash-flow predittivo</title>
+<meta name="description" content="Il 27 del mese lo sai già oggi: Tracky prevede il saldo, assegna ogni euro e ti avvisa prima del rosso. Sync bancaria PSD2, gratis senza carta.">
+<link rel="canonical" href="https://tracky.example.com/mai-piu-rosso/">
+<meta property="og:title" content="Tracky — mai più in rosso a fine mese">
+<meta property="og:description" content="Cash-flow predittivo · Piano zero-based · Alert Telegram. Gratis.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Tracky","applicationCategory":"FinanceApplication","operatingSystem":"Web","aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"2841"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"inLanguage":"it"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Come fa Tracky a prevedere il rosso?","acceptedAnswer":{"@type":"Answer","text":"Proietta stipendi, scadenze, rate e spese ricorrenti sui saldi reali e calcola ogni giorno la prima data negativa."}},{"@type":"Question","name":"Devo collegare la banca?","acceptedAnswer":{"@type":"Answer","text":"No: conti manuali e CSV bastano, la sync PSD2 è opzionale e revocabile."}}]}</script>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,500;0,800;0,900;1,900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f4f1ea;--ink:#111310;--red:#e23a2e;--grn:#0e7a4f;--yel:#ffd400;--r:14px}
+*{margin:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:Archivo,-apple-system,'Segoe UI',sans-serif;overflow-x:hidden}
+.mono{font-family:'IBM Plex Mono',monospace}
+.tape{background:var(--ink);color:#fff;overflow:hidden;white-space:nowrap;padding:9px 0;font-size:13px}
+.tape div{display:inline-block;animation:tk 28s linear infinite}
+.tape b{margin:0 10px 0 30px}.up{color:#4de3a1}.dn{color:#ff7a6b}
+@keyframes tk{to{transform:translateX(-50%)}}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.mast{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0 12px;border-bottom:4px double var(--ink);font-size:13px;gap:12px;flex-wrap:wrap}
+.mast b{font-size:26px;letter-spacing:-1px}.mast b i{font-style:normal;color:var(--red)}
+.hero{padding:54px 0 10px;text-align:left}
+.kick{display:inline-block;background:var(--ink);color:var(--yel);font-weight:800;font-size:13px;letter-spacing:.14em;padding:7px 16px;text-transform:uppercase;transform:rotate(-1.5deg)}
+h1{font-size:clamp(52px,9vw,124px);line-height:.92;letter-spacing:-3px;font-weight:900;margin:22px 0 8px;text-transform:uppercase}
+h1 .out{color:transparent;-webkit-text-stroke:2.5px var(--ink)}
+h1 .red{color:var(--red)}
+.dek{font-size:20px;max-width:640px;margin:16px 0 26px}
+.cta-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--red);color:#fff;font-weight:900;font-size:18px;border:3px solid var(--ink);border-radius:12px;padding:16px 38px;text-decoration:none;box-shadow:6px 6px 0 var(--ink);transition:.15s;display:inline-block}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:9px 9px 0 var(--ink)}
+.btn.alt{background:var(--yel);color:var(--ink)}
+.micro{font-size:13px}
+.board{margin:38px 0 0;border:3px solid var(--ink);border-radius:18px;overflow:hidden;background:#fff;box-shadow:10px 10px 0 var(--ink)}
+.bhead{background:var(--ink);color:#fff;padding:12px 20px;font-size:13px;display:flex;justify-content:space-between}
+.bgrid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:0}
+.bcell{padding:26px;border-right:2px solid var(--ink)}
+.bcell:last-child{border:none}
+.bcell small{font-size:11px;letter-spacing:.14em;font-weight:800}
+.bcell .big{font-size:clamp(34px,4vw,52px);font-weight:900;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.alarm{background:var(--red);color:#fff;border-radius:10px;padding:10px 16px;font-weight:800;margin-top:12px;display:inline-block;animation:alm 1.6s infinite}
+@keyframes alm{50%{transform:scale(1.04)}}
+.ok{background:var(--grn);color:#fff;border-radius:10px;padding:10px 16px;font-weight:800;margin-top:12px;display:inline-block}
+.spark{display:flex;align-items:flex-end;gap:5px;height:70px;margin-top:14px}
+.spark i{flex:1;background:var(--ink);border-radius:3px;animation:eq 2.6s ease-in-out infinite alternate;transform-origin:bottom}
+@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+section{padding:70px 0}
+h2{font-size:clamp(34px,5vw,64px);letter-spacing:-2px;line-height:.95;font-weight:900;text-transform:uppercase}
+.rule{height:4px;background:var(--ink);margin:18px 0 34px;position:relative}
+.rule::after{content:"";position:absolute;right:0;top:-5px;width:14px;height:14px;background:var(--red);border-radius:50%}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.art{border:3px solid var(--ink);border-radius:var(--r);background:#fff;padding:26px;box-shadow:5px 5px 0 var(--ink);transition:.2s}
+.art:hover{transform:translate(-2px,-3px) rotate(-.4deg);box-shadow:8px 9px 0 var(--ink)}
+.art .dat{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--red)}
+.art h3{font-size:22px;margin:10px 0 8px;letter-spacing:-.5px}
+.art p{font-size:15px;color:#333}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:0;border:3px solid var(--ink);border-radius:18px;overflow:hidden;margin-top:30px;box-shadow:8px 8px 0 var(--ink)}
+.duel div{padding:36px}
+.d-bad{background:#ffe3e0}.d-good{background:#d9f4e6}
+.duel h3{font-size:28px;margin-bottom:14px}.duel li{margin:10px 0 10px 20px;font-size:17px}
+.calc{border:3px solid var(--ink);border-radius:18px;background:var(--ink);color:#fff;padding:36px;margin-top:26px;box-shadow:8px 8px 0 var(--red)}
+.calc label{display:block;margin:14px 0 6px;font-weight:700}
+.calc input{width:100%;accent-color:var(--yel)}
+.calc .out{font-size:clamp(30px,4.4vw,50px);font-weight:900;color:var(--yel);margin-top:12px}
+.quotes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:26px}
+.q{border:3px solid var(--ink);background:var(--yel);border-radius:var(--r);padding:24px;font-size:16px;font-weight:500}
+.q:nth-child(2){background:#fff;transform:rotate(1deg)}.q:nth-child(3){background:#d9f4e6;transform:rotate(-1deg)}
+.q b{display:block;margin-top:12px;font-size:13px}
+details{border:3px solid var(--ink);border-radius:12px;padding:15px 20px;margin-bottom:12px;background:#fff}
+summary{font-weight:900;cursor:pointer;font-size:17px}
+.final{background:var(--ink);color:#fff;border-radius:26px;padding:70px 36px;text-align:center;box-shadow:10px 10px 0 var(--red)}
+.final h2{color:#fff}
+footer{padding:30px 0 46px;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rv{opacity:0;transform:translateY(26px);transition:.7s}.rv.on{opacity:1;transform:none}
+@media(max-width:900px){.bgrid,.cols,.duel,.quotes{grid-template-columns:1fr}.bcell{border-right:none;border-bottom:2px solid var(--ink)}.bcell:last-child{border-bottom:none}}
+</style>
+</head>
+<body>
+<div class="tape mono" aria-hidden="true"><div id="tape"></div></div>
+<div class="wrap">
+<div class="mast mono"><span>EDIZIONE STRAORDINARIA · N. 042</span><b>tracky<i>!</i> POST</b><span>PREZZO: € 0 · GRATIS</span></div>
+<header class="hero">
+<span class="kick">Ultim'ora dal tuo conto</span>
+<h1>Mai più<br><span class="out">in rosso</span><br>il <span class="red">27.</span></h1>
+<p class="dek">Tracky legge stipendi, scadenze e rate, <b>proietta il saldo 90 giorni avanti</b> e ti avvisa su Telegram <i>prima</i> del disastro. Piano zero-based, sync PSD2, AI analyst. Gratis, senza carta.</p>
+<div class="cta-row"><a class="btn" href="#go">LEGGI IL FUTURO →</a><a class="btn alt" href="#calcola">Quanto butto? 🧮</a></div>
+<p class="micro mono" style="margin-top:12px">★ 4,9/5 · 2.841 recensioni · 12.840 famiglie · IT/EN</p>
+<div class="board rv mono">
+<div class="bhead"><span>● BORSA DEL RISPARMIO · LIVE</span><span id="clock">--:--:--</span></div>
+<div class="bgrid">
+<div class="bcell"><small>SCOPERTI EVITATI OGGI</small><div class="big" style="color:var(--grn)">+<span data-c="312">0</span></div><div class="spark" aria-hidden="true"><i style="height:40%"></i><i style="height:70%;animation-delay:.2s"></i><i style="height:55%;animation-delay:.4s"></i><i style="height:90%;animation-delay:.1s"></i><i style="height:65%;animation-delay:.6s"></i><i style="height:100%;animation-delay:.3s"></i><i style="height:75%;animation-delay:.5s"></i></div></div>
+<div class="bcell"><small>SENZA TRACKY · IL 27</small><div class="big" style="color:var(--red)">−€184</div><span class="alarm">⚠ SCOPERTO!</span></div>
+<div class="bcell"><small>CON TRACKY · IL 27</small><div class="big" style="color:var(--grn)">+€158</div><span class="ok">✓ RATA SPOSTATA AL 2</span></div>
+</div></div>
+</header>
+<section><h2 class="rv">Le notizie che contano.</h2><div class="rule"></div>
+<div class="cols">
+<article class="art rv"><div class="dat mono">FINANZA · PAG. 1</div><h3>Il flusso di cassa prevede, tu dormi</h3><p>Stipendi, affitto, rate, bollette: proiettati ogni giorno. La prima data negativa non è più una sorpresa.</p></article>
+<article class="art rv"><div class="dat mono">INCHIESTA · PAG. 2</div><h3>L'AI trova le sub che ti derubano</h3><p>14 sottoscrizioni medie, 2 doppie. L'analyst le scova e propone la chiusura. Tu approvi, lui esegue.</p></article>
+<article class="art rv"><div class="dat mono">CRONACA · PAG. 3</div><h3>Piano zero-based: ogni euro al lavoro</h3><p>Bucket, target, auto-assign. “Da assegnare = 0” e il mese è blindato. Coppie e famiglie vedono gli stessi numeri.</p></article>
+</div>
+<h2 class="rv" style="margin-top:64px">Senza vs con.</h2><div class="rule"></div>
+<div class="duel rv"><div class="d-bad"><h3>❌ Senza</h3><ul><li>Scoperto da €47/mese</li><li>Sub dimenticate €68/mese</li><li>6h di Excel al mese</li><li>Litigi sul “pensavo ci fossero…”</li></ul></div><div class="d-good"><h3>✅ Con Tracky</h3><ul><li>Alert prima del rosso</li><li>−€816/anno di sub</li><li>20 min dal telefono</li><li>Stessi numeri, zero litigi</li></ul></div></div>
+<div class="calc rv" id="calcola"><div class="mono" style="font-size:13px;letter-spacing:.12em">CALCOLATRICE DELLO SPRECO · MUOVI I CURSORI</div>
+<label>Scoperti/commissioni al mese: € <span id="v1">40</span></label><input type="range" id="r1" min="0" max="200" value="40">
+<label>Abbonamenti inutili al mese: € <span id="v2">30</span></label><input type="range" id="r2" min="0" max="150" value="30">
+<div class="out">Butti <span id="tot">€ 840</span>/anno.<br>Tracky base: € 0.</div></div>
+</section>
+<section><h2 class="rv">Dicono i lettori.</h2><div class="rule"></div>
+<div class="quotes"><div class="q rv">“Il bot mi ha scritto: il 27 vai sotto. Aveva ragione. Rata spostata, scoperto evitato.”<b>— ELENA F., BOLOGNA ★★★★★</b></div><div class="q rv">“Addio Excel. Io e mia moglie, stessi numeri, due telefoni. Pace domestica.”<b>— MARCO R., TORINO ★★★★★</b></div><div class="q rv">“Tre sub doppie trovate il primo giorno. €41/mese recuperati.”<b>— DAVIDE S., MILANO ★★★★★</b></div></div></section>
+<section style="max-width:760px"><h2 class="rv">Ultime domande.</h2><div class="rule"></div>
+<details class="rv" open><summary>Come prevede il rosso?</summary><p>Proietta entrate, scadenze e ricorrenze sui saldi reali. Ogni giorno ricalcola la prima data negativa.</p></details>
+<details class="rv"><summary>Banca obbligatoria?</summary><p>No. Manuali + CSV bastano; la sync PSD2 è opzionale e revocabile.</p></details>
+<details class="rv"><summary>Quanto costa?</summary><p>Base gratis senza carta. PRO a prezzo fisso, mai percentuali.</p></details></section>
+<section id="go"><div class="final rv"><h2>A domani in edicola: tu, senza rosso.</h2><p class="mono" style="opacity:.7;margin:14px 0 26px">GRATIS · 5 MINUTI · SENZA CARTA · GARANZIA 90 GIORNI</p><a class="btn" href="https://tracky.example.com/signup?utm_source=landing&utm_medium=ticker&utm_campaign=sem">ABBONATI GRATIS →</a></div></section>
+</div>
+<footer class="wrap mono"><span>© 2026 TRACKY POST · DIRETTORE: I TUOI SOLDI</span><span>PRIVACY · TERMINI</span></footer>
+<script>
+const T=['SCOPERTI EVITATI +312 ▲','CASH-FLOW MEDIO +€342 ▲','SUB CHIUSE OGGI 48 ▲','NUOVO RECORD RISPARMIO +€512 ▲','ROSSO PREVISTO 0 ▼','EXCEL ELIMINATI 1.204 ▲'];
+document.getElementById('tape').innerHTML=(T.map(t=>`<b>●</b> ${t} <span class="up">▲</span>`).join(' ')+' ').repeat(4);
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('it-IT')},1000);
+const r1=document.getElementById('r1'),r2=document.getElementById('r2');
+function u(){document.getElementById('v1').textContent=r1.value;document.getElementById('v2').textContent=r2.value;document.getElementById('tot').textContent='€ '+((+r1.value + +r2.value)*12).toLocaleString('it-IT')}
+r1.oninput=r2.oninput=u;u();
+const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('on')),{threshold:.12});document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+const co=new IntersectionObserver(e=>e.forEach(x=>{if(!x.isIntersecting)return;const b=x.target,end=+b.dataset.c,t0=performance.now();(function t(t){const p=Math.min((t-t0)/1400,1);b.textContent=Math.round(end*(1-Math.pow(1-p,3))).toLocaleString('it-IT');p<1&&requestAnimationFrame(t)})(t0);co.unobserve(b)}),{threshold:.5});document.querySelectorAll('[data-c]').forEach(el=>co.observe(el));
+</script>
+</body>
+</html>
