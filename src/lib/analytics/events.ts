@@ -100,7 +100,9 @@ type AnalyticsConfig = {
 };
 
 function readConfig(): AnalyticsConfig {
-  const enabled = import.meta.env.VITE_POSTHOG_ENABLED !== 'false';
+  // Strict opt-in: only the exact string 'true' enables capture. Unset or
+  // anything else (incl. 'false') is a silent no-op.
+  const enabled = import.meta.env.VITE_POSTHOG_ENABLED === 'true';
   const replaySampleRate = Number(import.meta.env.VITE_POSTHOG_REPLAY_SAMPLE ?? '1');
   return {
     enabled,
@@ -142,23 +144,9 @@ export function initAnalytics(): void {
   if (isTestEnv()) return;
 
   const config = readConfig();
-  if (!config.enabled) return;
-  if (!config.key) {
-    if (import.meta.env.DEV) {
-      throw new Error(
-        'VITE_POSTHOG_KEY variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once VITE_POSTHOG_KEY is configured',
-      );
-    }
-    return;
-  }
-  if (!config.apiHost) {
-    if (import.meta.env.DEV) {
-      throw new Error(
-        'VITE_POSTHOG_API_HOST variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once VITE_POSTHOG_API_HOST is configured',
-      );
-    }
-    return;
-  }
+  // Missing key/host is a silent no-op in every environment: throwing in dev
+  // would crash the app for contributors without analytics configured.
+  if (!config.enabled || !config.key || !config.apiHost) return;
   // Never load the SDK before the user accepts.
   if (readConsent() !== 'accepted') return;
 
