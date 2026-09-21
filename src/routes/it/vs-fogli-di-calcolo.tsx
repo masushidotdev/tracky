@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const faq = [
   {
@@ -144,7 +145,14 @@ Ogni riga mostra il badge Valida, Duplicata o Errore, applichi una categoria o l
             <Confetti />
             <h2 className="mk-h2">Tieni il CSV. Molla la fatica.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Import CSV · export CSV · demo gratis</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

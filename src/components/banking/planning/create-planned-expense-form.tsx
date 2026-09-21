@@ -24,6 +24,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -77,6 +78,11 @@ export function CreatePlannedExpenseForm({
               }
             : {}),
           ...(account ? { accountId: account } : {}),
+        });
+        trackEvent(analyticsEvents.plannedExpenseCreated, {
+          direction,
+          recurring: recurringExpense,
+          surface: 'planning',
         });
       },
       {

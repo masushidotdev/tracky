@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const faq = [
   {
@@ -144,7 +145,14 @@ You review each row as Valid, Duplicate, or Error, apply one category or let you
             <Confetti />
             <h2 className="mk-h2">Keep the CSV. Drop the chores.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Import CSV · export CSV · free demo</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

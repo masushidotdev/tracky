@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, DragStrip, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const INTRO = "Dividete affitto, frigo e corse a scuola, eppure i soldi accendono sempre la stessa discussione: si spende in buona fede e nessuno vede il quadro intero. Se cercavate un budget familiare coppie che metta tutti d'accordo, Tracky elimina proprio questo problema. Un unico proprietario gestisce un singolo Piano familiare: stessi saldi, stessi bucket, un unico registro, rivisti insieme allo stesso tavolo.\n\nLe grandi spese smettono di essere sorprese. Date a retta scolastica, assicurazione e vacanze i loro bucket con un obiettivo e una scadenza, e Tracky stima quanto accantonare questo mese. Saltate un mese e la richiesta del mese dopo cresce da sola. I money box sono buste virtuali che pre-finanziano gli stessi obiettivi, e potete collegarne uno a un bucket del Piano così Tracky lo conta come già accantonato.\n\nNel quotidiano tutte le spese di casa passano da bucket condivisi e l'attività elenca ogni movimento in un unico registro, così la revisione sostituisce gli interrogatori. Le entrate finiscono in Pronte da assegnare, e ogni euro riceve un compito finché non arriva a zero. Provate la Demo gratis senza carta: sedetevi insieme, rivedete gli stessi numeri e chiudete il mese in una sola sera.";
 
@@ -68,7 +69,14 @@ function CouplesIt() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Prova la demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Prova la demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -114,7 +122,14 @@ function CouplesIt() {
             <Confetti />
             <h2 className="mk-h2">Un tavolo. Stessi numeri.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · 5 minuti · senza carta</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

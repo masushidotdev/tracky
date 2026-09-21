@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const seoIntro: Array<string> = [
   "You want every euro to have a job before you spend it. The Tracky Plan is a zero based budgeting app that works only with money already observed in your cash accounts. You assign each euro to a bucket until Ready to Assign reaches zero.",
@@ -91,7 +92,14 @@ function PlanEn() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app/plan' : signUpUrl}>{user ? 'Open the plan →' : 'Try the demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app/plan' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the plan →' : 'Try the demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -157,7 +165,14 @@ function PlanEn() {
             <Confetti />
             <h2 className="mk-h2">Assign it all. Sleep well.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · plan included · no card</p>
-            <MagnetCta href={user ? '/app/plan' : signUpUrl}>{user ? 'Open the plan →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app/plan' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the plan →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

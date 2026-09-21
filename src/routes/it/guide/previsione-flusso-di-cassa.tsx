@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const steps = [
   { t: 'Prima finanzia il piano', p: 'Apri il Piano e dai un compito ai soldi già presenti nei conti liquidi prima di proiettare. Assegni la liquidità ai bucket così Da assegnare mostra ciò che è davvero libero, con ogni piano in una sola valuta e il debito delle carte fuori dalla liquidità. Senza questa base finanziata, il Flusso di cassa non costruisce una proiezione solida. Finanzia prima il Piano e ogni data successiva si legge meglio.' },
@@ -118,7 +119,14 @@ function GuideIt() {
             <Confetti />
             <h2 className="mk-h2">Conosci il buco. Evitalo.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · stime, non promesse</p>
-            <MagnetCta href={user ? '/app/planning' : signUpUrl}>{user ? 'Apri la cassa →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app/planning' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la cassa →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const INTRO = "Il budget freelance partita IVA è complicato perché le entrate ballano e le tasse aspettano. Fatturi i clienti, i soldi arrivano in ritardo, e intanto affitto, strumenti e scadenze fiscali continuano ad arrivare. Tracky ti dà una divisione semplice: conti lavoro da una parte, conti vita dall'altra, con le scadenze fiscali dentro il flusso di cassa come voci pianificate. Vedi sempre cosa puoi spendere davvero.\n\nImporti gli export bancari come CSV nei conti manuali, abbini le colonne e controlli ogni riga prima che venga registrata. I duplicati vengono segnalati, così puoi reimportare in sicurezza dopo un'interruzione. Scadenze fiscali pianificate, sottoscrizioni e trasferimenti costruiscono un calendario di cassa che mostra il saldo dopo ogni data. Sono stime basate sulle voci conosciute, non garanzie, e i suggerimenti sulle sottoscrizioni vanno sempre verificati da te.\n\nLe money box sono contenitori virtuali dove accantoni le tasse senza spostare soldi veri. Il tuo Piano mensile mostra cosa è pronto da assegnare e cosa ti aspetta in ogni bucket. Esporti righe CSV pulite per il commercialista quando arriva la stagione fiscale, poi provi tutto nella demo gratis senza carta.";
 
@@ -71,7 +72,14 @@ function FreelanceIt() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Prova la demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Prova la demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -129,7 +137,14 @@ function FreelanceIt() {
             <Confetti />
             <h2 className="mk-h2">Fattura. Accantona. Respira.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · 5 minuti · senza carta</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const steps = [
   { t: 'Fund the plan first', p: 'Open Plan and give the money already in your cash accounts a job before you forecast. You assign cash to buckets so Ready to Assign shows what is truly free, with each plan kept in one currency and card debt held outside cash liquidity. Without this funded base, Cash Flow cannot build a solid projection. Fund the Plan first and every later date reads cleaner.' },
@@ -118,7 +119,14 @@ function GuideEn() {
             <Confetti />
             <h2 className="mk-h2">Know the dip. Dodge it.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · estimates, not promises</p>
-            <MagnetCta href={user ? '/app/planning' : signUpUrl}>{user ? 'Open cash-flow →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app/planning' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open cash-flow →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

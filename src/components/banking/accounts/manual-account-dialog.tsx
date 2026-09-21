@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -178,6 +179,7 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
             currency: currency.trim().toUpperCase(),
             alias: alias.trim() || undefined,
           });
+          trackEvent(analyticsEvents.manualAccountCreated, { account_type: selection, surface: 'accounts' });
           return;
         }
 
@@ -235,7 +237,13 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
         },
       },
     );
-    if (saved) onOpenChange(false);
+    if (saved) {
+      if (isLoanType(selection)) {
+        // loanType enum only — no names, balances, or rates.
+        trackEvent(analyticsEvents.loanCreated, { loan_type: selection, surface: 'accounts' });
+      }
+      onOpenChange(false);
+    }
   }
 
   return (

@@ -16,6 +16,7 @@ import { InputGroup, InputGroupAddon, InputGroupText, InputGroupTextarea } from 
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { todayIso } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 
@@ -75,6 +76,7 @@ export function CreateSubForm() {
         });
         if (subscriptionId) {
           toast.success(t('subscriptions.form.created'));
+          trackEvent(analyticsEvents.subscriptionCreated, { interval: value.interval, surface: 'subscriptions' });
           form.reset();
         } else {
           toast.error(t('subscriptions.form.createFailed'));

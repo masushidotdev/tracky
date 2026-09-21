@@ -1,9 +1,12 @@
+import * as React from 'react';
+
 import { createFileRoute } from '@tanstack/react-router';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
 
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, DragStrip, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const seoIntro: Array<string> = [
   "Tracky è una budget app gratis open source che assegna a ogni euro un lavoro prima che tu lo spenda. Distribuisci il denaro già presente nei tuoi conti nei bucket del Piano, e quando Da assegnare arriva a zero il mese è blindato. È gratis, con licenza MIT e senza carta richiesta: prova la demo ospitata oppure installala tu.",
@@ -62,6 +65,15 @@ const cards = [
 
 function HomeIt() {
   const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+
+  // StrictMode double-invokes effects in dev: ref-guard keeps one landing_viewed.
+  const landingSent = React.useRef(false);
+  React.useEffect(() => {
+    if (landingSent.current) return;
+    landingSent.current = true;
+    trackEvent(analyticsEvents.landingViewed, { auth_state: user ? 'logged' : 'anon' });
+  }, [user]);
+
   return (
     <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/">
       <header className="mk-hero">
@@ -90,7 +102,15 @@ function HomeIt() {
         </Reveal>
         <Reveal>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Prova gratis la demo →'}</MagnetCta>
+            <MagnetCta
+              href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'landing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Prova gratis la demo →'}
+            </MagnetCta>
             <span style={{ fontWeight: 700 }}>↓ trascina le carte, tocca tutto</span>
           </div>
         </Reveal>
@@ -191,7 +211,15 @@ function HomeIt() {
             <Confetti />
             <h2 className="mk-h2">Scoperto avvisato. Tu armato.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Gratis · 5 minuti · senza carta · MIT open source</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta
+              href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'landing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

@@ -19,6 +19,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 type Destination = 'existing' | 'new';
@@ -79,6 +80,7 @@ export function PlanAddCategoryDialog({
         }
         if (!groupId) return;
         await createBucket({ planId, groupId, categoryId: selectedCategory._id });
+        trackEvent(analyticsEvents.planBucketCreated, { destination, surface: 'plan' });
       },
       { success: t('plan.addCategory.success'), error: t('plan.addCategory.failed') },
     );

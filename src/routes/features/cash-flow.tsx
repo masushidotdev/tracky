@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const seoIntro: Array<string> = [
   "You want a cash flow forecast personal finance setup that shows trouble before your bank does. Tracky turns your known commitments — planned income and expenses, active subscriptions, instalments, card statements, and scheduled one-off movements — into a dated liquidity calendar. You start from your latest cash balances and you see the balance after every date in your cycle.",
@@ -82,7 +83,14 @@ function CashflowEn() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app/planning' : signUpUrl}>{user ? 'Open cash-flow →' : 'Try the demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app/planning' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open cash-flow →' : 'Try the demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -132,7 +140,14 @@ function CashflowEn() {
             <Confetti />
             <h2 className="mk-h2">See the dip before it sees you.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · cash-flow included · no card</p>
-            <MagnetCta href={user ? '/app/planning' : signUpUrl}>{user ? 'Open cash-flow →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app/planning' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open cash-flow →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

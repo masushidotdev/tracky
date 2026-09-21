@@ -15,6 +15,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { allNavItems, analystNavItem, isAnalystEnabled } from '@/lib/navigation';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useBalancePrivacy } from '@/lib/balance-privacy-context';
 import { useI18n } from '@/lib/i18n';
 
@@ -66,6 +67,7 @@ export function CommandMenu() {
 
   React.useEffect(() => {
     if (open) {
+      trackEvent(analyticsEvents.commandMenuOpened, {});
       return;
     }
 

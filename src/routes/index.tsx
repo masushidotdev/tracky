@@ -1,9 +1,12 @@
+import * as React from 'react';
+
 import { createFileRoute } from '@tanstack/react-router';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
 
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, DragStrip, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const seoIntro: Array<string> = [
   "Tracky is an open source budget app that gives every euro a job before you spend it. You assign the money already in your accounts across Plan buckets, and when Ready to Assign hits zero, your month is locked. It is free, MIT-licensed, with no card required — try the hosted demo or self-host it yourself.",
@@ -62,6 +65,15 @@ const cards = [
 
 function HomeEn() {
   const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+
+  // StrictMode double-invokes effects in dev: ref-guard keeps one landing_viewed.
+  const landingSent = React.useRef(false);
+  React.useEffect(() => {
+    if (landingSent.current) return;
+    landingSent.current = true;
+    trackEvent(analyticsEvents.landingViewed, { auth_state: user ? 'logged' : 'anon' });
+  }, [user]);
+
   return (
     <MarketingSite locale="en" auth={{ user, signInUrl, signUpUrl }} currentPath="/">
       <header className="mk-hero">
@@ -90,7 +102,15 @@ function HomeEn() {
         </Reveal>
         <Reveal>
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Try the demo free →'}</MagnetCta>
+            <MagnetCta
+              href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'landing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Try the demo free →'}
+            </MagnetCta>
             <span style={{ fontWeight: 700 }}>↓ drag the cards, touch everything</span>
           </div>
         </Reveal>
@@ -191,7 +211,15 @@ function HomeEn() {
             <Confetti />
             <h2 className="mk-h2">Overdraft: warned. You: armed.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free · 5 minutes · no card · MIT open source</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta
+              href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'landing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

@@ -1,8 +1,10 @@
+import * as React from 'react';
 import { useQuery } from 'convex/react';
 
 import { api } from '../../../../convex/_generated/api';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { analyticsEvents, isAnalyticsReady, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 type BankConnectionStatusProps = {
@@ -13,6 +15,19 @@ type BankConnectionStatusProps = {
 export function BankConnectionStatus({ state, fallbackStatus }: BankConnectionStatusProps) {
   const { t } = useI18n();
   const authRequest = useQuery(api.banking.accounts.getAuthRequestStatus, { state });
+  const tracked = React.useRef(false);
+
+  // No dep array: reruns until consent arrives, then records exactly once.
+  React.useEffect(() => {
+    if (tracked.current || authRequest === undefined || authRequest === null) return;
+    if (!isAnalyticsReady()) return;
+    tracked.current = true;
+    const failed = authRequest.status === 'failed' || fallbackStatus === 'failed';
+    // No bank name, no error message: only outcome + surface.
+    trackEvent(failed ? analyticsEvents.bankConnectionFailed : analyticsEvents.bankConnectionCompleted, {
+      surface: 'bank-connections',
+    });
+  });
 
   if (authRequest === undefined) {
     return (

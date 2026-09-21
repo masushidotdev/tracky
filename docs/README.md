@@ -30,6 +30,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0019-devtools-dev-only.md` - TanStack devtools behind a dev-only lazy gate so production builds never ship the panel.
 - `decisions/0020-jev-decision-layer.md` - calibrated jev decision gates (OpenRouter, advisory-only, composite thresholds, tier budgets) across transfer, import, proactive, subscription, and write-guard flows.
 - `decisions/0021-public-marketing-seo.md` - public Vivi marketing pages, EN-root + /it/ URLs, hreflang/sitemap/robots, OOS-honest copy.
+- `decisions/0022-posthog-tracking.md` - opt-in EU PostHog analytics: client-only capture, single project with app_env separation, managed proxy, replay masks, and no-PII event rules.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.
@@ -75,6 +76,7 @@ resume from source-controlled context instead of chat history.
 - `execution-plans/ledger-recurring-planned-occurrences.md` - next unpaid recurring-rule projections in the ledger without synthetic transaction behavior.
 - `execution-plans/plan-cross-month-transfers.md` - cross-month confirmed cash-transfer normalization, fee attribution, and regression verification.
 - `execution-plans/public-repository-governance.md` - public repository governance: branch rulesets, merge settings, fork workflow approval, and security configuration.
+- `execution-plans/posthog-tracking.md` - PostHog MVP implementation: foundations, core events, deviations, staging QA checklist, and operator steps.
 - `execution-plans/jev-decision-layer.md` - jev decision layer implementation: phases, verification evidence, and follow-ups.
 
 ## Harness Notes

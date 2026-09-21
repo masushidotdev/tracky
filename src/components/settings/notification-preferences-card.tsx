@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Input } from '@/components/ui/input';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 const LEAD_DAY_OPTIONS = [0, 1, 3, 7, 14, 30] as const;
@@ -82,6 +83,8 @@ function NotificationPreferencesEditor({ initial }: { initial: NotificationPrefe
     setSaving(true);
     try {
       await updatePreferences({ billReminderLeadDays: leadDays, emailEnabled, telegramEnabled });
+      // Channel toggles only — no addresses or chat ids.
+      trackEvent(analyticsEvents.notificationPrefsUpdated, { email: emailEnabled, telegram: telegramEnabled });
       toast.success(t('settings.notifications.saved'));
     } catch {
       toast.error(t('settings.notifications.saveFailed'));

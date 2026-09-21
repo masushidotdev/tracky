@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { docsManifest, getDoc, loadDocsModule } from '@/lib/docs/content';
 import { getDocsCopy } from '@/lib/docs/copy';
 import { getAdjacentDocs } from '@/lib/docs/manifest-core';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,15 @@ export function DocsPage({ slug }: Readonly<{ slug: string }>) {
   const { locale } = useI18n();
   const copy = getDocsCopy(locale);
   const doc = getDoc(slug, locale);
+  const docsViewSent = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (!doc) return;
+    const key = `${slug}:${locale}`;
+    if (docsViewSent.current === key) return;
+    docsViewSent.current = key;
+    trackEvent(analyticsEvents.docsArticleViewed, { slug, locale });
+  }, [doc, locale, slug]);
 
   if (!doc) {
     return (

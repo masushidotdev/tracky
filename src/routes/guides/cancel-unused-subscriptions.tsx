@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const steps = [
   { t: 'Import real history', p: 'You start with two to three months of CSV history, because detection needs real windows to compare. You import your own movements, with merchant names, amounts in the same currency, and dates. You give monthly and yearly patterns enough room to repeat. You get a solid base without relying on memory, so the next steps become quick checks instead of guesswork.' },
@@ -123,7 +124,14 @@ function GuideEn() {
             <Confetti />
             <h2 className="mk-h2">One couch. One subscription.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · suggestions, not certainty</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

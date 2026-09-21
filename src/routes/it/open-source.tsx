@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const faq = [
   {
@@ -77,8 +78,12 @@ function OssIt() {
         <Reveal>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             <MagnetCta href="https://github.com/masushidotdev/tracky">★ Stella su GitHub →</MagnetCta>
-            <MagnetCta href={user ? '/app' : signUpUrl} variant="pill">
-              {user ? 'Apri la demo →' : 'Prova la demo →'}
+            <MagnetCta href={user ? '/app' : signUpUrl} variant="pill" onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }>
+                {user ? 'Apri la demo →' : 'Prova la demo →'}
             </MagnetCta>
           </div>
         </Reveal>

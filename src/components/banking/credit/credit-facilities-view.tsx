@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -129,7 +130,7 @@ export function CreditFacilitiesView() {
   ]);
 
   async function createFacility(values: CreateFacilityValues) {
-    return pendingAction.run(
+    const ok = await pendingAction.run(
       'create',
       async () => {
         const tanBps = values.annualNominalRateBps.trim()
@@ -165,6 +166,9 @@ export function CreditFacilitiesView() {
       },
       { success: t('credit.form.created'), error: t('credit.form.createFailed') },
     );
+    // facilityType enum only — no names, limits, or balances.
+    if (ok) trackEvent(analyticsEvents.creditFacilityCreated, { facility_type: values.facilityType });
+    return ok;
   }
 
   async function updateUsage(facility: CreditFacility) {
@@ -275,7 +279,7 @@ export function CreditFacilitiesView() {
 
   async function closeCardCycle(facility: CreditFacility, cycleMonth?: string) {
     const operationKey = `cycleClose:${facility._id}`;
-    await pendingAction.run(
+    const ok = await pendingAction.run(
       operationKey,
       async () => {
         await closeCreditFacilityUsageCycle({
@@ -285,6 +289,7 @@ export function CreditFacilitiesView() {
       },
       { success: t('credit.statement.closed'), error: t('credit.statement.closeFailed') },
     );
+    if (ok) trackEvent(analyticsEvents.statementCycleClosed, { surface: 'credit' });
   }
 
   async function updateFacility(facility: CreditFacility, values: FacilityEditValues) {

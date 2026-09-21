@@ -19,6 +19,7 @@ import { ListSkeleton } from '@/components/app/skeletons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -84,7 +85,7 @@ export function InstallmentPlansPanel({ facilities }: { facilities: Array<Credit
       return;
     }
 
-    await pendingAction.run(
+    const ok = await pendingAction.run(
       'createInstallment',
       async () => {
         await createInstallmentPlanMutation({
@@ -108,6 +109,7 @@ export function InstallmentPlansPanel({ facilities }: { facilities: Array<Credit
       },
       { success: t('credit.installments.created'), error: t('credit.installments.createFailed') },
     );
+    if (ok) trackEvent(analyticsEvents.installmentPlanCreated, { surface: 'credit' });
   }
 
   async function updateInstallmentPlan(values: InstallmentPlanFormValues) {

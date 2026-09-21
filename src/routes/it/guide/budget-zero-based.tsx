@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const steps = [
   { t: 'Crea un conto manuale', p: 'Apri Conti e aggiungi un conto manuale di tipo checking in EUR, con un nome breve che riconosci ogni volta. Imposti il saldo reale di oggi come punto di partenza, perché il piano assegna solo denaro che esiste davvero in questo momento. Non colleghi nulla, quindi ogni cifra successiva nasce da questo saldo più le righe CSV che controlli tu per primo. Questo conto diventa l\'unica fonte del tuo primo piano, e ogni euro assegnato corrisponde a liquidità che possiedi davvero.' },
@@ -124,7 +125,14 @@ function GuideIt() {
             <Confetti />
             <h2 className="mk-h2">Tocca a te. 5 passi.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · senza carta · guida inclusa</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Apri la demo →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri la demo →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

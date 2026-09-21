@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const seoIntro: Array<string> = [
   "Vuoi dare a ogni euro un lavoro prima di spenderlo. Il Piano di Tracky è un budget a base zero che usa solo il denaro già osservato nei tuoi conti liquidi. Assegni ogni euro a un bucket finché Da assegnare non arriva a zero.",
@@ -91,7 +92,14 @@ function PlanIt() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app/plan' : signUpUrl}>{user ? 'Apri il piano →' : 'Prova la demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app/plan' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri il piano →' : 'Prova la demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -157,7 +165,14 @@ function PlanIt() {
             <Confetti />
             <h2 className="mk-h2">Assegna tutto. Dormi bene.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · piano incluso · senza carta</p>
-            <MagnetCta href={user ? '/app/plan' : signUpUrl}>{user ? 'Apri il piano →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app/plan' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri il piano →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

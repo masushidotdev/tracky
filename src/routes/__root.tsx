@@ -13,7 +13,9 @@ import type { ConvexQueryClient } from '@convex-dev/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
+import { ConsentBanner } from '@/components/analytics/consent-banner';
 import { I18nProvider, useI18n } from '@/lib/i18n';
+import { AnalyticsBootstrap } from '@/lib/analytics/analytics-bootstrap';
 
 // Dev-only panel: static `null` in production so the devtools chunk is never
 // requested outside development.
@@ -74,9 +76,13 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootComponent() {
+  const { userId } = Route.useRouteContext();
+
   return (
     <RootDocument>
+      <AnalyticsBootstrap userId={userId} />
       <Outlet />
+      <ConsentBanner />
     </RootDocument>
   );
 }

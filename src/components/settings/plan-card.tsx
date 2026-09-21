@@ -31,7 +31,7 @@ export function PlanCard() {
             </span>
           </div>
         )}
-        {entitlements?.tier === 'free' ? <UpgradeCta /> : null}
+        {entitlements?.tier === 'free' ? <UpgradeCta surface="settings_plan" /> : null}
       </CardContent>
     </Card>
   );

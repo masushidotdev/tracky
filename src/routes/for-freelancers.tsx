@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const INTRO = "Budgeting for freelancers is messy because your income moves and your taxes wait. You invoice clients, money lands late, and meanwhile rent, tools, and tax deadlines keep coming. Tracky gives you a simple split: work accounts on one side, life accounts on the other, with tax deadlines sitting inside your cash flow as planned items. You always see what is really yours to spend.\n\nYou import bank exports as CSV into manual accounts, map columns, and review each row before it lands. Duplicates get flagged, so you can re-import safely after an interruption. Planned tax items, subscriptions, and transfers build a cash-flow calendar that shows what happens after each date. These are estimates from known items, not guarantees, and subscription suggestions still need your check.\n\nMoney boxes are virtual jars where you set aside tax money without moving real cash. Your monthly Plan shows what is ready to assign and what is already waiting in each bucket. Export clean CSV rows for your accountant when tax season arrives, then try it all in the free demo with no card needed.";
 
@@ -70,7 +71,14 @@ function FreelanceEn() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Try the demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Try the demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -128,7 +136,14 @@ function FreelanceEn() {
             <Confetti />
             <h2 className="mk-h2">Invoice. Set aside. Relax.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · 5 minutes · no card</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

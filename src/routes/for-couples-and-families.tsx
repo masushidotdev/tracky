@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, DragStrip, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const INTRO = "You share the rent, the fridge, and the school run, yet money still sparks the same old argument: everyone spends with good intentions and nobody sees the full picture. If you searched for a budget app for couples families, this is the problem Tracky removes. One account owner runs a single household Plan: same balances, same buckets, one ledger, reviewed together at the same table.\n\nBig bills stop being surprises. You give school fees, insurance, and holidays their own buckets with a target and a due date, and Tracky estimates what to set aside this month. Skip a month and next month's ask grows by itself. Money boxes are virtual envelopes that pre-fund the same goals, and you can link one to a Plan bucket so Tracky counts it as already set aside.\n\nDay to day, all household spending flows through shared buckets and the activity lists every movement in one ledger, so reviews replace interrogations. Income lands in Ready to Assign, and every euro gets a job until it reaches zero. Try the Free demo with no card: sit down together, review the same numbers, and settle the month in a single sitting.";
 
@@ -68,7 +69,14 @@ function CouplesEn() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Try the demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Try the demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -114,7 +122,14 @@ function CouplesEn() {
             <Confetti />
             <h2 className="mk-h2">One table. Same numbers.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · 5 minutes · no card</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

@@ -4,6 +4,7 @@ import '../../styles/marketing/vivi.css';
 import { ProgressBar } from './vivi';
 
 import type { AppLocale } from '@/lib/i18n';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { marketingPages } from '@/lib/marketing/pages';
 
 export type MarketingAuth = {
@@ -74,10 +75,30 @@ export function MarketingSite({
                 {locale === 'it' ? 'Apri la demo →' : 'Open the demo →'}
               </a>
             ) : (
-              <a className="mk-btn" href={auth.signUpUrl}>
-                {locale === 'it' ? 'Gratis →' : 'Free →'}
+              <a
+                className="mk-btn"
+                style={{ marginRight: 8 }}
+                href={auth.signInUrl}
+                onClick={() =>
+                  // sendBeacon: the full-page WorkOS redirect unloads us before XHR flushes.
+                  trackEvent(analyticsEvents.signinStarted, { cta_location: 'nav' }, { sendBeacon: true })
+                }
+              >
+                {locale === 'it' ? 'Accedi' : 'Sign in'}
               </a>
             )}
+            {!auth.user ? (
+              <a
+                className="mk-btn"
+                href={auth.signUpUrl}
+                onClick={() =>
+                  // sendBeacon: the full-page WorkOS redirect unloads us before XHR flushes.
+                  trackEvent(analyticsEvents.signupStarted, { cta_location: 'nav' }, { sendBeacon: true })
+                }
+              >
+                {locale === 'it' ? 'Gratis →' : 'Free →'}
+              </a>
+            ) : null}
           </div>
         </nav>
         <main>{children}</main>

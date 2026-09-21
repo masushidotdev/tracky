@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const seoIntro: Array<string> = [
   "You want free budget app pricing with no fine print, so here it is: Tracky costs €0 today. You get the hosted demo plus the MIT-licensed self-hosted app, and you never enter card details because there is no checkout anywhere. Start in minutes with manual accounts and CSV import, and see your money clearly from day one.",
@@ -98,8 +99,12 @@ function PricingEn() {
                 <li>Self-host from GitHub, MIT</li>
               </ul>
               <p style={{ marginTop: 18 }}>
-                <MagnetCta href={cta} variant="pill">
-                  {user ? 'Open the demo →' : 'Start free →'}
+                <MagnetCta href={cta} variant="pill" onClick={() =>
+                  user
+                    ? undefined
+                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }>
+                {user ? 'Open the demo →' : 'Start free →'}
                 </MagnetCta>
               </p>
             </div>
@@ -147,7 +152,14 @@ function PricingEn() {
             <Confetti />
             <h2 className="mk-h2">€0. No asterisk big enough to hide.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · MIT repo · no card</p>
-            <MagnetCta href={cta}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={cta} onClick={() =>
+                  user
+                    ? undefined
+                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+                }
+              >
+                {user ? 'Open the demo →' : 'Start free →'}
+              </MagnetCta>
           </div>
         </Reveal>
       </section>

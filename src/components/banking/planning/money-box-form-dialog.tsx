@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -38,12 +39,14 @@ export function MoneyBoxFormDialog({
   onOpenChange,
   open,
   prefill,
+  surface = 'planning',
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   accounts: Array<Doc<'financialAccounts'>> | undefined;
   moneyBox?: Doc<'moneyBoxes'> | null;
   prefill?: MoneyBoxPrefill | null;
+  surface?: string;
 }) {
   const { t } = useI18n();
   const createMoneyBox = useMutation(api.banking.planning.createMoneyBox);
@@ -99,6 +102,8 @@ export function MoneyBoxFormDialog({
           await updateMoneyBox({ moneyBoxId: moneyBox._id, ...values });
         } else {
           await createMoneyBox({ ...values, plannedExpenseId: prefill?.plannedExpenseId });
+          trackEvent(analyticsEvents.moneyBoxCreated, { surface });
+          if (surface === 'goals') trackEvent(analyticsEvents.goalCreated, { surface });
         }
       },
       {

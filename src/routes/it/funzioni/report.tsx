@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const INTRO = "Vuoi risposte chiare dai tuoi soldi, e il report spese export CSV di Tracky te le dà in fretta. Hai tre schede — flusso di cassa, spese, entrate — che mostrano da dove arriva il denaro, dove va e come cambiano le abitudini nel tempo. Vedi ogni valuta separata, senza totali misti fuorvianti.\n\nConfronti i gruppi in modalità Composizione oppure segui mesi, trimestri e anni in modalità Andamento. Passi dalla ciambella alle barre orizzontali per spese ed entrate, oppure usi barre affiancate e impilate per l'andamento. Tocchi un segmento, una riga della legenda o una barra per aprire i movimenti più recenti, con data, descrizione, categoria e importo con segno.\n\nFiltri per date relative o personalizzate, raggruppamento, conti, categorie, tag e limiti di importo. Salvi fino a 20 viste che conservano solo la configurazione, così Questo mese segue sempre il mese corrente. Esplori i dieci gruppi principali mentre quelli minori finiscono in Altro, e le transazioni nascoste restano fuori da ogni totale.\n\nEsplori ogni scheda nella demo — il badge dice Funziona nella demo — con filtri, viste ed export pronti da provare. Tieni trasferimenti e movimenti interni fuori da spese ed entrate, così i totali restano puliti. Chiudi con numeri puliti, pronti da condividere con il commercialista.";
 
@@ -79,7 +80,14 @@ function ReportsIt() {
           </p>
         </Reveal>
         <Reveal>
-          <MagnetCta href={user ? '/app/reports' : signUpUrl}>{user ? 'Apri i report →' : 'Prova la demo →'}</MagnetCta>
+          <MagnetCta href={user ? '/app/reports' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri i report →' : 'Prova la demo →'}
+            </MagnetCta>
         </Reveal>
       </header>
       <section className="mk-section" style={{ paddingTop: 0 }}>
@@ -115,7 +123,14 @@ function ReportsIt() {
             <Confetti />
             <h2 className="mk-h2">Il commercialista ringrazia.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · report inclusi · senza carta</p>
-            <MagnetCta href={user ? '/app/reports' : signUpUrl}>{user ? 'Apri i report →' : 'Inizia gratis →'}</MagnetCta>
+            <MagnetCta href={user ? '/app/reports' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Apri i report →' : 'Inizia gratis →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

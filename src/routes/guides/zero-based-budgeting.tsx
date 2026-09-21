@@ -4,6 +4,7 @@ import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const steps = [
   { t: 'Create one manual account', p: 'You open Accounts and add a manual checking account in EUR with a short name you recognize instantly every time. You set today\'s real balance as the starting point, because the plan only assigns money that truly exists right now. You connect nothing, so every later figure comes from this balance plus CSV rows you preview yourself first. This account becomes the single funding source for your first plan, and each assigned euro traces back to cash you hold now.' },
@@ -124,7 +125,14 @@ function GuideEn() {
             <Confetti />
             <h2 className="mk-h2">Your turn. 5 steps.</h2>
             <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · no card · guide included</p>
-            <MagnetCta href={user ? '/app' : signUpUrl}>{user ? 'Open the demo →' : 'Start free →'}</MagnetCta>
+            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
+                user
+                  ? undefined
+                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+              }
+            >
+              {user ? 'Open the demo →' : 'Start free →'}
+            </MagnetCta>
           </div>
         </Reveal>
       </section>

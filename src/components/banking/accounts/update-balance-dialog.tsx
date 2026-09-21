@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { moneyInputValue, parseMoneyMinor } from '@/lib/money';
 
@@ -73,7 +74,10 @@ export function UpdateBalanceDialog({
         error: t('accounts.balance.updateFailed'),
       },
     );
-    if (saved) onOpenChange(false);
+    if (saved) {
+      trackEvent(analyticsEvents.balanceUpdated, { surface: 'accounts' });
+      onOpenChange(false);
+    }
   }
 
   return (

@@ -144,7 +144,17 @@ export function Confetti() {
 }
 
 /** Magnetic hover on the hero CTA (desktop pointer only). */
-export function MagnetCta({ href, children, variant = 'big' }: { href: string; children: React.ReactNode; variant?: 'big' | 'pill' }) {
+export function MagnetCta({
+  href,
+  children,
+  variant = 'big',
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  variant?: 'big' | 'pill';
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+}) {
   const ref = React.useRef<HTMLAnchorElement>(null);
   React.useEffect(() => {
     const el = ref.current;
@@ -164,7 +174,7 @@ export function MagnetCta({ href, children, variant = 'big' }: { href: string; c
     };
   }, []);
   return (
-    <a ref={ref} className={variant === 'big' ? 'mk-big-cta' : 'mk-btn'} href={href}>
+    <a ref={ref} className={variant === 'big' ? 'mk-big-cta' : 'mk-btn'} href={href} onClick={onClick}>
       {children}
     </a>
   );
