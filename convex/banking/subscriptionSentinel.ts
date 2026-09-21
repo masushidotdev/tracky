@@ -59,13 +59,16 @@ export const classifySeries = internalAction({
       const decision = await decide({ series }, subscriptionSentinelQuestions);
       const status = jevChoice(decision.answers.status);
       const createPlanned = jevNoul(decision.answers.create_planned);
+      // Telemetry to console, never to the user's memo field.
+      console.log(
+        `[jev:sentinel:v1] model=${decision.model} cost=${decision.usage?.cost ?? '?'} latencyMs=${decision.latencyMs} status=${status?.choice ?? 'active'}`,
+      );
       await ctx.runMutation(internal.banking.subscriptionSentinel.recordSentinelVerdict, {
         userId: args.userId,
         transactionId: args.transactionId,
         status: status?.choice ?? 'active',
         confidence: status?.confidence ?? 0,
         createPlanned: createPlanned ?? 0,
-        note: `jev:sentinel:v1 model=${decision.model} cost=${decision.usage?.cost ?? '?'} latencyMs=${decision.latencyMs}`,
       });
     } catch {
       // Fail closed: no verdict row, deterministic detection is unaffected.
@@ -74,8 +77,10 @@ export const classifySeries = internalAction({
   },
 });
 
-// Advisory verdict only: recorded on the transaction note for the review UI.
-// Creation of plannedTransactions rows stays a user-confirmed action.
+// Advisory verdict only. Currently a no-op sink for the classifier output:
+// recording must never scribble on the user's memo field, and creation of
+// plannedTransactions rows stays a user-confirmed action. Kept as the seam
+// where a future review-queue surface reads verdicts without touching notes.
 export const recordSentinelVerdict = internalMutation({
   args: {
     userId: v.string(),
@@ -83,18 +88,10 @@ export const recordSentinelVerdict = internalMutation({
     status: v.string(),
     confidence: v.number(),
     createPlanned: v.number(),
-    note: v.string(),
   },
   handler: async (ctx, args) => {
     const transaction = await ctx.db.get('transactions', args.transactionId);
     if (!transaction || transaction.userId !== args.userId) return null;
-    const verdict = ['active', 'price-hiked', 'zombie', 'one-off-cluster'].includes(args.status)
-      ? args.status
-      : 'active';
-    await ctx.db.patch('transactions', transaction._id, {
-      note: [transaction.note, `${args.note} status=${verdict}`].filter(Boolean).join(' ').slice(0, 500),
-      updatedAtMs: Date.now(),
-    });
     return transaction._id;
   },
 });
