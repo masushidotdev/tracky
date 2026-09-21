@@ -33,9 +33,9 @@ checkout; zero invented users, ratings or savings figures.
 
 Marketing loaders degrade to logged-out (`signInUrl/signUpUrl → /app`) when
 WorkOS secrets are absent, so pages SSR on secret-less workers; `/app/*`
-stays gated by `_authenticated` loaders. `<html lang>` stays hardcoded `en`
-(server-side fix deferred); the marketing shell sets it client-side per route
-and OG locale + hreflang cover crawlers.
+stays gated by `_authenticated` loaders. `<html lang>` derives from the SSR
+route path in `RootDocument` (`/it/*` → `it`, else `en`), so Italian pages ship
+correct language on first paint.
 
 Marketing copy lives in colocated per-route dicts, not `src/lib/i18n.tsx`
 (5k lines, silent-missing-key). Vivi theme is scoped CSS under `.mk`

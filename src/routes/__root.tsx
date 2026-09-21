@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouterState } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
 import { Suspense, lazy } from 'react';
@@ -88,8 +88,12 @@ function NotFoundPage() {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  // SSR-safe: during SSR this reflects the request URL, so Italian routes
+  // ship lang="it" on first paint for crawlers and assistive tech.
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const lang = pathname === '/it' || pathname.startsWith('/it/') ? 'it' : 'en';
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

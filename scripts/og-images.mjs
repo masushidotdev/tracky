@@ -3,8 +3,9 @@
 // Usage:
 //   node scripts/og-images.mjs            # generate missing PNGs only
 //   node scripts/og-images.mjs --force    # regenerate all
-// Env (never commit): CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, OG_BASE_URL
-// (default https://www.trytracky.app — point at staging or localhost to test).
+// Env (never commit): CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN plus
+// OG_BASE_URL (required when generation is enabled — the already-deployed
+// origin serving /og, e.g. staging or production).
 // Replaces the solid-color placeholders; runs before `vite build`.
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
