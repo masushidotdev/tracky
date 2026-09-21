@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { countBucket, lengthBucket, normalizeRouteId, readConsent, setAnalyticsConsent } from './events';
+import {
+  countBucket,
+  lengthBucket,
+  normalizeRouteId,
+  readConsent,
+  sanitizeEventUrls,
+  setAnalyticsConsent,
+} from './events';
 
 vi.mock('posthog-js', () => ({
   default: {
@@ -57,5 +64,37 @@ describe('buckets', () => {
     expect(lengthBucket(100)).toBe('51-200');
     expect(lengthBucket(500)).toBe('201-1000');
     expect(lengthBucket(5000)).toBe('1000+');
+  });
+});
+
+describe('sanitizeEventUrls', () => {
+  test('rewrites SDK URL props to the normalized route id', () => {
+    const event = {
+      properties: {
+        $current_url: 'https://app.trytracky.app/app/loans/abc123?x=1#y',
+        $pathname: '/app/loans/abc123',
+        $referrer: 'https://google.com/',
+        $referring_domain: 'google.com',
+        route_id: '/app/loans/:id',
+      },
+    };
+    sanitizeEventUrls(event);
+    expect(event.properties.$pathname).toBe('/app/loans/:id');
+    expect(event.properties.$current_url).toBe('https://app.trytracky.app/app/loans/:id');
+    expect(event.properties.$referrer).toBeUndefined();
+    expect(event.properties.$referring_domain).toBeUndefined();
+    expect(event.properties.route_id).toBe('/app/loans/:id');
+  });
+
+  test('drops URL props when no pathname is present', () => {
+    const event = { properties: { $current_url: 'https://example.com/', foo: 'bar' } };
+    sanitizeEventUrls(event);
+    expect(event.properties.$current_url).toBeUndefined();
+    expect(event.properties.$pathname).toBeUndefined();
+    expect(event.properties.foo).toBe('bar');
+  });
+
+  test('tolerates null events', () => {
+    expect(sanitizeEventUrls(null)).toBeNull();
   });
 });

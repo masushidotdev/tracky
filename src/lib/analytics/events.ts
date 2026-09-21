@@ -85,6 +85,36 @@ export function normalizeRouteId(pathname: string): string {
   return pathname;
 }
 
+// Defense-in-depth for SDK-added URL props: posthog-js attaches $current_url,
+// $pathname, $host etc. to every capture even with autocapture off, so the
+// before_send hook rewrites them to the normalized route id (no raw Convex
+// ids, query, hash, or referrer ever leaves the browser).
+export function sanitizeEventUrls(
+  event: { properties?: Record<string, unknown> | null } | null,
+): typeof event {
+  if (!event || !event.properties) return event;
+  const props = event.properties;
+  const rawPath = typeof props.$pathname === 'string' ? props.$pathname : null;
+  const routeId = rawPath ? normalizeRouteId(rawPath.split('?')[0].split('#')[0]) : null;
+  if (routeId) {
+    props.$pathname = routeId;
+    if (typeof props.$current_url === 'string') {
+      try {
+        const url = new URL(props.$current_url);
+        props.$current_url = `${url.origin}${routeId}`;
+      } catch {
+        props.$current_url = routeId;
+      }
+    }
+  } else {
+    delete props.$current_url;
+    delete props.$pathname;
+  }
+  delete props.$referrer;
+  delete props.$referring_domain;
+  return event;
+}
+
 export type ConsentState = 'unknown' | 'accepted' | 'rejected';
 
 export function readConsent(): ConsentState {
@@ -163,6 +193,7 @@ export function initAnalytics(): void {
     capture_pageview: false,
     capture_pageleave: false,
     opt_out_capturing_by_default: true,
+    before_send: sanitizeEventUrls,
     // Consent-gated: opt-in banner accepted before init, so recording starts
     // immediately at the configured sample rate (user decision: 1.0).
     // Revocation calls reset().

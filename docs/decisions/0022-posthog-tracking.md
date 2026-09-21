@@ -13,7 +13,10 @@ Client-only PostHog via `posthog-js`, lazy init after explicit opt-in banner:
 - `opt_out_capturing_by_default: true` + localStorage gate (`unknown` default):
   zero beacons before accept. Kill-switch `VITE_POSTHOG_ENABLED=false`.
 - Manual `$pageview` on TanStack route change (debounced, `route_id`
-  normalized, query stripped). `autocapture: false`.
+  normalized, query stripped). `autocapture: false`. A `before_send` hook
+  rewrites SDK-added URL props (`$current_url`, `$pathname`) to the
+  normalized route id and drops `$referrer`/`$referring_domain`, so raw
+  Convex ids, query, hash, and referrer never leave the browser.
 - Identify on WorkOS user id only; alias anon->logged; `reset()` + opt-out on
   logout. No emails, names, amounts, notes, bank names, prompt text in props.
 - Session replay 100% sample (user decision), `maskAllInputs`, text/block

@@ -59,10 +59,14 @@ MVP funnel + core (~25 events), opt-in banner, client-only EU capture:
   with `accepted` still emitted on accept.
 - `reset()` clearing `app_env` super-prop — re-register on identify path so
   staging/prod separation survives logout/login.
+- SDK-added URL props (`$current_url`, `$pathname`, `$referrer`) bypass the
+  `route_id` normalization on custom events — `before_send: sanitizeEventUrls`
+  rewrites them to the normalized route id and drops referrer fields, with
+  unit tests in `events.test.ts`.
 
 ## Current Verification Evidence
 
-- `npx vitest run src/lib/analytics/events.test.ts`: 6 passed.
+- `npx vitest run src/lib/analytics/events.test.ts`: 9 passed (incl. 3 `sanitizeEventUrls`).
 - `tsc --noEmit`: clean excluding the pre-existing `content-collections`
   generated-types error, unrelated to this change.
 - `eslint --max-warnings 0`: clean on all touched files.
