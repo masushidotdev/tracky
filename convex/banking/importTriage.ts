@@ -119,13 +119,33 @@ export const requestRowTriage = internalMutation({
     const transaction = await ctx.db.get('transactions', args.transactionId);
     if (!transaction || transaction.userId !== args.userId) return { routing: 'queue', queued: false };
     if (transaction.classificationKind !== 'uncategorized') return { routing: 'queue', queued: false };
+    // Atomic reservation first: check + spend in one mutation, so a batch of
+    // N eligible rows cannot all pass the check and overshoot the tier budget
+    // before usage is recorded.
     const settings = await ctx.db
       .query('userSettings')
       .withIndex('by_userId', (q) => q.eq('userId', args.userId))
       .unique();
-    const usage = (settings as { jevTriageUsage?: { date?: string; count?: number } } | null)?.jevTriageUsage;
-    const spent = usage?.date === args.today ? (usage.count ?? 0) : 0;
+    const now = Date.now();
+    // userSettings.jevTriageUsage is schema-optional: absent on old rows.
+    const previousUsage: { date?: string; count?: number } | undefined = settings
+      ? (settings as typeof settings & { jevTriageUsage?: { date?: string; count?: number } }).jevTriageUsage
+      : undefined;
+    const spent = previousUsage?.date === args.today ? (previousUsage.count ?? 0) : 0;
     if (spent >= args.dailyBudget) return { routing: 'queue', queued: false };
+    if (!settings) {
+      await ctx.db.insert('userSettings', {
+        userId: args.userId,
+        jevTriageUsage: { date: args.today, count: 1 },
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+    } else {
+      await ctx.db.patch('userSettings', settings._id, {
+        jevTriageUsage: { date: args.today, count: spent + 1 },
+        updatedAtMs: now,
+      });
+    }
     await ctx.scheduler.runAfter(0, internal.banking.importTriage.triageRow, {
       userId: args.userId,
       transactionId: args.transactionId,
@@ -151,6 +171,8 @@ export const triageRow = internalAction({
         kind !== undefined && auto !== undefined
           ? routeTriage({ choice: kind.choice, confidence: kind.confidence, autoApply: auto })
           : 'queue';
+      // Quota was reserved atomically in requestRowTriage before scheduling,
+      // so no second spend here: exactly one slot per scheduled row.
       await ctx.runMutation(internal.banking.importTriage.applyTriageVerdict, {
         userId: args.userId,
         transactionId: args.transactionId,
@@ -158,11 +180,6 @@ export const triageRow = internalAction({
         kind: kind?.choice,
         confidence: kind?.confidence,
         note: `${JEV_TRIAGE_NOTE_PREFIX} model=${decision.model} cost=${decision.usage?.cost ?? '?'} latencyMs=${decision.latencyMs}`,
-      });
-      await ctx.runMutation(internal.banking.importTriage.recordTriageSpend, {
-        userId: args.userId,
-        today: args.today,
-        count: 1,
       });
     } catch {
       // Fail closed: the row stays uncategorized for human review.

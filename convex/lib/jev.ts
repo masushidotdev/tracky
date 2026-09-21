@@ -131,8 +131,13 @@ export async function decide(
       if (typeof json.answers !== 'object' || json.answers === null) {
         throw new JevError('JEV_SHAPE', 'jev response has no answers map');
       }
-      const answers: Record<string, JevAnswer> = {};
+      // Null-prototype map: a hostile answers object containing __proto__
+      // must not pollute the prototype chain.
+      const answers: Record<string, JevAnswer | undefined> = Object.create(null);
       for (const [id, value] of Object.entries(json.answers as Record<string, unknown>)) {
+        if (id === '__proto__' || id === 'constructor' || id === 'prototype') {
+          throw new JevError('JEV_SHAPE', `Answer ${id} uses a reserved key`);
+        }
         answers[id] = validateAnswer(id, value);
       }
       return { model: typeof json.model === 'string' ? json.model : (options?.model ?? JEV_PINNED_MODEL), answers, usage: json.usage, latencyMs };

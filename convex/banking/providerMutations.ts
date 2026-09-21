@@ -274,11 +274,14 @@ function inferImportedTransactionClassification(args: {
 
   const merchantKey = normalizeMerchantKey(args.counterpartyName ?? args.description);
   if (merchantKey.length < 4) {
+    // Short merchant keys carry no signal: without a rental path (no prior can
+    // match a <4 key) they stay `uncategorized` residue for jev triage instead
+    // of a blind expense fallback.
     return {
-      classificationKind: 'expense' as const,
+      classificationKind: 'uncategorized' as const,
       classificationSource: 'system' as const,
-      classificationConfidence: inferredCategorySystemKey === 'expense:other' ? 0.45 : 0.65,
-      categoryId,
+      classificationConfidence: 0.45,
+      categoryId: undefined,
     };
   }
 
@@ -383,6 +386,13 @@ async function linkImportedTransactionToExistingSubscription(
     latestTransactionId: transaction._id,
     nextDueDate: cadence.nextDueDate,
     updatedAtMs: now,
+  });
+
+  // UC3: classify the charge series (rincari, zombie, cluster) once linked.
+  // Advisory only: the verdict lands on the transaction note, never auto-edits.
+  await ctx.scheduler.runAfter(0, internal.banking.subscriptionSentinel.classifySeries, {
+    userId: args.userId,
+    transactionId: transaction._id,
   });
 
   return true;

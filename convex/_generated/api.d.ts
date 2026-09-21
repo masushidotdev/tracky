@@ -30,6 +30,7 @@ import type * as analyst_proactive_reports from "../analyst/proactive/reports.js
 import type * as analyst_proactive_subscriptionReviewCore from "../analyst/proactive/subscriptionReviewCore.js";
 import type * as analyst_memoryDedup from "../analyst/memoryDedup.js";
 import type * as analyst_writeGuard from "../analyst/writeGuard.js";
+import type * as analyst_writeGuardBadge from "../analyst/writeGuardBadge.js";
 import type * as banking_importTriage from "../banking/importTriage.js";
 import type * as banking_subscriptionSentinel from "../banking/subscriptionSentinel.js";
 import type * as banking_transferArbitration from "../banking/transferArbitration.js";
@@ -177,6 +178,7 @@ declare const fullApi: ApiFromModules<{
   "analyst/proactive/subscriptionReviewCore": typeof analyst_proactive_subscriptionReviewCore;
   "analyst/memoryDedup": typeof analyst_memoryDedup;
   "analyst/writeGuard": typeof analyst_writeGuard;
+  "analyst/writeGuardBadge": typeof analyst_writeGuardBadge;
   "banking/importTriage": typeof banking_importTriage;
   "banking/subscriptionSentinel": typeof banking_subscriptionSentinel;
   "banking/transferArbitration": typeof banking_transferArbitration;

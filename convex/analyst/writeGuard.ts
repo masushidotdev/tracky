@@ -8,7 +8,7 @@ import { v } from 'convex/values';
 import { internal } from '../_generated/api';
 import { internalAction, internalMutation, internalQuery, query } from '../_generated/server';
 import { requireAuthUser } from '../auth';
-import { decide, jevChoice, jevNoul } from '../lib/jev';
+import { decide, jevChoice, jevNoul, minimizeJevText } from '../lib/jev';
 import { routeWriteGuardBadge } from './writeGuardBadge';
 import type { WriteGuardBadge } from './writeGuardBadge';
 
@@ -142,10 +142,12 @@ export const scanApprovalsForThread = internalMutation({
       await ctx.scheduler.runAfter(0, internal.analyst.writeGuard.adviseWriteBadges, {
         userId: args.userId,
         threadId: args.threadId,
+        // Tool inputs are advisory agent output and may carry PII (names,
+        // memos, amounts): minimize before they leave Convex for jev.
         approvals: pending.slice(0, 10).map(({ approvalId, toolName, input }) => ({
           approvalId,
           toolName,
-          summary: JSON.stringify(input ?? {}).slice(0, 500),
+          summary: minimizeJevText(JSON.stringify(input ?? {}), 500),
         })),
       });
     }

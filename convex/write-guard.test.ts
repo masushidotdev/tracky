@@ -12,4 +12,10 @@ describe('jev write-guard badges', () => {
     expect(routeWriteGuardBadge({ risk: 'low', autoApprove: 0.4, recordCount: 1 })).toBe('confirm');
     expect(routeWriteGuardBadge({ risk: 'low', autoApprove: 0.9, recordCount: 1 })).toBe('safe');
   });
+
+  test('treats an incomplete verdict as confirm, never safe', () => {
+    expect(routeWriteGuardBadge({ autoApprove: 0.95, recordCount: 1 })).toBe('confirm');
+    expect(routeWriteGuardBadge({ risk: undefined, autoApprove: 0.99, recordCount: 1 })).toBe('confirm');
+    expect(routeWriteGuardBadge({ risk: 'unexpected-label', autoApprove: 0.99, recordCount: 1 })).toBe('confirm');
+  });
 });
