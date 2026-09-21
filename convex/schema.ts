@@ -58,6 +58,12 @@ export default defineSchema({
       }),
     ),
     deletionRequestedAtMs: v.optional(v.number()),
+    jevTriageUsage: v.optional(
+      v.object({
+        date: v.string(),
+        count: v.number(),
+      }),
+    ),
     forecastProfile: v.optional(
       v.object({
         birthYear: v.number(),

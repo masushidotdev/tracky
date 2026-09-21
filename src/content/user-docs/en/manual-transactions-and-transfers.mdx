@@ -40,7 +40,7 @@ A future one-off movement appears in the Scheduled band above booked rows. It do
 
 On creation, Tracky searches another account for an opposite leg with the same currency and a date within seven days before or after. Amount tolerance is `min(max(2% of amount, 300 minor units), 1000 minor units)`.
 
-Confidence starts at `0.90` for an exact amount, `0.82` for a difference up to 300 minor units, and `0.72` for other allowed differences, minus `0.02` per day apart, with a `0.60` floor. High-confidence matches are automatic; others appear in Review.
+Confidence starts at `0.90` for an exact amount, `0.82` for a difference up to 300 minor units, and `0.72` for other allowed differences, minus `0.02` per day apart, with a `0.60` floor. High-confidence matches are automatic; others appear in Review. Ambiguous pairs in the middle ground may be re-checked by an additional calibrated review before confirmation; pairs that stay uncertain remain in Review for you to decide.
 
 ## Update and delete
 

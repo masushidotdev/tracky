@@ -28,6 +28,13 @@ import type * as analyst_proactive_mutations from "../analyst/proactive/mutation
 import type * as analyst_proactive_queries from "../analyst/proactive/queries.js";
 import type * as analyst_proactive_reports from "../analyst/proactive/reports.js";
 import type * as analyst_proactive_subscriptionReviewCore from "../analyst/proactive/subscriptionReviewCore.js";
+import type * as analyst_memoryDedup from "../analyst/memoryDedup.js";
+import type * as analyst_writeGuard from "../analyst/writeGuard.js";
+import type * as banking_importTriage from "../banking/importTriage.js";
+import type * as banking_subscriptionSentinel from "../banking/subscriptionSentinel.js";
+import type * as banking_transferArbitration from "../banking/transferArbitration.js";
+import type * as lib_jev from "../lib/jev.js";
+import type * as lib_jevThresholds from "../lib/jevThresholds.js";
 import type * as analyst_prompts_budgeting from "../analyst/prompts/budgeting.js";
 import type * as analyst_prompts_core from "../analyst/prompts/core.js";
 import type * as analyst_prompts_debt from "../analyst/prompts/debt.js";
@@ -168,6 +175,13 @@ declare const fullApi: ApiFromModules<{
   "analyst/proactive/queries": typeof analyst_proactive_queries;
   "analyst/proactive/reports": typeof analyst_proactive_reports;
   "analyst/proactive/subscriptionReviewCore": typeof analyst_proactive_subscriptionReviewCore;
+  "analyst/memoryDedup": typeof analyst_memoryDedup;
+  "analyst/writeGuard": typeof analyst_writeGuard;
+  "banking/importTriage": typeof banking_importTriage;
+  "banking/subscriptionSentinel": typeof banking_subscriptionSentinel;
+  "banking/transferArbitration": typeof banking_transferArbitration;
+  "lib/jev": typeof lib_jev;
+  "lib/jevThresholds": typeof lib_jevThresholds;
   "analyst/prompts/budgeting": typeof analyst_prompts_budgeting;
   "analyst/prompts/core": typeof analyst_prompts_core;
   "analyst/prompts/debt": typeof analyst_prompts_debt;

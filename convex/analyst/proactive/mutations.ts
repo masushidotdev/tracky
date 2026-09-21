@@ -373,15 +373,22 @@ export const persistAnomalyNotifications = internalMutation({
       mean: v.number(),
       zScore: v.number(),
       percentAboveBaseline: v.number(),
+      // UC4 gate output (optional so legacy callers keep working): notify=false
+      // suppresses the push, the digest row is still upserted for the inbox.
+      jevNotify: v.optional(v.boolean()),
+      jevSeverity: v.optional(v.union(v.literal('info'), v.literal('warning'), v.literal('critical'))),
+      jevTone: v.optional(v.string()),
+      jevConfidence: v.optional(v.number()),
     })),
   },
   handler: async (ctx, args) => {
     const candidates = args.anomalies.slice(0, 10).map((anomaly) => {
       const currency = anomaly.currency.toUpperCase();
+      const severity = anomaly.jevSeverity ?? (anomaly.zScore >= 4 ? ('critical' as const) : ('warning' as const));
       return {
         userId: args.userId,
         type: 'spendingAnomaly' as const,
-        severity: anomaly.zScore >= 4 ? ('critical' as const) : ('warning' as const),
+        severity,
         titleKey: 'notifications.anomaly.title',
         bodyKey: 'notifications.anomaly.body',
         params: {
@@ -391,6 +398,9 @@ export const persistAnomalyNotifications = internalMutation({
           percent: Math.round(anomaly.percentAboveBaseline),
           currency,
           period: args.period,
+          ...(anomaly.jevNotify !== undefined ? { jevNotify: anomaly.jevNotify ? 'true' : 'false' } : {}),
+          ...(anomaly.jevTone ? { jevTone: cleanText(anomaly.jevTone, 20) } : {}),
+          ...(anomaly.jevConfidence !== undefined ? { jevConfidence: Math.round(anomaly.jevConfidence * 100) } : {}),
         },
         dedupeKey: `analyst:anomaly:${args.period}:${currency}:${anomaly.scope}:${normalizedDedupePart(anomaly.key)}`,
       };

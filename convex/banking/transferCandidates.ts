@@ -1,4 +1,6 @@
 import { absoluteMinorUnits } from '../lib/money';
+import { internal } from '../_generated/api';
+import { JEV_TRANSFER } from '../lib/jevThresholds';
 import {
   AUTO_CONFIRM_TRANSFER_CONFIDENCE,
   createConfirmedTransferMatch,
@@ -122,11 +124,25 @@ export async function createTransferCandidateForTransaction(
     });
   }
 
-  return await createTransferCandidateMatch(ctx, {
+  // Ambiguous band: persist a review candidate now, then let jev arbitration
+  // confirm it through the composite gate (scheduled by the caller below).
+  const needsArbitration = confidence >= JEV_TRANSFER.arbitrateMin && confidence < JEV_TRANSFER.arbitrateMax;
+
+  const matchId = await createTransferCandidateMatch(ctx, {
     userId: args.userId,
     outgoingTransactionId,
     incomingTransactionId,
     confidence,
     notes,
   });
+
+  if (needsArbitration && matchId) {
+    await ctx.scheduler.runAfter(0, internal.banking.transferArbitration.arbitrateTransferCandidate, {
+      userId: args.userId,
+      transferMatchId: matchId,
+      heuristicConfidence: confidence,
+    });
+  }
+
+  return matchId;
 }
