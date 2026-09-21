@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouterState } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
 import { Suspense, lazy } from 'react';
@@ -55,15 +55,21 @@ export const Route = createRootRouteWithContext<{
   component: RootComponent,
   notFoundComponent: NotFoundPage,
   beforeLoad: async (ctx) => {
-    const { userId, token } = await fetchWorkosAuth();
+    // Marketing pages must SSR for crawlers without WorkOS/Convex: a failed
+    // auth fetch degrades to logged-out instead of 500ing the page.
+    try {
+      const { userId, token } = await fetchWorkosAuth();
 
-    // During SSR only (the only time serverHttpClient exists),
-    // set the WorkOS auth token to make HTTP queries with.
-    if (token) {
-      ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
+      // During SSR only (the only time serverHttpClient exists),
+      // set the WorkOS auth token to make HTTP queries with.
+      if (token) {
+        ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
+      }
+
+      return { userId, token };
+    } catch {
+      return { userId: null, token: null };
     }
-
-    return { userId, token };
   },
 });
 
@@ -82,8 +88,12 @@ function NotFoundPage() {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  // SSR-safe: during SSR this reflects the request URL, so Italian routes
+  // ship lang="it" on first paint for crawlers and assistive tech.
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const lang = pathname === '/it' || pathname.startsWith('/it/') ? 'it' : 'en';
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
