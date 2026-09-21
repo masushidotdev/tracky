@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { resetAnalyticsUser } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 export function NavUser({
@@ -77,6 +78,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
+                resetAnalyticsUser();
                 signOut();
               }}
             >

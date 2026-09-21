@@ -15,6 +15,7 @@ import { EmptyState } from '@/components/app/empty-state';
 import { PanelSkeleton } from '@/components/app/skeletons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { useI18n } from '@/lib/i18n';
 
@@ -73,6 +74,7 @@ export function SubscriptionsView() {
       `subscription-status:${subscription._id}`,
       async () => {
         await updateStatus({ subscriptionId: subscription._id, status });
+        trackEvent(analyticsEvents.subscriptionStatusChanged, { status, surface: 'subscriptions' });
       },
       {
         success: t('subscriptions.statusUpdated'),

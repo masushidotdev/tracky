@@ -10,6 +10,7 @@ import { DataExportCard } from '@/components/settings/data-export-card';
 import { MemoriesCard } from '@/components/settings/memories-card';
 import { NotificationPreferencesCard } from '@/components/settings/notification-preferences-card';
 import { PlanCard } from '@/components/settings/plan-card';
+import { TrackingCard } from '@/components/settings/tracking-card';
 import { ProfileCard } from '@/components/settings/profile-card';
 
 export const Route = createFileRoute('/_authenticated/_app/app/settings/')({
@@ -22,6 +23,7 @@ function RouteComponent() {
       <div className="flex w-full max-w-4xl flex-col gap-4">
         <ProfileCard />
         <PlanCard />
+        <TrackingCard />
         <NotificationPreferencesCard />
         <CategoriesCard />
         <CategoryRulesCard />

@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { formatDateTime } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 
@@ -35,6 +36,8 @@ export function DangerZoneCard() {
     setRequesting(true);
     try {
       await requestDeletion({});
+      // Phase 1: PostHog Person deletion is a manual operator step (see execution plan).
+      trackEvent(analyticsEvents.accountDeletionRequested, {});
       toast.success(t('settings.danger.requested'));
     } catch {
       toast.error(t('settings.danger.requestFailed'));
@@ -47,6 +50,7 @@ export function DangerZoneCard() {
     setCancelling(true);
     try {
       await cancelDeletion({});
+      trackEvent(analyticsEvents.accountDeletionCancelled, {});
       toast.success(t('settings.danger.cancelled'));
     } catch {
       toast.error(t('settings.danger.cancelFailed'));

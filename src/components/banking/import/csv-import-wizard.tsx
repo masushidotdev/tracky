@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
+import { analyticsEvents, countBucket, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 type ImportTransaction = ParsedCsvTransaction & {
@@ -193,6 +194,8 @@ export function CsvImportWizard() {
       (row): row is CsvPreviewRow & { transaction: ImportTransaction } =>
         row.status === 'valid' && Boolean(row.transaction),
     );
+    // Row-count bucket only — never file names or row contents.
+    trackEvent(analyticsEvents.csvImportStarted, { row_count_bucket: countBucket(eligible.length) });
     const batches = chunks(eligible, BATCH_SIZE);
     setProgress({
       completed: false,
@@ -230,6 +233,7 @@ export function CsvImportWizard() {
         );
       }
       setProgress((current) => (current ? { ...current, completed: true } : current));
+      trackEvent(analyticsEvents.csvImportCompleted, { row_count_bucket: countBucket(eligible.length) });
     } catch (error) {
       setProgress((current) =>
         current
@@ -240,6 +244,7 @@ export function CsvImportWizard() {
             }
           : current,
       );
+      trackEvent(analyticsEvents.csvImportFailed, { error_step: 'import', surface: 'import' });
     }
   }
 

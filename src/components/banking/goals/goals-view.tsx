@@ -18,6 +18,7 @@ import { RegisterContributionDialog } from '@/components/banking/planning/regist
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { moneyInputValue, parseMoneyMinor } from '@/lib/money';
 
@@ -197,7 +198,11 @@ export function GoalsView() {
         },
       },
     );
-    if (saved) setWithdrawMoneyBox(null);
+    if (saved) {
+      // moneyBoxWithdrawn duplicates here for the Goals surface; planning surface emits via its own sheets.
+      trackEvent(analyticsEvents.moneyBoxWithdrawn, { surface: 'goals' });
+      setWithdrawMoneyBox(null);
+    }
     return saved;
   }
 
@@ -260,6 +265,7 @@ export function GoalsView() {
         accounts={accounts}
         moneyBox={moneyBoxForm === 'create' ? null : moneyBoxForm}
         open={moneyBoxForm !== null}
+        surface="goals"
         onOpenChange={(open) => !open && setMoneyBoxForm(null)}
       />
       <RegisterContributionDialog

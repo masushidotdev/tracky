@@ -11,6 +11,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { EmptyState } from '@/components/app/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { formatDateTime } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 
@@ -34,6 +35,7 @@ export function DataExportCard() {
     setRequesting(true);
     try {
       await requestExport({});
+      trackEvent(analyticsEvents.dataExportRequested, {});
       toast.success(t('settings.export.requested'));
     } catch {
       toast.error(t('settings.export.requestFailed'));

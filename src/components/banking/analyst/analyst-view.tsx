@@ -15,6 +15,7 @@ import { ChatPanel } from './chat-panel';
 import { ThreadList } from './thread-list';
 import type { SelectableModel } from './helpers';
 import { Button } from '@/components/ui/button';
+import { analyticsEvents, lengthBucket, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils';
 export function AnalystView({ threadId }: { threadId?: string }) {
   const navigate = useNavigate();
   const { locale, t } = useI18n();
+  const openedSent = React.useRef(false);
   const { run, pendingKey } = usePendingAction();
   const [model, setModel] = React.useState<SelectableModel>(DEFAULT_ANALYST_MODEL);
   const [threadsOpen, setThreadsOpen] = React.useState(true);
@@ -45,6 +47,12 @@ export function AnalystView({ threadId }: { threadId?: string }) {
   React.useEffect(() => {
     setModel(loadStoredAnalystModel(window.localStorage, threadId));
   }, [threadId]);
+
+  React.useEffect(() => {
+    if (openedSent.current) return;
+    openedSent.current = true;
+    trackEvent(analyticsEvents.analystOpened, {});
+  }, []);
 
   const selectThread = React.useCallback(
     (nextThreadId?: string) => {
@@ -121,16 +129,21 @@ export function AnalystView({ threadId }: { threadId?: string }) {
         onModelChange={changeModel}
         onNew={newThread}
         onLoadMore={() => messages.loadMore(50)}
-        onSend={(prompt) =>
-          run(
+        onSend={(prompt) => {
+          // Length bucket + model only — never prompt text.
+          trackEvent(analyticsEvents.analystMessageSent, {
+            message_length_bucket: lengthBucket(prompt.length),
+            model_id: model,
+          });
+          return run(
             'send',
             () => sendMessage({ threadId: threadId!, prompt, modelId: model, locale }).then(() => undefined),
             {
               getErrorMessage: (error) =>
                 t(isAnalystRateLimitError(error) ? 'analyst.error.rateLimit' : 'analyst.error.send'),
             },
-          )
-        }
+          );
+        }}
         onApproval={(approvalId, approve) =>
           void run(
             'approval',

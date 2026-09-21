@@ -37,6 +37,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useI18n } from '@/lib/i18n';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { moneyInputValue, parseMoneyMinor } from '@/lib/money';
 
 function initialFilters(): ReportFiltersState {
@@ -65,6 +66,7 @@ function chartTypeFor(tab: ReportTab, mode: ReportMode): ReportChartType {
 export function ReportsView() {
   const { intlLocale, t } = useI18n();
   const [tab, setTab] = React.useState<ReportTab>('cashflow');
+  const reportViewSent = React.useRef<ReportTab | null>(null);
   const [mode, setMode] = React.useState<ReportMode>('breakdown');
   const [chartType, setChartType] = React.useState<ReportChartType>('sankey');
   const [filters, setFilters] = React.useState<ReportFiltersState>(initialFilters);
@@ -195,7 +197,14 @@ export function ReportsView() {
   const changeTab = (nextTab: ReportTab) => {
     setTab(nextTab);
     setChartType(chartTypeFor(nextTab, mode));
+    trackEvent(analyticsEvents.reportViewed, { report_type: nextTab, surface: 'reports' });
   };
+
+  React.useEffect(() => {
+    if (reportViewSent.current === tab) return;
+    reportViewSent.current = tab;
+    trackEvent(analyticsEvents.reportViewed, { report_type: tab, surface: 'reports' });
+  }, [tab]);
   const changeMode = (nextMode: ReportMode) => {
     setMode(nextMode);
     setChartType(chartTypeFor(tab, nextMode));
@@ -265,6 +274,7 @@ export function ReportsView() {
     }
     try {
       await createSavedReport({ name, config: currentSavedConfig() });
+      trackEvent(analyticsEvents.savedReportCreated, { report_type: tab, surface: 'reports' });
       toast.success(t('reports.saved.saved'));
     } catch {
       toast.error(t('reports.saved.saveFailed'));

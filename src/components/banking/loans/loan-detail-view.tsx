@@ -28,6 +28,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { moneyInputValue, parseMoneyMinor } from '@/lib/money';
 
@@ -405,6 +406,7 @@ export function LoanDetailView({
       { success: t('loans.delete.deleted'), error: t('loans.delete.failed') },
     );
     if (deleted) {
+      trackEvent(analyticsEvents.loanDeleted, { surface: 'loans' });
       setEditOpen(false);
       await navigate({ to: '/app/transactions' });
     }

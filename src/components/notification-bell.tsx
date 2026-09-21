@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HIDDEN_AMOUNT_PLACEHOLDER } from '@/lib/balance-privacy';
 import { useBalancePrivacy } from '@/lib/balance-privacy-context';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -75,7 +76,7 @@ export function NotificationBell() {
   }
 
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => open && trackEvent(analyticsEvents.notificationOpened, {})}>
       <PopoverTrigger asChild>
         <Button type="button" variant="ghost" size="icon-sm" className="relative" aria-label={t('notifications.open')}>
           <BellIcon />

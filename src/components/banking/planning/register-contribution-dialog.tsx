@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -91,7 +92,11 @@ export function RegisterContributionDialog({
         error: t('planning.moneyBoxes.contributionFailed'),
       },
     );
-    if (recorded) onOpenChange(false);
+    if (recorded) {
+      // No amounts: mode + surface only.
+      trackEvent(analyticsEvents.moneyBoxFunded, { mode, surface: 'goals' });
+      onOpenChange(false);
+    }
   }
 
   return (

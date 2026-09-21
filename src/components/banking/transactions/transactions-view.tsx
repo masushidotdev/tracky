@@ -42,6 +42,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { categoryDisplayName } from '@/lib/categories';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
 import { useI18n } from '@/lib/i18n';
@@ -420,6 +421,7 @@ export function TransactionsView({
             interval: 'month',
             intervalCount: 1,
           });
+          trackEvent(analyticsEvents.subscriptionSuggestionAccepted, { surface: 'transactions' });
         },
         {
           success: t('transactions.toast.subscriptionConverted'),
@@ -438,6 +440,7 @@ export function TransactionsView({
           await rejectSubscriptionSuggestion({
             transactionId: transaction._id,
           });
+          trackEvent(analyticsEvents.subscriptionSuggestionRejected, { surface: 'transactions' });
         },
         {
           success: t('transactions.toast.subscriptionRejected'),
@@ -465,6 +468,8 @@ export function TransactionsView({
       if (!ok) {
         return;
       }
+
+      trackEvent(analyticsEvents.transactionCategorized, { surface: 'transactions' });
 
       const merchantPattern = transaction.counterpartyName?.trim();
       if (categoryId && merchantPattern) {
@@ -679,6 +684,7 @@ export function TransactionsView({
             incomingTransactionId,
           });
           setSelectedTransfer(null);
+          trackEvent(analyticsEvents.transferMatched, { surface: 'transactions', mode: 'manual' });
         },
         { success: t('transactions.toast.transferMatched'), error: t('transactions.toast.transferMatchFailed') },
       );
@@ -694,11 +700,13 @@ export function TransactionsView({
         async () => {
           if (args.transferMatchId) {
             await confirmTransferCandidate({ transferMatchId: args.transferMatchId });
+            trackEvent(analyticsEvents.transferMatched, { surface: 'transactions', mode: 'suggested' });
           } else {
             await createTransferMatch({
               outgoingTransactionId: args.outgoing._id,
               incomingTransactionId: args.incoming._id,
             });
+            trackEvent(analyticsEvents.transferMatched, { surface: 'transactions', mode: 'manual' });
           }
         },
         { success: t('transactions.toast.transferMatched'), error: t('transactions.toast.transferMatchFailed') },
@@ -798,6 +806,7 @@ export function TransactionsView({
             transactionIds: transactions.map((transaction) => transaction._id),
             ...(mode === 'add' ? { addTagIds: tagIds } : { removeTagIds: tagIds }),
           });
+          trackEvent(analyticsEvents.transactionTagged, { surface: 'transactions', mode: 'bulk' });
           if (result.skipped.length > 0) {
             throw new Error(t('transactions.bulk.partial', { count: result.skipped.length }));
           }

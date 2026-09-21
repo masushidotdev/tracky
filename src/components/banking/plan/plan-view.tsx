@@ -40,6 +40,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useEntitlements } from '@/lib/entitlements';
 import { currentPeriod } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
@@ -378,13 +379,15 @@ export function PlanView() {
 
   async function applyAutoAssign(strategy: PlanAutoAssignStrategy, bucketIds?: Array<Id<'planBuckets'>>) {
     if (!activePlan) return false;
-    return pendingAction.run(
+    const ok = await pendingAction.run(
       'autoAssign',
       async () => {
         await autoAssign({ planId: activePlan.id, period, strategy, bucketIds, dryRun: false });
       },
       { success: t('plan.autoAssign.applied'), error: t('plan.autoAssign.failed') },
     );
+    if (ok) trackEvent(analyticsEvents.planAutoAssignRun, { strategy, surface: 'plan' });
+    return ok;
   }
 
   async function recalculate() {
@@ -454,9 +457,18 @@ export function PlanView() {
     );
   }
 
-  const goPrevious = () => setPeriod((current) => addMonths(current, -1));
-  const goNext = () => setPeriod((current) => addMonths(current, 1));
-  const goCurrent = () => setPeriod(currentPeriod());
+  const goPrevious = () => {
+    setPeriod((current) => addMonths(current, -1));
+    trackEvent(analyticsEvents.planMonthChanged, { direction: 'previous', surface: 'plan' });
+  };
+  const goNext = () => {
+    setPeriod((current) => addMonths(current, 1));
+    trackEvent(analyticsEvents.planMonthChanged, { direction: 'next', surface: 'plan' });
+  };
+  const goCurrent = () => {
+    setPeriod(currentPeriod());
+    trackEvent(analyticsEvents.planMonthChanged, { direction: 'current', surface: 'plan' });
+  };
 
   if (month.truncated) {
     return (

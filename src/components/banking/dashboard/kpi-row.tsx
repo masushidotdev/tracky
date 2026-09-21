@@ -7,6 +7,7 @@ import { StatCard, StatCardGroup } from '@/components/app/stat-card';
 import { SafeToSpendSheet } from '@/components/banking/dashboard/safe-to-spend-sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatIsoDate } from '@/lib/format';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useBalancePrivacy } from '@/lib/balance-privacy-context';
 import { useI18n } from '@/lib/i18n';
 import { formatMoney, fundedProgressPercent } from '@/lib/money';
@@ -116,7 +117,10 @@ export function KpiRow({
         <StatCard
           label={t('dashboard.safeToSpend.title')}
           ariaLabel={t('dashboard.safeToSpend.open')}
-          onClick={() => setSafeToSpendOpen(true)}
+          onClick={() => {
+            setSafeToSpendOpen(true);
+            trackEvent(analyticsEvents.safeToSpendOpened, { surface: 'dashboard_kpi' });
+          }}
           value={
             safeToSpend === undefined ? (
               <ValueSkeleton />

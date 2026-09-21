@@ -23,6 +23,7 @@ import { RecentTransactionsCard } from '@/components/banking/dashboard/recent-tr
 import { UpcomingPaymentsCard } from '@/components/banking/dashboard/upcoming-payments-card';
 import { Input } from '@/components/ui/input';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { categoryDisplayName } from '@/lib/categories';
 import { currentPeriod } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
@@ -36,6 +37,8 @@ function moneyToMajor(money: Money) {
 export function DashboardView() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const pageviewSent = React.useRef(false);
+  const emptyStateSent = React.useRef(false);
   const search = Route.useSearch();
   const [period, setPeriod] = React.useState(currentPeriod);
   const accounts = useQuery(api.banking.accounts.listAccounts, { status: 'active', limit: 200 });
@@ -141,6 +144,19 @@ export function DashboardView() {
         })),
     );
   }, [accountId, cashflow, selectedCashflowGroup]);
+
+  React.useEffect(() => {
+    if (pageviewSent.current) return;
+    pageviewSent.current = true;
+    trackEvent(analyticsEvents.dashboardViewed, {});
+  }, []);
+
+  React.useEffect(() => {
+    if (emptyStateSent.current) return;
+    if (accounts === undefined || accounts.length > 0) return;
+    emptyStateSent.current = true;
+    trackEvent(analyticsEvents.onboardingEmptyStateViewed, { surface: 'dashboard' });
+  }, [accounts]);
 
   return (
     <div className="flex flex-col gap-4">

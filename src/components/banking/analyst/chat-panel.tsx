@@ -145,7 +145,9 @@ export function ChatPanel({
         </ConversationContent>
       </Conversation>
       <div className="flex flex-col gap-3 border-t bg-background/70 p-3">
-        {dailyLimitReached && entitlements?.tier === 'free' ? <UpgradeCta dailyLimitReached /> : null}
+        {dailyLimitReached && entitlements?.tier === 'free' ? (
+          <UpgradeCta dailyLimitReached surface="analyst_limit" />
+        ) : null}
         {messages.length === 0 ? (
           <div className="flex flex-wrap gap-2">
             {(['overview', 'plan', 'future', 'subscriptions', 'purchase'] as const).map((key) => (

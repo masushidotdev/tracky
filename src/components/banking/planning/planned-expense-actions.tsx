@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 export function PlannedExpenseActionsMenu({
@@ -85,6 +86,7 @@ export function PlannedExpenseActionsMenu({
       async () => {
         if (nextStatus === 'paid') {
           await markOccurrencePaid({ plannedExpenseId, dueDate });
+          trackEvent(analyticsEvents.plannedExpensePaid, { surface: 'planning' });
         } else {
           await reopenOccurrence({ plannedExpenseId, dueDate });
         }

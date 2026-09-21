@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 
@@ -77,6 +78,7 @@ export function CreatePlannedTransferForm({
           ...(source.kind === 'account' ? { fromAccountId: source.id } : { fromCreditFacilityId: source.id }),
           toAccountId,
         });
+        trackEvent(analyticsEvents.plannedTransferCreated, { surface: 'planning' });
       },
       { success: t('planning.transferForm.created'), error: t('planning.transferForm.createFailed') },
     );

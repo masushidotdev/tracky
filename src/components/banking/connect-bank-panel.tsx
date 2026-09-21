@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { usePendingAction } from '@/hooks/use-pending-action';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { cn } from '@/lib/utils';
 
 type AspspOption = {
@@ -208,6 +209,12 @@ export function ConnectBankForm() {
     void runSubmit(
       'connect-submit',
       async () => {
+        // provider_slug would leak the bank; country + psu type are enough for funnel analysis.
+        trackEvent(analyticsEvents.bankConnectionStarted, {
+          country: selectedAspsp.country,
+          psu_type: psuType,
+          surface: 'bank-connections',
+        });
         const result = await startConnection({
           aspspName: selectedAspsp.name,
           aspspCountry: selectedAspsp.country,

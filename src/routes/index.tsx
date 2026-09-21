@@ -1,7 +1,10 @@
+import * as React from 'react';
+
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
 
 import { Button } from '@/components/ui/button';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 export const Route = createFileRoute('/')({
@@ -19,6 +22,14 @@ function Home() {
   const { user, signInUrl, signUpUrl } = Route.useLoaderData();
   const { t } = useI18n();
 
+  // StrictMode double-invokes effects in dev: ref-guard keeps one landing_viewed.
+  const landingSent = React.useRef(false);
+  React.useEffect(() => {
+    if (landingSent.current) return;
+    landingSent.current = true;
+    trackEvent(analyticsEvents.landingViewed, { auth_state: user ? 'logged' : 'anon' });
+  }, [user]);
+
   return (
     <main className="min-h-svh bg-background">
       <section className="mx-auto flex min-h-svh w-full max-w-5xl flex-col justify-center gap-8 px-6 py-12">
@@ -35,10 +46,25 @@ function Home() {
           ) : (
             <>
               <Button asChild>
-                <a href={signInUrl}>{t('common.signIn')}</a>
+                <a
+                  href={signInUrl}
+                  onClick={() =>
+                    // sendBeacon: the full-page WorkOS redirect unloads us before XHR flushes.
+                    trackEvent(analyticsEvents.signinStarted, { cta_location: 'landing' }, { sendBeacon: true })
+                  }
+                >
+                  {t('common.signIn')}
+                </a>
               </Button>
               <Button asChild variant="outline">
-                <a href={signUpUrl}>{t('common.createAccount')}</a>
+                <a
+                  href={signUpUrl}
+                  onClick={() =>
+                    trackEvent(analyticsEvents.signupStarted, { cta_location: 'landing' }, { sendBeacon: true })
+                  }
+                >
+                  {t('common.createAccount')}
+                </a>
               </Button>
             </>
           )}

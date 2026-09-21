@@ -31,6 +31,7 @@ import { UpgradeCta } from '@/components/app/upgrade-cta';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useEntitlements } from '@/lib/entitlements';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 import { parseMoneyMinor } from '@/lib/money';
 import { usePendingAction } from '@/hooks/use-pending-action';
@@ -105,11 +106,11 @@ export function ForecastView({
   } | null>(null);
 
   if (entitlements === undefined) return <PanelSkeleton rows={5} />;
-  if (!canUseForecast) return <UpgradeCta />;
+  if (!canUseForecast) return <UpgradeCta surface="forecast_gate" />;
   if (scenarios === undefined || seeds === undefined || sortedScenarios === undefined) return <PanelSkeleton rows={5} />;
 
-  const initialize = async (draft: OnboardingDraft) =>
-    pendingAction.run(
+  const initialize = async (draft: OnboardingDraft) => {
+    const ok = await pendingAction.run(
       'initialize',
       async () => {
         const scenarioId = await initializeForecast({
@@ -154,6 +155,9 @@ export function ForecastView({
         error: t('forecast.onboarding.createFailed'),
       },
     );
+    if (ok) trackEvent(analyticsEvents.forecastInitialized, { surface: 'forecast' });
+    return ok;
+  };
 
   if (scenarios.length === 0) {
     return <ForecastOnboarding seeds={seeds} isPending={pendingAction.isPending('initialize')} onSubmit={initialize} />;
@@ -162,7 +166,7 @@ export function ForecastView({
   if (!activeScenario || projectionResult === undefined || scenarioDetails === undefined || accounts === undefined) {
     return <PanelSkeleton rows={5} />;
   }
-  if ('upgradeRequired' in projectionResult) return <UpgradeCta />;
+  if ('upgradeRequired' in projectionResult) return <UpgradeCta surface="forecast_projection" />;
   if ('needsOnboarding' in projectionResult) {
     return <ForecastOnboarding seeds={seeds} isPending={pendingAction.isPending('initialize')} onSubmit={initialize} />;
   }
@@ -287,8 +291,8 @@ export function ForecastView({
     event: StoredForecastLifeEvent,
     enabled: boolean,
     eventId?: Id<'forecastLifeEvents'>,
-  ) =>
-    pendingAction.run(
+  ) => {
+    const ok = await pendingAction.run(
       eventId ? `event:${eventId}` : 'event:new',
       async () => {
         await upsertLifeEvent({
@@ -300,6 +304,10 @@ export function ForecastView({
       },
       { success: t('forecast.events.saved'), error: t('forecast.events.saveFailed') },
     );
+    // event.kind enum only (retirement/purchase/...) — never user-entered values.
+    if (ok && !eventId) trackEvent(analyticsEvents.lifeEventAdded, { event_kind: event.kind, surface: 'forecast' });
+    return ok;
+  };
 
   const toggleLifeEvent = async (item: ForecastLifeEvent, enabled: boolean) =>
     pendingAction.run(
@@ -433,6 +441,7 @@ export function ForecastView({
     if (ok && createdId) {
       setScenarioSettingsOpen(false);
       onSearchChange(createdId, undefined);
+      trackEvent(analyticsEvents.scenarioCreated, { creation_mode: creationMode, surface: 'forecast' });
     }
   };
 
