@@ -79,6 +79,7 @@ resume from source-controlled context instead of chat history.
 - `execution-plans/public-repository-governance.md` - public repository governance: branch rulesets, merge settings, fork workflow approval, and security configuration.
 - `execution-plans/posthog-tracking.md` - PostHog MVP implementation: foundations, core events, deviations, staging QA checklist, and operator steps.
 - `execution-plans/jev-decision-layer.md` - jev decision layer implementation: phases, verification evidence, and follow-ups.
+- `execution-plans/account-erasure-immediate-wipe.md` - immediate irreversible account wipe: holding page, chunked Convex hard-delete, best-effort revocations, WorkOS last (planned, frozen).
 
 ## Harness Notes
 
