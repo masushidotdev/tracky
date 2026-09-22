@@ -96,6 +96,12 @@
 
 ### Fixed
 
+- Body text no longer falls back to a system font in production: Geist
+  Variable is now self-hosted from two `/fonts/*.woff2` files (latin and
+  latin-ext) instead of the fontsource package import, whose relative
+  font URLs were emitted unresolved into the production bundle and
+  returned 404 for every weight.
+
 - The TanStack devtools panel no longer ships to production: it now loads
   through a `React.lazy` import gated on `import.meta.env.DEV`, so the
   production bundle never requests the devtools chunk. Nothing changes on
