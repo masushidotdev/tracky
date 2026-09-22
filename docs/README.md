@@ -31,6 +31,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0020-jev-decision-layer.md` - calibrated jev decision gates (OpenRouter, advisory-only, composite thresholds, tier budgets) across transfer, import, proactive, subscription, and write-guard flows.
 - `decisions/0021-public-marketing-seo.md` - public Vivi marketing pages, EN-root + /it/ URLs, hreflang/sitemap/robots, OOS-honest copy.
 - `decisions/0022-posthog-tracking.md` - opt-in EU PostHog analytics: client-only capture, single project with app_env separation, managed proxy, replay masks, and no-PII event rules.
+- `decisions/0023-self-hosted-geist-fonts.md` - Geist Variable self-hosted from public/fonts; no bare fontsource import in app.css.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.

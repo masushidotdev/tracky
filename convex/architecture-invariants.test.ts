@@ -288,4 +288,20 @@ describe('architecture invariants', () => {
     expect(rootSource).toContain('import.meta.env.DEV');
     expect(rootSource).toContain('@/components/devtools');
   });
+
+  test('Geist stays self-hosted from public/fonts', () => {
+    // A bare `@import '@fontsource-variable/geist'` breaks in production:
+    // tailwind's postcss inlining rewrites its relative url() to an
+    // absolute filesystem path that vite leaves unresolved, 404ing every
+    // weight. Fonts must be explicit @font-face blocks over /fonts/*.woff2.
+    const appCss = readFileSync(join(srcRoot, 'app.css'), 'utf8');
+    expect(appCss).not.toMatch(/^@import\s+['"]@fontsource-variable\/geist/m);
+    expect(appCss).toContain("url('/fonts/geist-latin-wght-normal.woff2')");
+    expect(appCss).toContain("url('/fonts/geist-latin-ext-wght-normal.woff2')");
+
+    const fontsDir = join(process.cwd(), 'public', 'fonts');
+    for (const file of ['geist-latin-wght-normal.woff2', 'geist-latin-ext-wght-normal.woff2']) {
+      expect(statSync(join(fontsDir, file)).isFile()).toBe(true);
+    }
+  });
 });
