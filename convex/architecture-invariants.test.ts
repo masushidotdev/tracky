@@ -295,7 +295,9 @@ describe('architecture invariants', () => {
     // absolute filesystem path that vite leaves unresolved, 404ing every
     // weight. Fonts must be explicit @font-face blocks over /fonts/*.woff2.
     const appCss = readFileSync(join(srcRoot, 'app.css'), 'utf8');
-    expect(appCss).not.toMatch(/^@import\s+['"]@fontsource-variable\/geist/m);
+    expect(appCss).not.toMatch(
+      /^\s*@import\s+(?:url\(\s*)?['"]@fontsource-variable\/geist/m,
+    );
     expect(appCss).toContain("url('/fonts/geist-latin-wght-normal.woff2')");
     expect(appCss).toContain("url('/fonts/geist-latin-ext-wght-normal.woff2')");
 
