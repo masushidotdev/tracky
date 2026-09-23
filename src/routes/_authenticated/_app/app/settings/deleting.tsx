@@ -84,12 +84,38 @@ export function DeletingRoute() {
   const [connectionError, setConnectionError] = React.useState(false);
   const [requestError, setRequestError] = React.useState(false);
   const [requestAccepted, setRequestAccepted] = React.useState(false);
+  const [signOutError, setSignOutError] = React.useState(false);
   const [storageReadAttempt, retryStorageRead] = React.useReducer((count: number) => count + 1, 0);
   const startedRef = React.useRef(false);
   const pendingRef = React.useRef(false);
   const requestErrorRef = React.useRef(false);
   const requestAttemptedRef = React.useRef(false);
   const signingOutRef = React.useRef(false);
+
+  // Session cleanup runs only after server erasure finishes. Keep completion
+  // markers and analytics identity until the cookie is actually cleared so a
+  // failed request leaves a retry path instead of stranding the session.
+  const finish = React.useCallback(async (manual = false) => {
+    if (signingOutRef.current) return;
+    signingOutRef.current = true;
+    if (manual) setSignOutError(false);
+    try {
+      await clearDeletedAccountSession();
+    } catch {
+      signingOutRef.current = false;
+      setSignOutError(true);
+      return;
+    }
+    removeMarker(deletionStartedKey);
+    removeMarker(deletionPendingKey);
+    removeMarker('tracky.deletionExportId');
+    try {
+      resetAnalyticsUser();
+    } catch {
+      // Analytics cleanup is best effort; the identity has been erased.
+    }
+    window.location.replace('/');
+  }, []);
 
   React.useEffect(() => {
     if (authLoading || requestAttemptedRef.current) return;
@@ -150,31 +176,6 @@ export function DeletingRoute() {
     let active = true;
     let inFlight = false;
 
-    const finish = async () => {
-      if (signingOutRef.current) return;
-      signingOutRef.current = true;
-      try {
-        window.sessionStorage.removeItem(deletionStartedKey);
-        window.sessionStorage.removeItem(deletionPendingKey);
-        window.sessionStorage.removeItem('tracky.deletionExportId');
-      } catch {
-        // Browser storage cleanup must not prevent sign-out after erasure.
-      }
-      try {
-        resetAnalyticsUser();
-      } catch {
-        // Analytics cleanup is best effort; the identity has been erased.
-      }
-      try {
-        await clearDeletedAccountSession();
-        window.location.replace('/');
-      } catch {
-        // The WorkOS identity is gone; return to the public site even if this
-        // local cleanup request could not complete.
-        window.location.replace('/');
-      }
-    };
-
     const poll = async () => {
       if (inFlight || signingOutRef.current) return;
       inFlight = true;
@@ -186,7 +187,10 @@ export function DeletingRoute() {
         setLoading(false);
         if (result) {
           setRequestAccepted(true);
-          removeMarker(deletionPendingKey);
+          // Keep the pending marker once erasure is done: finish() removes it
+          // only after the session cookie is actually cleared, so a failed
+          // cleanup keeps its retry path.
+          if (result.status !== 'done') removeMarker(deletionPendingKey);
         }
         if (result?.status === 'wiping' || result?.status === 'failed') {
           startedRef.current = true;
@@ -220,7 +224,7 @@ export function DeletingRoute() {
       active = false;
       window.clearInterval(interval);
     };
-  }, [convex, navigate, user?.id]);
+  }, [convex, finish, navigate, user?.id]);
 
   const stageToProgress: Record<string, (typeof progressSteps)[number]> = {
     disconnect: 'disconnect',
@@ -273,6 +277,16 @@ export function DeletingRoute() {
           </p>
         ) : null}
         {loading ? <p className="text-sm text-muted-foreground">{t('settings.deleting.checking')}</p> : null}
+        {signOutError ? (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground" role="alert">
+              {t('settings.deleting.signOutFailed')}
+            </p>
+            <Button type="button" onClick={() => void finish(true)}>
+              {t('settings.deleting.retrySignOut')}
+            </Button>
+          </div>
+        ) : null}
         <ol className="space-y-2">
           {progressSteps.map((step, index) => (
             <li key={step} className="flex items-center gap-2 text-sm">

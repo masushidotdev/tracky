@@ -781,6 +781,9 @@ const messages = {
     'settings.deleting.retryStorage': 'Try again',
     'settings.deleting.connectionError': 'Unable to check progress right now. We will keep trying.',
     'settings.deleting.retrying': 'Deletion hit a temporary error. Tracky will retry automatically.',
+    'settings.deleting.signOutFailed':
+      'Your data has been deleted, but sign-out did not complete. Please try again to return to the homepage.',
+    'settings.deleting.retrySignOut': 'Finish sign-out',
     'settings.deleting.backToSettings': 'Back to Settings',
     'settings.deleting.step.disconnect': 'Stop bank syncing',
     'settings.deleting.step.exports': 'Remove exports and notifications',
@@ -3306,6 +3309,9 @@ const messages = {
     'settings.deleting.retryStorage': 'Riprova',
     'settings.deleting.connectionError': 'Impossibile verificare l’avanzamento ora. Continueremo a riprovare.',
     'settings.deleting.retrying': 'Si è verificato un errore temporaneo. Tracky riproverà automaticamente.',
+    'settings.deleting.signOutFailed':
+      'I tuoi dati sono stati eliminati, ma l’uscita non è riuscita. Riprova per tornare alla homepage.',
+    'settings.deleting.retrySignOut': 'Completa l’uscita',
     'settings.deleting.backToSettings': 'Torna alle impostazioni',
     'settings.deleting.step.disconnect': 'Interruzione della sincronizzazione bancaria',
     'settings.deleting.step.exports': 'Rimozione di export e notifiche',

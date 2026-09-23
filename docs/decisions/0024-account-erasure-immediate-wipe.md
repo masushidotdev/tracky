@@ -34,7 +34,10 @@ sent to PostHog, and only under the existing analytics consent.
 
 Once WorkOS has deleted the user, its logout endpoint can leave the browser on
 a blank WorkOS page. The progress page therefore clears the application's
-AuthKit session cookie locally and loads the public homepage directly.
+AuthKit session cookie first, and only then removes completion markers, resets
+analytics identity, and loads the public homepage directly. A failed cleanup
+keeps the completion state with an explicit retry so the session cookie is
+not left behind without one.
 
 One authenticated mutation records a `wiping` job and schedules the first
 server action. Bounded, indexed mutation batches delete export files, personal

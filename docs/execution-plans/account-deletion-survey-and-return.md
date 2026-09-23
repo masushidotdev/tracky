@@ -22,6 +22,10 @@ Status: implemented and verified locally; staging verification pending
    alongside the erasure job.
 3. Local session cookie removal and document navigation to the homepage after
    `done` or a previously started job whose status is no longer readable.
+   Cookie cleanup runs first; only on success are completion markers removed,
+   analytics identity reset, and the browser sent to `/`. A failed cleanup
+   keeps the completion state with an explicit retry instead of stranding
+   the session without one.
 4. English and Italian interface and privacy documentation.
 
 ## Current Verification Evidence

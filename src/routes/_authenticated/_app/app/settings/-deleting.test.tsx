@@ -75,6 +75,38 @@ test('a completed deletion clears the local session when marker cleanup throws',
   expect(container.textContent).not.toContain('settings.deleting.connectionError');
 });
 
+test('a failed session cleanup keeps the page with a retry instead of navigating home', async () => {
+  window.sessionStorage.setItem('tracky.deletionStarted', 'confirmed_user');
+  window.sessionStorage.setItem('tracky.deletionPending', JSON.stringify({
+    userId: 'confirmed_user',
+    deletionExportId: null,
+    feedback: { reason: 'privacy' },
+  }));
+  mocks.query.mockResolvedValue({ status: 'done', currentStep: 'done' });
+  mocks.clearSession.mockRejectedValueOnce(new Error('cleanup unavailable')).mockResolvedValue(undefined);
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => {
+    root?.render(<DeletingRoute />);
+    await Promise.resolve();
+  });
+
+  expect(mocks.clearSession).toHaveBeenCalledTimes(1);
+  expect(container.textContent).toContain('settings.deleting.signOutFailed');
+  expect(window.sessionStorage.getItem('tracky.deletionStarted')).toBe('confirmed_user');
+
+  await act(async () => {
+    container?.querySelector('button')?.click();
+    await Promise.resolve();
+  });
+
+  expect(mocks.clearSession).toHaveBeenCalledTimes(2);
+  expect(container.textContent).not.toContain('settings.deleting.signOutFailed');
+  expect(window.sessionStorage.getItem('tracky.deletionStarted')).toBeNull();
+});
+
 test('an unreadable pending marker does not send the user back to Settings', async () => {
   mocks.query.mockResolvedValue(null);
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
