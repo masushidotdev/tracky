@@ -127,3 +127,24 @@ test('a missing status signs out when deletion previously started', async () => 
   expect(mocks.signOut).toHaveBeenCalledWith({ returnTo: '/' });
   expect(mocks.navigate).not.toHaveBeenCalled();
 });
+
+test('a missing status signs out despite an unreadable pending marker', async () => {
+  window.sessionStorage.setItem('tracky.deletionStarted', 'confirmed_user');
+  mocks.query.mockResolvedValue(null);
+  mocks.signOut.mockResolvedValue(undefined);
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
+    if (key === 'tracky.deletionPending') throw new Error('storage unavailable');
+    return key === 'tracky.deletionStarted' ? 'confirmed_user' : null;
+  });
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => {
+    root?.render(<DeletingRoute />);
+    await Promise.resolve();
+  });
+
+  expect(mocks.signOut).toHaveBeenCalledWith({ returnTo: '/' });
+  expect(mocks.navigate).not.toHaveBeenCalled();
+});

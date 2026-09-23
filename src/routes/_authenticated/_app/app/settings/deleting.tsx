@@ -187,11 +187,10 @@ export function DeletingRoute() {
         }
         if (result?.status === 'done') {
           await finish();
-        } else if (!result && !pendingRef.current &&
-          readMarker(deletionPendingKey) === null && !requestErrorRef.current) {
+        } else if (!result && !pendingRef.current && !requestErrorRef.current) {
           if (startedRef.current) {
             await finish();
-          } else {
+          } else if (readMarker(deletionPendingKey) === null) {
             await navigate({ to: '/app/settings' });
           }
         }
