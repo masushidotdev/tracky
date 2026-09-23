@@ -110,3 +110,20 @@ test('the pending request starts once after storage reads recover', async () => 
   });
   expect(mocks.mutation).toHaveBeenCalledTimes(1);
 });
+
+test('a missing status signs out when deletion previously started', async () => {
+  window.sessionStorage.setItem('tracky.deletionStarted', 'confirmed_user');
+  mocks.query.mockResolvedValue(null);
+  mocks.signOut.mockResolvedValue(undefined);
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => {
+    root?.render(<DeletingRoute />);
+    await Promise.resolve();
+  });
+
+  expect(mocks.signOut).toHaveBeenCalledWith({ returnTo: '/' });
+  expect(mocks.navigate).not.toHaveBeenCalled();
+});

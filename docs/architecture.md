@@ -295,8 +295,9 @@ If the first pending-marker read fails, the holding page retries it until it can
 submit the saved request once.
 If navigation fails and the pending marker cannot be cleared, the saved request
 remains pending without a misleading failure message. If the request itself
-fails, it offers a return to
-Settings before any erasure job exists. The server
+fails, it offers a return to Settings before any erasure job exists. If a job
+already started but its completed status row has expired, the holding page
+signs out instead of returning to Settings. The server
 disconnects sync, deletes user-owned records in indexed batches, revokes bank
 sessions on a best-effort basis, deletes Analyst component threads, then removes
 settings and profile before calling WorkOS User Management DELETE. An error
