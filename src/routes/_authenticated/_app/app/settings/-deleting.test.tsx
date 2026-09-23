@@ -107,6 +107,27 @@ test('a failed session cleanup keeps the page with a retry instead of navigating
   expect(window.sessionStorage.getItem('tracky.deletionStarted')).toBeNull();
 });
 
+test('a remount with a matching started marker skips resubmission and polls status', async () => {
+  window.sessionStorage.setItem('tracky.deletionStarted', 'confirmed_user');
+  window.sessionStorage.setItem('tracky.deletionPending', JSON.stringify({
+    userId: 'confirmed_user',
+    deletionExportId: null,
+    feedback: { reason: 'privacy' },
+  }));
+  mocks.query.mockResolvedValue({ status: 'wiping', currentStep: 'disconnect' });
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => {
+    root?.render(<DeletingRoute />);
+    await Promise.resolve();
+  });
+
+  expect(mocks.mutation).not.toHaveBeenCalled();
+  expect(container.textContent).toContain('settings.deleting.closeTab');
+});
+
 test('an unreadable pending marker does not send the user back to Settings', async () => {
   mocks.query.mockResolvedValue(null);
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {

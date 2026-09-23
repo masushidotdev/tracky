@@ -119,6 +119,12 @@ export function DeletingRoute() {
 
   React.useEffect(() => {
     if (authLoading || requestAttemptedRef.current) return;
+    if (user?.id && readMarker(deletionStartedKey) === user.id) {
+      // Erasure already accepted (e.g. storage recovered after a remount).
+      // Skip resubmission; status polling observes the durable job.
+      requestAttemptedRef.current = true;
+      return;
+    }
     const raw = readMarker(deletionPendingKey);
     if (raw === undefined) {
       const timer = window.setTimeout(retryStorageRead, 2_000);
