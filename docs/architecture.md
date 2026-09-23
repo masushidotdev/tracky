@@ -285,7 +285,9 @@ The Settings danger zone offers a final JSON export and requires the current
 email to confirm deletion. The client first opens the isolated holding page,
 unmounting normal app queries, then calls `accountDeletion.deleteMyAccount`.
 That authenticated mutation records an erasure job and schedules the first
-server action. The holding page reads `getDeletionStatus` to display progress;
+server action. A pending request is tied to the confirming WorkOS account, and
+the route guard keeps normal screens unmounted if the user presses Back before
+the request finishes. The holding page reads `getDeletionStatus` to display progress;
 it does not drive the wipe. If the request itself fails, it offers a return to
 Settings before any erasure job exists. The server
 disconnects sync, deletes user-owned records in indexed batches, revokes bank

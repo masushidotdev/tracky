@@ -38,7 +38,11 @@ calling `deleteMyAccount`. Starting the mutation while Settings and the app
 shell are still mounted causes their reactive queries to throw
 `deletion_in_progress` and can crash the progress page even though the server
 wipe succeeds. The progress route handles a failed start separately from a
-server job that has entered its automatic retry cycle.
+server job that has entered its automatic retry cycle. The pending browser
+handoff stores the confirming WorkOS user ID, so a later sign-in by another
+account cannot consume it; the route guard also isolates normal screens while
+the mutation is outstanding, including after browser Back. The page allows
+closing the tab only after the mutation or status query confirms a server job.
 A sweeper runs every five minutes and resumes jobs whose heartbeat has been
 stale for 15 minutes; it
 also retries failed jobs with backoff. Normal progress is scheduled

@@ -5,12 +5,12 @@ import { useConvex, useMutation } from 'convex/react';
 import { CheckIcon } from 'lucide-react';
 
 import { api } from '../../../../../../convex/_generated/api';
-import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { TranslationKey } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { analyticsEvents, resetAnalyticsUser, trackEvent } from '@/lib/analytics/events';
+import { deletionPendingKey, deletionStartedKey, parsePendingDeletion } from '@/lib/account-deletion-pending';
 import { useI18n } from '@/lib/i18n';
 
 export const Route = createFileRoute('/_authenticated/_app/app/settings/deleting')({
@@ -52,11 +52,12 @@ function DeletingRoute() {
   const convex = useConvex();
   const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user, loading: authLoading } = useAuth();
   const [status, setStatus] = React.useState<DeletionStatus>(null);
   const [loading, setLoading] = React.useState(true);
   const [connectionError, setConnectionError] = React.useState(false);
   const [requestError, setRequestError] = React.useState(false);
+  const [requestAccepted, setRequestAccepted] = React.useState(false);
   const startedRef = React.useRef(false);
   const pendingRef = React.useRef(false);
   const requestErrorRef = React.useRef(false);
@@ -64,42 +65,61 @@ function DeletingRoute() {
   const signingOutRef = React.useRef(false);
 
   React.useEffect(() => {
-    const pendingExportId = window.sessionStorage.getItem('tracky.deletionPending');
-    if (pendingExportId === null || requestAttemptedRef.current) return;
+    if (authLoading || requestAttemptedRef.current) return;
+    const raw = window.sessionStorage.getItem(deletionPendingKey);
+    if (raw === null) return;
+    const pending = parsePendingDeletion(raw, user?.id);
+    if (!pending) {
+      window.sessionStorage.removeItem(deletionPendingKey);
+      return;
+    }
     requestAttemptedRef.current = true;
     pendingRef.current = true;
 
     void (async () => {
+      let accepted = false;
+      let created = false;
       try {
-        await deleteAccount({ deletionExportId: pendingExportId ? (pendingExportId as Id<'dataExports'>) : undefined });
-        trackEvent(analyticsEvents.accountDeletionRequested, {});
-        startedRef.current = true;
-        window.sessionStorage.setItem('tracky.deletionStarted', '1');
+        await deleteAccount({ deletionExportId: pending.deletionExportId ?? undefined });
+        accepted = true;
+        created = true;
       } catch (error) {
         if (String(error).includes('deletion_in_progress')) {
-          startedRef.current = true;
-          window.sessionStorage.setItem('tracky.deletionStarted', '1');
+          accepted = true;
         } else {
           requestErrorRef.current = true;
           setRequestError(true);
         }
       } finally {
         pendingRef.current = false;
-        window.sessionStorage.removeItem('tracky.deletionPending');
+        // Keep the guard active until status polling observes the durable job.
+        if (!accepted) window.sessionStorage.removeItem(deletionPendingKey);
+      }
+      if (accepted) {
+        startedRef.current = true;
+        window.sessionStorage.setItem(deletionStartedKey, pending.userId);
+        setRequestAccepted(true);
+        if (created) {
+          try {
+            trackEvent(analyticsEvents.accountDeletionRequested, {});
+          } catch {
+            // Optional analytics must not turn a successful wipe into a UI error.
+          }
+        }
       }
     })();
-  }, [deleteAccount]);
+  }, [authLoading, deleteAccount, user?.id]);
 
   React.useEffect(() => {
-    startedRef.current = window.sessionStorage.getItem('tracky.deletionStarted') === '1';
+    startedRef.current ||= Boolean(user?.id && window.sessionStorage.getItem(deletionStartedKey) === user.id);
     let active = true;
     let inFlight = false;
 
     const finish = async () => {
       if (signingOutRef.current) return;
       signingOutRef.current = true;
-      window.sessionStorage.removeItem('tracky.deletionStarted');
-      window.sessionStorage.removeItem('tracky.deletionPending');
+      window.sessionStorage.removeItem(deletionStartedKey);
+      window.sessionStorage.removeItem(deletionPendingKey);
       window.sessionStorage.removeItem('tracky.deletionExportId');
       resetAnalyticsUser();
       try {
@@ -119,13 +139,18 @@ function DeletingRoute() {
         setStatus(result);
         setConnectionError(false);
         setLoading(false);
+        if (result) {
+          setRequestAccepted(true);
+          window.sessionStorage.removeItem(deletionPendingKey);
+        }
         if (result?.status === 'wiping' || result?.status === 'failed') {
           startedRef.current = true;
-          window.sessionStorage.setItem('tracky.deletionStarted', '1');
+          if (user?.id) window.sessionStorage.setItem(deletionStartedKey, user.id);
         }
         if (result?.status === 'done') {
           await finish();
-        } else if (!result && !startedRef.current && !pendingRef.current && !requestErrorRef.current) {
+        } else if (!result && !startedRef.current && !pendingRef.current &&
+          window.sessionStorage.getItem(deletionPendingKey) === null && !requestErrorRef.current) {
           await navigate({ to: '/app/settings' });
         }
       } catch (error) {
@@ -147,7 +172,7 @@ function DeletingRoute() {
       active = false;
       window.clearInterval(interval);
     };
-  }, [convex, navigate, signOut]);
+  }, [convex, navigate, signOut, user?.id]);
 
   const stageToProgress: Record<string, (typeof progressSteps)[number]> = {
     disconnect: 'disconnect',
@@ -214,7 +239,9 @@ function DeletingRoute() {
             </li>
           ))}
         </ol>
-        <p className="text-xs text-muted-foreground">{t('settings.deleting.closeTab')}</p>
+        <p className="text-xs text-muted-foreground">
+          {t(requestAccepted ? 'settings.deleting.closeTab' : 'settings.deleting.keepTabOpen')}
+        </p>
       </CardContent>
     </Card>
   );

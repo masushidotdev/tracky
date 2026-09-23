@@ -23,6 +23,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
+import { deletionPendingKey } from '@/lib/account-deletion-pending';
 import { useI18n } from '@/lib/i18n';
 
 const deletionExportKey = 'tracky.deletionExportId';
@@ -58,7 +59,7 @@ export function DangerZoneCard() {
   const exportNeedsDownload = Boolean(selectedExportId &&
     (!exportForDeletion || (exportForDeletion.status !== 'failed' && !exportForDeletion.deletionDownloadAcknowledgedAtMs)));
   const email = user?.email ?? '';
-  const canDelete = typedEmail.trim() === email && email !== '' && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
+  const canDelete = typedEmail.trim() === email && email !== '' && Boolean(user?.id) && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
 
   const startExport = async () => {
     setRequestingExport(true);
@@ -89,15 +90,18 @@ export function DangerZoneCard() {
   };
 
   const confirm = async () => {
-    if (!canDelete) return;
+    if (!canDelete || !user?.id) return;
     setDeleting(true);
     // Leave the normal app before creating the deletion row. Its subscriptions
     // are intentionally rejected as soon as erasure starts.
-    window.sessionStorage.setItem('tracky.deletionPending', selectedExportId ?? '');
+    window.sessionStorage.setItem(deletionPendingKey, JSON.stringify({
+      userId: user.id,
+      deletionExportId: selectedExportId,
+    }));
     try {
-      await navigate({ to: '/app/settings/deleting' });
+      await navigate({ to: '/app/settings/deleting', replace: true });
     } catch {
-      window.sessionStorage.removeItem('tracky.deletionPending');
+      window.sessionStorage.removeItem(deletionPendingKey);
       toast.error(t('settings.danger.deleteFailed'));
       setDeleting(false);
     }
