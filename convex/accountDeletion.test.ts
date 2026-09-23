@@ -7,6 +7,7 @@ import workOSAuthKitTest from '@convex-dev/workos-authkit/test';
 import { afterEach, expect, test, vi } from 'vitest';
 import { components } from './_generated/api';
 import schema from './schema';
+import type { Id } from './_generated/dataModel';
 
 process.env.WORKOS_CLIENT_ID ??= 'client_test';
 process.env.WORKOS_API_KEY ??= 'sk_test';
@@ -17,11 +18,12 @@ const modules = import.meta.glob([
   './accountDeletion.ts', './accountDeletionActions.ts', './accountDeletionBanking.ts',
   './accountDeletionPlanning.ts', './banking/enableBanking.ts', './dataExport.ts',
 ]);
-const deleteMyAccount = makeFunctionReference<'mutation', Record<string, never>, null>('accountDeletion:deleteMyAccount');
+const deleteMyAccount = makeFunctionReference<'mutation', { deletionExportId?: Id<'dataExports'> }, null>('accountDeletion:deleteMyAccount');
 const getDeletionStatus = makeFunctionReference<'query', Record<string, never>,
   { status: 'wiping' | 'failed' | 'done'; currentStep: string } | null>('accountDeletion:getDeletionStatus');
 const requestDataExport = makeFunctionReference<'mutation', Record<string, never>, string>('dataExport:requestDataExport');
-const requestDeletionDataExport = makeFunctionReference<'mutation', Record<string, never>, string>('dataExport:requestDeletionDataExport');
+const requestDeletionDataExport = makeFunctionReference<'mutation', Record<string, never>, Id<'dataExports'>>('dataExport:requestDeletionDataExport');
+const acknowledgeDeletionExportDownload = makeFunctionReference<'mutation', { exportId: Id<'dataExports'> }, null>('dataExport:acknowledgeDeletionExportDownload');
 
 function createTest() {
   const t = convexTest(schema, modules);
@@ -72,6 +74,53 @@ test('deletion dialog can reuse an export despite the daily export limit', async
   const asUser = t.withIdentity({ subject: 'user_export' });
   await expect(asUser.mutation(requestDataExport, {})).rejects.toThrow('already available');
   expect(await asUser.mutation(requestDeletionDataExport, {})).toBe(exportId);
+});
+
+test('an ordinary export does not block direct deletion', async () => {
+  const t = createTest();
+  await seedUser(t, 'user_direct_deletion');
+  await t.run(async (ctx) => {
+    await ctx.db.insert('dataExports', {
+      userId: 'user_direct_deletion', status: 'completed', format: 'json',
+      storageId: await ctx.storage.store(new Blob(['copy'], { type: 'application/json' })),
+      requestedAtMs: Date.now(), completedAtMs: Date.now(), expiresAtMs: Date.now() + 60_000,
+    });
+  });
+  expect(await t.withIdentity({ subject: 'user_direct_deletion' }).mutation(deleteMyAccount, {})).toBeNull();
+});
+
+test('selected export requires a completed, acknowledged file before erasure', async () => {
+  const t = createTest();
+  await seedUser(t, 'user_selected_export');
+  await seedUser(t, 'user_other_export');
+  const selected = t.withIdentity({ subject: 'user_selected_export' });
+  const other = t.withIdentity({ subject: 'user_other_export' });
+  const exportId = await selected.mutation(requestDeletionDataExport, {});
+  await expect(selected.mutation(deleteMyAccount, {})).rejects.toThrow('deletion_export_not_acknowledged');
+  await expect(selected.mutation(acknowledgeDeletionExportDownload, { exportId }))
+    .rejects.toThrow('deletion_export_not_ready');
+  await t.run(async (ctx) => {
+    const storageId = await ctx.storage.store(new Blob(['copy'], { type: 'application/json' }));
+    await ctx.db.patch('dataExports', exportId, {
+      status: 'completed', storageId, completedAtMs: Date.now(),
+    });
+  });
+  await expect(other.mutation(acknowledgeDeletionExportDownload, { exportId }))
+    .rejects.toThrow('deletion_export_not_ready');
+  await expect(selected.mutation(deleteMyAccount, {})).rejects.toThrow('deletion_export_not_acknowledged');
+  expect(await selected.mutation(acknowledgeDeletionExportDownload, { exportId })).toBeNull();
+  expect(await selected.mutation(deleteMyAccount, { deletionExportId: exportId })).toBeNull();
+});
+
+test('a failed selected export does not prevent direct deletion', async () => {
+  const t = createTest();
+  await seedUser(t, 'user_failed_export');
+  const asUser = t.withIdentity({ subject: 'user_failed_export' });
+  const exportId = await asUser.mutation(requestDeletionDataExport, {});
+  await t.run(async (ctx) => {
+    await ctx.db.patch('dataExports', exportId, { status: 'failed', errorCode: 'export_failed' });
+  });
+  expect(await asUser.mutation(deleteMyAccount, {})).toBeNull();
 });
 
 test('scheduled wipe completes without an open browser and removes stored export files', async () => {

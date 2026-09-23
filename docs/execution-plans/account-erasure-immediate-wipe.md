@@ -28,7 +28,10 @@ Decisions taken with the user (Q&A 2026-09-22/23) and their reasons:
 - Export offered in the confirm dialog (download before confirm). Reason: GDPR
   portability; export blob is deleted by the wipe itself (group 1), so ordering
   is mandatory. Export-from-deletion bypasses the 1/day rate limit (or reuses a
-  recent export).
+  recent export). The user confirms they saved a selected export after opening
+  the download link; the server stores that acknowledgment and checks it at the
+  deletion boundary. It represents the user's confirmation, not browser proof
+  of a completed download.
 - Type-to-confirm (type account email to enable the delete button). Reason:
   standard for irreversible no-undo actions; replaces current double-click
   AlertDialog (`src/components/settings/danger-zone-card.tsx`).
@@ -51,24 +54,31 @@ Decisions taken with the user (Q&A 2026-09-22/23) and their reasons:
   (`analystTurnLocks` keyed by threadId, orphan `telegramUpdates`): resolve via
   thread→user mapping / chatId of deleted links; document accepted residue only
   if non-PII.
-- Remove `userSettings.deletionRequestedAtMs` (breaking, intended); delete
-  `requestAccountDeletion` / `cancelAccountDeletion` mutations, DangerZone
-  pending UI, related tests.
+- Keep `userSettings.deletionRequestedAtMs` optional for this release so
+  `clearLegacyDeletionFlags` can migrate existing rows before a follow-up
+  release removes the validator. Delete `requestAccountDeletion` /
+  `cancelAccountDeletion` mutations, DangerZone pending UI, related tests.
 
 ### B — Trigger + orchestrator (deps: A)
 
-- New `deleteMyAccount` mutation: `requireAuthUser`, idempotency on existing
+- New `deleteMyAccount` mutation: `requireAuthUser`, optional
+  `deletionExportId`, server check for a selected export and its download
+  acknowledgment (even if the caller omits the ID), idempotency on existing
   `accountDeletions` row for the user (second call → `deletion_in_progress`
   error), insert `wiping` row, step 0 (mark connections `disconnected`, delete
   sync-states so crons skip the user), `scheduler.runAfter(0, beginWipe)`.
+  Failed selected exports allow direct deletion; no selected export keeps the
+  optional-export path valid.
 - `beginWipe` action: re-check status, drive batch chain, advance `currentStep`
   per group for the holding-page progress.
 - `getDeletionStatus` query: auth-only, must NOT depend on `userProfiles` (it
   is hard-deleted mid-wipe). Returns `{ status, currentStep }` or null.
-- Sweeper cron (daily, `convex/crons.ts`): resume `wiping` rows with stale
-  heartbeat (15 min timeout, e.g. worker crash or tab closed mid-chain), retry
+- Sweeper cron (every five minutes, `convex/crons.ts`): resume `wiping` rows
+  with stale heartbeat (15 min timeout, e.g. worker crash), retry
   `failed` with backoff (`attemptCount`, `nextRetryAtMs`), retry pending
-  revocations/WorkOS deletes. The sweeper is safety net only, never the driver.
+  revocations. Failed revocations are abandoned after 30 days from the
+  deletion request and their completed job rows are removed. The sweeper is a
+  recovery path; normal batches schedule their own continuation.
 
 ### C — Banking wipe batches (deps: A, runs parallel to D)
 
@@ -116,8 +126,12 @@ Leaf-first, ~100 rows/txn via `by_userId`, chain via `scheduler.runAfter(0)`:
 
 ### F — Frontend holding flow (deps: B for API shape; UI mock parallel)
 
-- DangerZone dialog: "Download export" button (must complete download first) +
-  email type-to-confirm enables "Delete everything".
+- DangerZone dialog: open the export download link, then use "I saved my export"
+  to call `acknowledgeDeletionExportDownload({ exportId })`. The export list
+  exposes `deletionSelected` and `deletionDownloadAcknowledgedAtMs` to restore
+  this state after a refresh. Disable confirmation during a pending export
+  request and until the selected export is acknowledged. Email type-to-confirm
+  also gates "Delete everything".
 - Confirm → `deleteMyAccount` → navigate `/app/settings/deleting` holding page
   (spinner + step progress from `currentStep`).
 - Holding polls `getDeletionStatus` every 2s, no frontend timeout. Completion =
@@ -131,7 +145,9 @@ Leaf-first, ~100 rows/txn via `by_userId`, chain via `scheduler.runAfter(0)`:
 convex-test pattern from `convex/user-settings.test.ts`:
 
 - Double submit → second throws `deletion_in_progress`.
-- Export → download → wipe ordering.
+- Selected export → user download acknowledgment → wipe ordering, including
+  omission of `deletionExportId` by a direct mutation caller. The UI also
+  blocks confirmation while an export request is pending.
 - Full-seed wipe: all ~45 tables + export blobs → zero residue, storage empty,
   tombstone present, profile hard-deleted.
 - EB/WorkOS fetch mocked to fail → page still closes, sweeper retries.
@@ -141,7 +157,7 @@ convex-test pattern from `convex/user-settings.test.ts`:
 
 ### H — Docs + i18n (same land, repo rule; deps: final behavior)
 
-- `docs/decisions/0021-account-erasure-immediate-wipe.md` (Status: accepted):
+- `docs/decisions/0024-account-erasure-immediate-wipe.md` (Status: accepted):
   immediate wipe, order, best-effort revocations, hash tombstone, WorkOS last;
   explicitly supersedes 0006/0015 (kept, not deleted).
 - User docs EN+IT `settings-and-privacy.mdx`: rewrite deletion section (amend,
@@ -164,24 +180,27 @@ convex-test pattern from `convex/user-settings.test.ts`:
 
 - Staging with fixture user → force wipe → verify WorkOS dashboard (user gone),
   EB dashboard (consents revoked), tables empty.
-- Deploy deletes legacy pending flags (incl. the Sep-21 test request) —
-  `cancelAccountDeletion` path removed.
+- Deploy compatibility schema with `deletionRequestedAtMs` optional, run
+  `clearLegacyDeletionFlags` to completion in staging, and verify the old
+  field is absent before repeating in production (including the Sep-21 test
+  request). Remove the compatibility field in a later release after both
+  migrations are verified; `cancelAccountDeletion` is already removed.
 - Prod deploy; post-merge: CHANGELOG, recap 2–5 sentences, main pull
   `--ff-only`, `git status -sb` verify (repo PR rules).
 
 ## Current Verification Evidence
 
-- 2026-09-23: workstreams A-H implemented. `npm test` passes
-  (`npm test -- --pool forks --max-workers 2 --sequence.seed 42`:
-  127 files / 987 tests), `npm run lint` (tsc + eslint) passes,
-  `npm run build` passes. Note: the default parallel run is flaky on one
-  pre-existing `resetAvailable` case in `convex/plan-read.test.ts` (June
-  activity occasionally ignored under parallel load; fails on the clean
-  baseline plan too when new wipe files are present in the tree, passes in
-  isolation and with `--pool forks --max-workers 2`). No production change
-  was made for it; it needs a separate determinism fix outside this wipe.
-  `convex/accountDeletion.test.ts` + `convex/accountDeletionPlanning.test.ts`
-  (7 tests) cover double-submit idempotency, deletion-export reuse under the
-  daily limit, headless full wipe with storage cleanup, EB failure retry, and
-  WorkOS failure retry. Remaining rollout step: staging fixture
-  wipe with WorkOS/EB dashboard checks per Rollout above.
+- 2026-09-23: workstreams A-H implemented. On Node 22, the default `npm test`
+  run passed three consecutive times (127 files / 989 tests) and passed again
+  after adding an ordinary-export direct-deletion regression (990 tests);
+  `npm run lint`
+  (tsc + eslint) and `npm run build` passed. The prior `resetAvailable` flake
+  came from its test fixture inserting June transactions directly after
+  assignment mutations had scheduled historical snapshots. The fixture now
+  seeds those transactions first, so snapshots include both spends;
+  `convex/plan-read.test.ts` passed ten consecutive focused runs on Node 22.
+  Account-deletion tests cover double-submit idempotency, selected-export
+  acknowledgment (including an omitted ID), failed-export fallback,
+  deletion-export reuse under the daily limit, headless full wipe with storage
+  cleanup, EB failure retry, and WorkOS failure retry. Remaining rollout step:
+  staging fixture wipe with WorkOS/EB dashboard checks per Rollout above.

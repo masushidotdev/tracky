@@ -124,8 +124,11 @@ export default defineSchema({
     requestedAtMs: v.number(),
     completedAtMs: v.optional(v.number()),
     expiresAtMs: v.number(),
+    deletionSelected: v.optional(v.boolean()),
+    deletionDownloadAcknowledgedAtMs: v.optional(v.number()),
   })
     .index('by_userId_and_requestedAtMs', ['userId', 'requestedAtMs'])
+    .index('by_userId_and_deletionSelected', ['userId', 'deletionSelected'])
     .index('by_status_and_expiresAtMs', ['status', 'expiresAtMs']),
 
   providerAuthRequests: defineTable({

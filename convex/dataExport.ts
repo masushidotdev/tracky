@@ -210,7 +210,16 @@ export const requestDeletionDataExport = mutation({
       .take(5);
     const reusable = recent.find((row) => row.status === 'queued' || row.status === 'running' ||
       (row.status === 'completed' && row.storageId && row.expiresAtMs > Date.now()));
-    if (reusable) return reusable._id;
+    const previousSelection = await ctx.db.query('dataExports')
+      .withIndex('by_userId_and_deletionSelected', (q) =>
+        q.eq('userId', user.id).eq('deletionSelected', true)).unique();
+    if (previousSelection && previousSelection._id !== reusable?._id) {
+      await ctx.db.patch('dataExports', previousSelection._id, { deletionSelected: false });
+    }
+    if (reusable) {
+      await ctx.db.patch('dataExports', reusable._id, { deletionSelected: true });
+      return reusable._id;
+    }
     const now = Date.now();
     const exportId = await ctx.db.insert('dataExports', {
       userId: user.id,
@@ -218,9 +227,28 @@ export const requestDeletionDataExport = mutation({
       format: 'json',
       requestedAtMs: now,
       expiresAtMs: now + EXPORT_RETENTION_MS,
+      deletionSelected: true,
     });
     await ctx.scheduler.runAfter(0, internal.dataExport.runDataExport, { exportId });
     return exportId;
+  },
+});
+
+// A click on a signed URL cannot prove the browser saved the file. The user
+// explicitly acknowledges saving the selected, still-downloadable export.
+export const acknowledgeDeletionExportDownload = mutation({
+  args: { exportId: v.id('dataExports') },
+  returns: v.null(),
+  handler: async (ctx, { exportId }) => {
+    const user = await requireAuthUser(ctx);
+    const row = await ctx.db.get('dataExports', exportId);
+    if (!row || row.userId !== user.id || !row.deletionSelected ||
+      row.status !== 'completed' || !row.storageId || row.expiresAtMs <= Date.now() ||
+      !await ctx.db.system.get('_storage', row.storageId)) {
+      throw new ConvexError('deletion_export_not_ready');
+    }
+    await ctx.db.patch('dataExports', exportId, { deletionDownloadAcknowledgedAtMs: Date.now() });
+    return null;
   },
 });
 

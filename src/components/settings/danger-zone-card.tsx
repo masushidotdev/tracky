@@ -6,6 +6,7 @@ import { DownloadIcon, TriangleAlertIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -32,25 +33,33 @@ export function DangerZoneCard() {
   const navigate = useNavigate();
   const exports = useQuery(api.dataExport.listMyDataExports, {});
   const requestExport = useMutation(api.dataExport.requestDeletionDataExport);
+  const acknowledgeDownload = useMutation(api.dataExport.acknowledgeDeletionExportDownload);
   const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const [open, setOpen] = React.useState(false);
   const [typedEmail, setTypedEmail] = React.useState('');
-  const [exportId, setExportId] = React.useState<string | null>(null);
+  const [exportId, setExportId] = React.useState<Id<'dataExports'> | null>(null);
   const [requestingExport, setRequestingExport] = React.useState(false);
+  const [downloadStarted, setDownloadStarted] = React.useState(false);
+  const [acknowledgingExport, setAcknowledgingExport] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
 
   React.useEffect(() => {
-    setExportId(window.sessionStorage.getItem(deletionExportKey));
+    setExportId(window.sessionStorage.getItem(deletionExportKey) as Id<'dataExports'> | null);
   }, []);
 
-  const exportForDeletion = exports?.find((item) => item._id === exportId);
+  const selectedExportId = exports
+    ? (exports.find((item) => item.deletionSelected)?._id ??
+      exports.find((item) => item._id === exportId)?._id ?? null)
+    : exportId;
+  const exportForDeletion = exports?.find((item) => item._id === selectedExportId);
   const activeExport = exports?.find((item) => item.status === 'queued' || item.status === 'running');
-  const readyExport = exportForDeletion?.downloadUrl
-    ? exportForDeletion
+  const readyExport = exportForDeletion
+    ? (exportForDeletion.downloadUrl ? exportForDeletion : null)
     : exports?.find((item) => item.status === 'completed' && item.downloadUrl);
-  const exportNeedsDownload = Boolean(exportId && exportForDeletion?.status !== 'failed');
+  const exportNeedsDownload = Boolean(selectedExportId &&
+    (!exportForDeletion || (exportForDeletion.status !== 'failed' && !exportForDeletion.deletionDownloadAcknowledgedAtMs)));
   const email = user?.email ?? '';
-  const canDelete = typedEmail.trim() === email && email !== '' && !exportNeedsDownload && !activeExport && !deleting;
+  const canDelete = typedEmail.trim() === email && email !== '' && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
 
   const startExport = async () => {
     setRequestingExport(true);
@@ -58,6 +67,7 @@ export function DangerZoneCard() {
       const id = await requestExport({});
       window.sessionStorage.setItem(deletionExportKey, id);
       setExportId(id);
+      setDownloadStarted(false);
       trackEvent(analyticsEvents.dataExportRequested, {});
       toast.success(t('settings.danger.exportRequested'));
     } catch {
@@ -67,16 +77,23 @@ export function DangerZoneCard() {
     }
   };
 
-  const markDownloaded = () => {
-    window.sessionStorage.removeItem(deletionExportKey);
-    setExportId(null);
+  const confirmDownload = async () => {
+    if (!selectedExportId || !downloadStarted) return;
+    setAcknowledgingExport(true);
+    try {
+      await acknowledgeDownload({ exportId: selectedExportId });
+    } catch {
+      toast.error(t('settings.danger.exportAckFailed'));
+    } finally {
+      setAcknowledgingExport(false);
+    }
   };
 
   const confirm = async () => {
     if (!canDelete) return;
     setDeleting(true);
     try {
-      await deleteAccount({});
+      await deleteAccount({ deletionExportId: selectedExportId ?? undefined });
       window.sessionStorage.setItem('tracky.deletionStarted', '1');
       trackEvent(analyticsEvents.accountDeletionRequested, {});
       await navigate({ to: '/app/settings/deleting' });
@@ -121,11 +138,19 @@ export function DangerZoneCard() {
                       <Spinner /> {t('settings.danger.exportInProgress')}
                     </p>
                   ) : readyExport?.downloadUrl ? (
-                    <Button asChild type="button" size="sm" variant="outline">
-                      <a href={readyExport.downloadUrl} download onClick={markDownloaded}>
-                        <DownloadIcon data-icon="inline-start" /> {t('settings.danger.downloadExport')}
-                      </a>
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button asChild type="button" size="sm" variant="outline">
+                        <a href={readyExport.downloadUrl} download target="_blank" rel="noreferrer" onClick={() => setDownloadStarted(true)}>
+                          <DownloadIcon data-icon="inline-start" /> {t('settings.danger.downloadExport')}
+                        </a>
+                      </Button>
+                      {selectedExportId && readyExport._id === selectedExportId && downloadStarted &&
+                        !exportForDeletion?.deletionDownloadAcknowledgedAtMs ? (
+                        <Button type="button" size="sm" variant="outline" disabled={acknowledgingExport} onClick={() => void confirmDownload()}>
+                          {acknowledgingExport ? <Spinner /> : null}{t('settings.danger.confirmDownload')}
+                        </Button>
+                      ) : null}
+                    </div>
                   ) : (
                     <Button type="button" size="sm" variant="outline" onClick={() => void startExport()}>
                       {t('settings.danger.prepareExport')}

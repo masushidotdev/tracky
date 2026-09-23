@@ -23,9 +23,9 @@ export async function hashUserId(userId: string): Promise<string> {
 }
 
 export const deleteMyAccount = mutation({
-  args: {},
+  args: { deletionExportId: v.optional(v.id('dataExports')) },
   returns: v.null(),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const user = await requireAuthUser(ctx);
     const existing = await ctx.db.query('accountDeletions')
       .withIndex('by_userId', (q) => q.eq('userId', user.id)).unique();
@@ -34,6 +34,20 @@ export const deleteMyAccount = mutation({
     const tombstone = await ctx.db.query('deletedUsers')
       .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
     if (tombstone) throw new ConvexError('deletion_in_progress');
+    const selectedExport = await ctx.db.query('dataExports')
+      .withIndex('by_userId_and_deletionSelected', (q) =>
+        q.eq('userId', user.id).eq('deletionSelected', true)).unique();
+    if (args.deletionExportId && args.deletionExportId !== selectedExport?._id) {
+      throw new ConvexError('deletion_export_mismatch');
+    }
+    if (selectedExport && selectedExport.status !== 'failed') {
+      if (selectedExport.status !== 'completed' || !selectedExport.storageId ||
+        selectedExport.expiresAtMs <= Date.now() ||
+        !selectedExport.deletionDownloadAcknowledgedAtMs ||
+        !await ctx.db.system.get('_storage', selectedExport.storageId)) {
+        throw new ConvexError('deletion_export_not_acknowledged');
+      }
+    }
     const now = Date.now();
     const deletionId = await ctx.db.insert('accountDeletions', {
       userId: user.id,
