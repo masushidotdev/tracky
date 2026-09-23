@@ -62,7 +62,7 @@ describe('WorkOS user profile sync', () => {
     const profileId = await t
       .withIdentity({ subject: authUserId })
       .mutation(api.authProfiles.ensureCurrentUserProfile, {});
-    const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId));
+    const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId!));
 
     expect(profile).toMatchObject({
       authUserId,
