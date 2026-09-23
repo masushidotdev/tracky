@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@workos/authkit-tanstack-react-start/client';
-import { useConvex } from 'convex/react';
+import { useConvex, useMutation } from 'convex/react';
 import { CheckIcon } from 'lucide-react';
 
 import { api } from '../../../../../../convex/_generated/api';
+import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { TranslationKey } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
-import { resetAnalyticsUser } from '@/lib/analytics/events';
+import { analyticsEvents, resetAnalyticsUser, trackEvent } from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 export const Route = createFileRoute('/_authenticated/_app/app/settings/deleting')({
@@ -48,13 +50,45 @@ function isUnauthorized(error: unknown) {
 function DeletingRoute() {
   const { t } = useI18n();
   const convex = useConvex();
+  const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [status, setStatus] = React.useState<DeletionStatus>(null);
   const [loading, setLoading] = React.useState(true);
   const [connectionError, setConnectionError] = React.useState(false);
+  const [requestError, setRequestError] = React.useState(false);
   const startedRef = React.useRef(false);
+  const pendingRef = React.useRef(false);
+  const requestErrorRef = React.useRef(false);
+  const requestAttemptedRef = React.useRef(false);
   const signingOutRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const pendingExportId = window.sessionStorage.getItem('tracky.deletionPending');
+    if (pendingExportId === null || requestAttemptedRef.current) return;
+    requestAttemptedRef.current = true;
+    pendingRef.current = true;
+
+    void (async () => {
+      try {
+        await deleteAccount({ deletionExportId: pendingExportId ? (pendingExportId as Id<'dataExports'>) : undefined });
+        trackEvent(analyticsEvents.accountDeletionRequested, {});
+        startedRef.current = true;
+        window.sessionStorage.setItem('tracky.deletionStarted', '1');
+      } catch (error) {
+        if (String(error).includes('deletion_in_progress')) {
+          startedRef.current = true;
+          window.sessionStorage.setItem('tracky.deletionStarted', '1');
+        } else {
+          requestErrorRef.current = true;
+          setRequestError(true);
+        }
+      } finally {
+        pendingRef.current = false;
+        window.sessionStorage.removeItem('tracky.deletionPending');
+      }
+    })();
+  }, [deleteAccount]);
 
   React.useEffect(() => {
     startedRef.current = window.sessionStorage.getItem('tracky.deletionStarted') === '1';
@@ -65,6 +99,7 @@ function DeletingRoute() {
       if (signingOutRef.current) return;
       signingOutRef.current = true;
       window.sessionStorage.removeItem('tracky.deletionStarted');
+      window.sessionStorage.removeItem('tracky.deletionPending');
       window.sessionStorage.removeItem('tracky.deletionExportId');
       resetAnalyticsUser();
       try {
@@ -90,7 +125,7 @@ function DeletingRoute() {
         }
         if (result?.status === 'done') {
           await finish();
-        } else if (!result && !startedRef.current) {
+        } else if (!result && !startedRef.current && !pendingRef.current && !requestErrorRef.current) {
           await navigate({ to: '/app/settings' });
         }
       } catch (error) {
@@ -115,12 +150,35 @@ function DeletingRoute() {
   }, [convex, navigate, signOut]);
 
   const stageToProgress: Record<string, (typeof progressSteps)[number]> = {
-    disconnect: 'disconnect', personalData: 'exports', telegram: 'communication',
-    bankingLeaves: 'bankingLeaves', providerRevocation: 'providerRevocation',
-    bankingCore: 'bankingCore', planning: 'planning', forecast: 'planning',
-    misc: 'planning', agentThreads: 'planning', profile: 'profile', workos: 'workos',
+    disconnect: 'disconnect',
+    personalData: 'exports',
+    telegram: 'communication',
+    bankingLeaves: 'bankingLeaves',
+    providerRevocation: 'providerRevocation',
+    bankingCore: 'bankingCore',
+    planning: 'planning',
+    forecast: 'planning',
+    misc: 'planning',
+    agentThreads: 'planning',
+    profile: 'profile',
+    workos: 'workos',
   };
   const currentIndex = progressSteps.findIndex((step) => step === stageToProgress[status?.currentStep ?? '']);
+
+  if (requestError) {
+    return (
+      <Card className="w-full max-w-2xl">
+        <CardHeader>
+          <CardTitle>{t('settings.danger.deleteFailed')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button type="button" onClick={() => void navigate({ to: '/app/settings' })}>
+            {t('settings.deleting.backToSettings')}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-2xl" aria-live="polite">
@@ -132,10 +190,14 @@ function DeletingRoute() {
       </CardHeader>
       <CardContent className="space-y-4">
         {connectionError ? (
-          <p className="text-sm text-muted-foreground" role="status">{t('settings.deleting.connectionError')}</p>
+          <p className="text-sm text-muted-foreground" role="status">
+            {t('settings.deleting.connectionError')}
+          </p>
         ) : null}
         {status?.status === 'failed' ? (
-          <p className="text-sm text-muted-foreground" role="status">{t('settings.deleting.retrying')}</p>
+          <p className="text-sm text-muted-foreground" role="status">
+            {t('settings.deleting.retrying')}
+          </p>
         ) : null}
         {loading ? <p className="text-sm text-muted-foreground">{t('settings.deleting.checking')}</p> : null}
         <ol className="space-y-2">

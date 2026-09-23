@@ -38,33 +38,38 @@ export const Route = createFileRoute('/_authenticated/_app')({
 
 function AppLayout() {
   const { balancesHidden } = Route.useLoaderData();
+  const deleting = useRouterState({ select: (state) => state.location.pathname === '/app/settings/deleting' });
 
   return (
     <DeletionRouteGuard>
-      <BalancePrivacyProvider initialHidden={balancesHidden}>
-        <CommandMenuProvider>
-          <SidebarProvider
-            style={
-              {
-                '--sidebar-width': 'calc(var(--spacing) * 72)',
-                '--header-height': 'calc(var(--spacing) * 12)',
-              } as CSSProperties
-            }
-          >
-            <ProfileBootstrap />
-            <CommandMenu />
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-              <SiteHeader />
-              <div className="flex flex-1 flex-col">
-                <div className="@container/main flex flex-1 flex-col gap-2">
-                  <Outlet />
+      {deleting ? (
+        <Outlet />
+      ) : (
+        <BalancePrivacyProvider initialHidden={balancesHidden}>
+          <CommandMenuProvider>
+            <SidebarProvider
+              style={
+                {
+                  '--sidebar-width': 'calc(var(--spacing) * 72)',
+                  '--header-height': 'calc(var(--spacing) * 12)',
+                } as CSSProperties
+              }
+            >
+              <ProfileBootstrap />
+              <CommandMenu />
+              <AppSidebar variant="inset" />
+              <SidebarInset>
+                <SiteHeader />
+                <div className="flex flex-1 flex-col">
+                  <div className="@container/main flex flex-1 flex-col gap-2">
+                    <Outlet />
+                  </div>
                 </div>
-              </div>
-            </SidebarInset>
-          </SidebarProvider>
-        </CommandMenuProvider>
-      </BalancePrivacyProvider>
+              </SidebarInset>
+            </SidebarProvider>
+          </CommandMenuProvider>
+        </BalancePrivacyProvider>
+      )}
     </DeletionRouteGuard>
   );
 }

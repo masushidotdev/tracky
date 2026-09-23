@@ -34,7 +34,6 @@ export function DangerZoneCard() {
   const exports = useQuery(api.dataExport.listMyDataExports, {});
   const requestExport = useMutation(api.dataExport.requestDeletionDataExport);
   const acknowledgeDownload = useMutation(api.dataExport.acknowledgeDeletionExportDownload);
-  const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const [open, setOpen] = React.useState(false);
   const [typedEmail, setTypedEmail] = React.useState('');
   const [exportId, setExportId] = React.useState<Id<'dataExports'> | null>(null);
@@ -92,20 +91,15 @@ export function DangerZoneCard() {
   const confirm = async () => {
     if (!canDelete) return;
     setDeleting(true);
+    // Leave the normal app before creating the deletion row. Its subscriptions
+    // are intentionally rejected as soon as erasure starts.
+    window.sessionStorage.setItem('tracky.deletionPending', selectedExportId ?? '');
     try {
-      await deleteAccount({ deletionExportId: selectedExportId ?? undefined });
-      window.sessionStorage.setItem('tracky.deletionStarted', '1');
-      trackEvent(analyticsEvents.accountDeletionRequested, {});
       await navigate({ to: '/app/settings/deleting' });
-    } catch (error) {
-      const message = String(error);
-      if (message.includes('deletion_in_progress')) {
-        window.sessionStorage.setItem('tracky.deletionStarted', '1');
-        await navigate({ to: '/app/settings/deleting' });
-      } else {
-        toast.error(t('settings.danger.deleteFailed'));
-        setDeleting(false);
-      }
+    } catch {
+      window.sessionStorage.removeItem('tracky.deletionPending');
+      toast.error(t('settings.danger.deleteFailed'));
+      setDeleting(false);
     }
   };
 
