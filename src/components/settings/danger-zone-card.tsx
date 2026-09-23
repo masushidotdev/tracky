@@ -23,6 +23,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
+import { deletionPendingKey } from '@/lib/account-deletion-pending';
 import { useI18n } from '@/lib/i18n';
 
 const deletionExportKey = 'tracky.deletionExportId';
@@ -34,7 +35,6 @@ export function DangerZoneCard() {
   const exports = useQuery(api.dataExport.listMyDataExports, {});
   const requestExport = useMutation(api.dataExport.requestDeletionDataExport);
   const acknowledgeDownload = useMutation(api.dataExport.acknowledgeDeletionExportDownload);
-  const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const [open, setOpen] = React.useState(false);
   const [typedEmail, setTypedEmail] = React.useState('');
   const [exportId, setExportId] = React.useState<Id<'dataExports'> | null>(null);
@@ -59,7 +59,7 @@ export function DangerZoneCard() {
   const exportNeedsDownload = Boolean(selectedExportId &&
     (!exportForDeletion || (exportForDeletion.status !== 'failed' && !exportForDeletion.deletionDownloadAcknowledgedAtMs)));
   const email = user?.email ?? '';
-  const canDelete = typedEmail.trim() === email && email !== '' && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
+  const canDelete = typedEmail.trim() === email && email !== '' && Boolean(user?.id) && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
 
   const startExport = async () => {
     setRequestingExport(true);
@@ -90,22 +90,30 @@ export function DangerZoneCard() {
   };
 
   const confirm = async () => {
-    if (!canDelete) return;
+    if (!canDelete || !user?.id) return;
     setDeleting(true);
+    // Leave the normal app before creating the deletion row. Its subscriptions
+    // are intentionally rejected as soon as erasure starts.
     try {
-      await deleteAccount({ deletionExportId: selectedExportId ?? undefined });
-      window.sessionStorage.setItem('tracky.deletionStarted', '1');
-      trackEvent(analyticsEvents.accountDeletionRequested, {});
-      await navigate({ to: '/app/settings/deleting' });
-    } catch (error) {
-      const message = String(error);
-      if (message.includes('deletion_in_progress')) {
-        window.sessionStorage.setItem('tracky.deletionStarted', '1');
-        await navigate({ to: '/app/settings/deleting' });
-      } else {
+      window.sessionStorage.setItem(deletionPendingKey, JSON.stringify({
+        userId: user.id,
+        deletionExportId: selectedExportId,
+      }));
+    } catch {
+      toast.error(t('settings.danger.deleteFailed'));
+      setDeleting(false);
+      return;
+    }
+    try {
+      await navigate({ to: '/app/settings/deleting', replace: true });
+    } catch {
+      try {
+        window.sessionStorage.removeItem(deletionPendingKey);
         toast.error(t('settings.danger.deleteFailed'));
-        setDeleting(false);
+      } catch {
+        // Keep the saved request; it can resume when browser storage recovers.
       }
+      setDeleting(false);
     }
   };
 
