@@ -44,6 +44,7 @@ export function LoanFormFields({
   allowNoSettlementAccount = false,
   originalPrincipalError,
   paymentError,
+  showRequiredErrors = false,
   showBalance = true,
   showCurrency = true,
   showFirstPaymentDate = true,
@@ -57,6 +58,7 @@ export function LoanFormFields({
   allowNoSettlementAccount?: boolean;
   originalPrincipalError?: string;
   paymentError?: string;
+  showRequiredErrors?: boolean;
   showBalance?: boolean;
   showCurrency?: boolean;
   showFirstPaymentDate?: boolean;
@@ -67,17 +69,20 @@ export function LoanFormFields({
 }) {
   const { t } = useI18n();
   const compatibleAccounts = accounts.filter((account) => account.currency === values.currency);
+  const requiredError = t('loans.requiredField');
 
   return (
     <FieldGroup>
       {showName ? (
-        <Field>
+        <Field data-invalid={showRequiredErrors && !values.name.trim()}>
           <FieldLabel htmlFor="loanName">{t('common.name')}</FieldLabel>
           <Input
             id="loanName"
+            aria-invalid={showRequiredErrors && !values.name.trim()}
             value={values.name}
             onChange={(event) => onChange({ ...values, name: event.target.value })}
           />
+          {showRequiredErrors && !values.name.trim() ? <FieldError>{requiredError}</FieldError> : null}
         </Field>
       ) : null}
       {showLoanType ? (
@@ -102,14 +107,16 @@ export function LoanFormFields({
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         {showBalance ? (
-          <Field>
+          <Field data-invalid={showRequiredErrors && !values.currentBalance.trim()}>
             <FieldLabel htmlFor="loanCurrentBalance">{t('loans.currentBalance')}</FieldLabel>
             <Input
               id="loanCurrentBalance"
+              aria-invalid={showRequiredErrors && !values.currentBalance.trim()}
               inputMode="decimal"
               value={values.currentBalance}
               onChange={(event) => onChange({ ...values, currentBalance: event.target.value })}
             />
+            {showRequiredErrors && !values.currentBalance.trim() ? <FieldError>{requiredError}</FieldError> : null}
           </Field>
         ) : null}
         {showCurrency ? (
@@ -155,25 +162,29 @@ export function LoanFormFields({
         <FieldDescription>{t('loans.originalPrincipalHint')}</FieldDescription>
       </Field>
       <div className="grid gap-3 sm:grid-cols-3">
-        <Field>
+        <Field data-invalid={showRequiredErrors && !values.annualRate.trim()}>
           <FieldLabel htmlFor="loanAnnualRate">{t('loans.interestRatePercent')}</FieldLabel>
           <Input
             id="loanAnnualRate"
+            aria-invalid={showRequiredErrors && !values.annualRate.trim()}
             inputMode="decimal"
             value={values.annualRate}
             onChange={(event) => onChange({ ...values, annualRate: event.target.value })}
           />
+          {showRequiredErrors && !values.annualRate.trim() ? <FieldError>{requiredError}</FieldError> : null}
         </Field>
-        <Field data-invalid={Boolean(paymentError)}>
+        <Field data-invalid={Boolean(paymentError) || (showRequiredErrors && !values.minimumPayment.trim())}>
           <FieldLabel htmlFor="loanMinimumPayment">{t('loans.minimumPaymentRequired')}</FieldLabel>
           <Input
             id="loanMinimumPayment"
             inputMode="decimal"
-            aria-invalid={Boolean(paymentError)}
+            aria-invalid={Boolean(paymentError) || (showRequiredErrors && !values.minimumPayment.trim())}
             value={values.minimumPayment}
             onChange={(event) => onChange({ ...values, minimumPayment: event.target.value })}
           />
-          <FieldError>{paymentError}</FieldError>
+          <FieldError>
+            {paymentError || (showRequiredErrors && !values.minimumPayment.trim() ? requiredError : '')}
+          </FieldError>
         </Field>
         <Field>
           <FieldLabel htmlFor="loanEscrow">{t('loans.escrowOptional')}</FieldLabel>
@@ -195,13 +206,17 @@ export function LoanFormFields({
         />
         <FieldDescription>{t('loans.finalPaymentHint')}</FieldDescription>
       </Field>
-      <Field>
+      <Field data-invalid={showRequiredErrors && values.settlementAccountId === 'none'}>
         <FieldLabel htmlFor="loanSettlementAccount">{t('loans.settlementAccount')}</FieldLabel>
         <Select
           value={values.settlementAccountId}
           onValueChange={(settlementAccountId) => onChange({ ...values, settlementAccountId })}
         >
-          <SelectTrigger id="loanSettlementAccount" className="w-full">
+          <SelectTrigger
+            id="loanSettlementAccount"
+            className="w-full"
+            aria-invalid={showRequiredErrors && values.settlementAccountId === 'none'}
+          >
             <SelectValue placeholder={t('loans.selectSettlementAccount')} />
           </SelectTrigger>
           <SelectContent>
@@ -217,17 +232,20 @@ export function LoanFormFields({
             </SelectGroup>
           </SelectContent>
         </Select>
+        {showRequiredErrors && values.settlementAccountId === 'none' ? <FieldError>{requiredError}</FieldError> : null}
       </Field>
       <div className="grid gap-3 sm:grid-cols-2">
         {showFirstPaymentDate ? (
-          <Field>
+          <Field data-invalid={showRequiredErrors && !values.firstPaymentDate}>
             <FieldLabel htmlFor="loanFirstPaymentDate">{t('loans.firstPaymentDate')}</FieldLabel>
             <Input
               id="loanFirstPaymentDate"
+              aria-invalid={showRequiredErrors && !values.firstPaymentDate}
               type="date"
               value={values.firstPaymentDate}
               onChange={(event) => onChange({ ...values, firstPaymentDate: event.target.value })}
             />
+            {showRequiredErrors && !values.firstPaymentDate ? <FieldError>{requiredError}</FieldError> : null}
           </Field>
         ) : null}
         <Field>
