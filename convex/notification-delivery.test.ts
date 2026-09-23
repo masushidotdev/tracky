@@ -35,6 +35,11 @@ const deliverNotifications = makeFunctionReference<
   { notificationIds: Array<Id<'notifications'>> },
   null
 >('notificationDelivery:deliverNotifications');
+const sendNotificationTelegram = makeFunctionReference<
+  'action',
+  { notificationId: Id<'notifications'>; userId: string; chatId: string; text: string },
+  { sent: true; chunkCount: number }
+>('analyst/telegramActions:sendNotificationTelegram');
 
 function createTest() {
   return convexTest(schema, modules);
@@ -204,6 +209,29 @@ describe('notification delivery', () => {
     const notification = await t.run(async (ctx) => await ctx.db.get('notifications', notificationId));
     expect(notification?.telegramDeliveredAtMs).toEqual(expect.any(Number));
     expect(notification?.emailDeliveredAtMs).toBeUndefined();
+  });
+
+  test('does not send a queued notification after account erasure starts', async () => {
+    process.env.TELEGRAM_BOT_TOKEN = 'telegram_test_token';
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const t = createTest();
+    const userId = 'user_notification_erasing';
+    const notificationId = await seedNotification(t, {
+      userId, telegramEnabled: true, withProfile: true, withTelegramLink: true,
+    });
+    await t.run(async (ctx) => {
+      await ctx.db.insert('accountDeletions', {
+        userId, userHash: 'erasing-hash', status: 'wiping', currentStep: 'personalData',
+        requestedAtMs: Date.now(), updatedAtMs: Date.now(), attemptCount: 0,
+        workosDeleted: false,
+      });
+    });
+
+    await expect(t.action(sendNotificationTelegram, {
+      notificationId, userId, chatId: `chat_${userId}`, text: 'Private reminder',
+    })).rejects.toThrow('notification_cancelled');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   test('renders EN and IT templates with parameter interpolation', () => {

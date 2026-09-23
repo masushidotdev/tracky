@@ -2,6 +2,7 @@ import { makeFunctionReference } from 'convex/server';
 import { v } from 'convex/values';
 import { internalAction, internalMutation } from '../../_generated/server';
 import { decide, jevChoice, jevNoul, minimizeJevText } from '../../lib/jev';
+import { isAccountDeletionStarted } from '../../lib/accountDeletionGuard';
 import { anomalyGateQuestions, routeAnomalyGate } from './jevGates';
 import { detectSpendingAnomalies, toPersistedSpendingAnomaly } from './anomalyCore';
 import { computeHealthScore } from './healthScoreCore';
@@ -138,6 +139,9 @@ async function enqueueJob(
   ctx: MutationCtx,
   input: { userId: string; kind: ProactiveJobKind; asOfDate: string; period?: string; locale: string; nowMs?: number },
 ) {
+  if (await isAccountDeletionStarted(ctx, input.userId)) {
+    return { jobId: null, inserted: false as const, status: 'skipped' as const };
+  }
   const key = dedupeKey(input);
   const existing = await ctx.db
     .query('proactiveJobs')

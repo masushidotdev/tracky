@@ -8,6 +8,7 @@ export const connectionStatusValidator = v.union(
   v.literal('reauthorizationRequired'),
   v.literal('paused'),
   v.literal('error'),
+  v.literal('disconnected'),
 );
 
 export const userProfileStatusValidator = v.union(v.literal('active'), v.literal('deleted'));

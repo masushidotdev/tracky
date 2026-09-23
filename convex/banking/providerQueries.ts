@@ -63,9 +63,13 @@ export const getSyncBundle = internalQuery({
     const account = await ctx.db.get('financialAccounts', syncState.accountId);
     const connection = await ctx.db.get('providerConnections', syncState.providerConnectionId);
 
-    if (!account || !connection) {
+    if (!account || !connection || connection.status === 'disconnected') {
       return null;
     }
+
+    const deletion = await ctx.db.query('accountDeletions')
+      .withIndex('by_userId', (q) => q.eq('userId', syncState.userId)).unique();
+    if (deletion) return null;
 
     return {
       syncState,

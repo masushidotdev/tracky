@@ -18,6 +18,7 @@ const discoveredModules = import.meta.glob([
   './memoryStore.ts',
   './memoryCore.ts',
   './models.ts',
+  '../lib/accountDeletionGuard.ts',
 ]);
 const modules = Object.fromEntries(
   Object.entries(discoveredModules).map(([path, loader]) => [
@@ -69,6 +70,21 @@ async function seedAuthUser(t: ReturnType<typeof createTest>, userId: string) {
 }
 
 describe('user-scoped Analyst memory storage', () => {
+  test('rejects an in-flight memory write after deletion starts', async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      await ctx.db.insert('accountDeletions', {
+        userId: 'user_erasing', userHash: 'pending-hash', status: 'wiping', currentStep: 'agentThreads',
+        requestedAtMs: 1, updatedAtMs: 1, attemptCount: 0, workosDeleted: false,
+      });
+    });
+    await expect(t.mutation(internal.analyst.memoryStore.upsertMemoryForUser, {
+      userId: 'user_erasing', kind: 'fact', content: 'Private memory',
+      embedding: Array.from({ length: 1_536 }, () => 0.01),
+    })).rejects.toThrow('deletion_in_progress');
+    expect(await t.run(async (ctx) => await ctx.db.query('agentMemories').take(10))).toHaveLength(0);
+  });
+
   test('deduplicates normalized content and hydrates only for the owner', async () => {
     const t = convexTest(schema, modules);
     const embedding = Array.from({ length: 1_536 }, () => 0.01);

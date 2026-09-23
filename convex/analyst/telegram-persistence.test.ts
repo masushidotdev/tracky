@@ -11,7 +11,7 @@ process.env.WORKOS_CLIENT_ID ??= 'client_test';
 process.env.WORKOS_API_KEY ??= 'sk_test';
 process.env.WORKOS_WEBHOOK_SECRET ??= 'whsec_test';
 
-const discoveredModules = import.meta.glob(['../_generated/*.js', '../entitlements.ts', '../http.ts', './telegram.ts']);
+const discoveredModules = import.meta.glob(['../_generated/*.js', '../entitlements.ts', '../http.ts', './telegram.ts', './telegramActions.ts']);
 const modules = Object.fromEntries(
   Object.entries(discoveredModules).map(([path, loader]) => [
     path.startsWith('../') ? `./${path.slice(3)}` : `./analyst/${path.slice(2)}`,
@@ -32,6 +32,85 @@ describe('Telegram link and update persistence', () => {
     vi.setSystemTime(new Date('2026-07-13T12:00:00.000Z'));
   });
   afterEach(() => vi.useRealTimers());
+
+  test('does not store a late link code after account deletion begins or completes', async () => {
+    const t = createTest();
+    const now = Date.now();
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',
+      new TextEncoder().encode('user_erasing'))), (byte) => byte.toString(16).padStart(2, '0')).join('');
+    const deletionId = await t.run(async (ctx) => ctx.db.insert('accountDeletions', {
+      userId: 'user_erasing', userHash: hash, status: 'wiping',
+      currentStep: 'telegram', requestedAtMs: now, updatedAtMs: now,
+      attemptCount: 0, workosDeleted: false,
+    }));
+    await expect(t.mutation(internal.analyst.telegram.storeLinkCode, {
+      userId: 'user_erasing', codeHash: 'b'.repeat(64), expiresAtMs: now + 60_000,
+    })).rejects.toThrow('deletion_in_progress');
+    await t.run(async (ctx) => {
+      await ctx.db.patch('accountDeletions', deletionId, { userId: undefined, status: 'done' });
+      await ctx.db.insert('deletedUsers', { userHash: hash, deletedAtMs: now });
+    });
+    await expect(t.mutation(internal.analyst.telegram.storeLinkCode, {
+      userId: 'user_erasing', codeHash: 'c'.repeat(64), expiresAtMs: now + 60_000,
+    })).rejects.toThrow('deletion_in_progress');
+  });
+
+  test('stops a claimed outbound reply when its link or account is removed', async () => {
+    const t = createTest();
+    const now = Date.now();
+    const linkId = await t.run(async (ctx) => {
+      const link = await ctx.db.insert('telegramLinks', {
+        userId: 'user_send', chatId: 'chat_send', verifiedAtMs: now,
+        locale: 'en', createdAtMs: now, updatedAtMs: now,
+      });
+      await ctx.db.insert('telegramUpdates', {
+        updateId: 901, chatId: 'chat_send', kind: 'rateLimited', userId: 'user_send',
+        inboundText: 'hello', outboundText: 'reply', locale: 'en', sentChunkCount: 0,
+        stage: 'send', status: 'pending', attempts: 0, maxAttempts: 3,
+        nextRunAtMs: now, createdAtMs: now, updatedAtMs: now,
+      });
+      return link;
+    });
+    const claim = await t.mutation(internal.analyst.telegram.claimTelegramUpdate, { updateId: 901 });
+    expect(claim).not.toBeNull();
+    expect(await t.mutation(internal.analyst.telegram.maySendTelegramChunk, {
+      updateId: 901, leaseToken: claim!.leaseToken,
+    })).toBe(true);
+    await t.run(async (ctx) => { await ctx.db.delete('telegramLinks', linkId); });
+    expect(await t.mutation(internal.analyst.telegram.maySendTelegramChunk, {
+      updateId: 901, leaseToken: claim!.leaseToken,
+    })).toBe(false);
+  });
+
+  test('an action does not send a reply after the account deletion fence appears', async () => {
+    const t = createTest();
+    const now = Date.now();
+    await t.run(async (ctx) => {
+      await ctx.db.insert('telegramLinks', {
+        userId: 'user_action_erasing', chatId: 'chat_action_erasing', verifiedAtMs: now,
+        locale: 'en', createdAtMs: now, updatedAtMs: now,
+      });
+      await ctx.db.insert('telegramUpdates', {
+        updateId: 902, chatId: 'chat_action_erasing', kind: 'rateLimited',
+        userId: 'user_action_erasing', inboundText: 'hello', outboundText: 'sensitive reply',
+        locale: 'en', sentChunkCount: 0, stage: 'send', status: 'pending',
+        attempts: 0, maxAttempts: 3, nextRunAtMs: now, createdAtMs: now, updatedAtMs: now,
+      });
+      await ctx.db.insert('accountDeletions', {
+        userId: 'user_action_erasing', userHash: 'd'.repeat(64), status: 'wiping',
+        currentStep: 'telegram', requestedAtMs: now, updatedAtMs: now,
+        attemptCount: 0, workosDeleted: false,
+      });
+    });
+    const send = vi.fn();
+    vi.stubGlobal('fetch', send);
+    try {
+      await t.action(internal.analyst.telegramActions.processTelegramUpdate, { updateId: 902 });
+      expect(send).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 
   test('consumes a link code once, enforces chat ownership, and deduplicates update IDs', async () => {
     const t = createTest();

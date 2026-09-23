@@ -1,6 +1,6 @@
 # Decision 0006: Data deletion requests and JSON exports
 
-Status: accepted
+Status: superseded in its deletion-request behavior by decision 0024; export format and expiry remain accepted.
 
 ## Context
 

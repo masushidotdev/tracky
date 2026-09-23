@@ -38,6 +38,17 @@ type EnableBankingSessionPayload = {
 
 type AccountSyncStatus = 'active' | 'paused' | 'rateLimited' | 'reauthorizationRequired' | 'error';
 
+async function assertAccountNotDeleting(ctx: MutationCtx, userId: string) {
+  const deletion = await ctx.db.query('accountDeletions')
+    .withIndex('by_userId', (q) => q.eq('userId', userId)).unique();
+  if (deletion) throw new ConvexError('deletion_in_progress');
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(userId));
+  const userHash = Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const tombstone = await ctx.db.query('deletedUsers')
+    .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
+  if (tombstone) throw new ConvexError('deletion_in_progress');
+}
+
 type EnableBankingAccountPayload = {
   uid?: string;
   name?: string;
@@ -411,6 +422,7 @@ export const createAuthRequest = internalMutation({
     expiresAtMs: v.number(),
   },
   handler: async (ctx, args) => {
+    await assertAccountNotDeleting(ctx, args.userId);
     const now = Date.now();
     return await ctx.db.insert('providerAuthRequests', {
       userId: args.userId,
@@ -443,6 +455,7 @@ export const startImportJob = internalMutation({
     transactionStatus: v.optional(transactionStatusValidator),
   },
   handler: async (ctx, args) => {
+    await assertAccountNotDeleting(ctx, args.userId);
     await assertImportJobTarget(ctx, args);
 
     const now = Date.now();
@@ -665,6 +678,7 @@ export const completeEnableBankingSession = internalMutation({
     if (!request) {
       throw new ConvexError('Provider auth request not found');
     }
+    await assertAccountNotDeleting(ctx, request.userId);
 
     // Defense in depth: exchangeCallback already returns early on completed
     // requests, so reaching here means a direct or raced call. Refusing keeps
@@ -880,6 +894,8 @@ export const upsertAccountBalances = internalMutation({
     if (!account || !connection || account.userId !== connection.userId) {
       throw new ConvexError('Balance sync target not found');
     }
+    await assertAccountNotDeleting(ctx, account.userId);
+    if (connection.status === 'disconnected') throw new ConvexError('deletion_in_progress');
 
     if (account.providerConnectionId !== connection._id) {
       throw new ConvexError('Balance sync target does not match provider connection');
@@ -941,6 +957,8 @@ export const upsertTransactions = internalMutation({
     if (!account || !connection || !syncState) {
       throw new ConvexError('Sync target not found');
     }
+    await assertAccountNotDeleting(ctx, account.userId);
+    if (connection.status === 'disconnected') throw new ConvexError('deletion_in_progress');
 
     const now = Date.now();
     const today = new Date(now).toISOString().slice(0, 10);

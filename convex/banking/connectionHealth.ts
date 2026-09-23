@@ -1,5 +1,5 @@
 type ConnectionHealthInput = {
-  status: 'pending' | 'active' | 'reauthorizationRequired' | 'paused' | 'error';
+  status: 'pending' | 'active' | 'reauthorizationRequired' | 'paused' | 'error' | 'disconnected';
   accessValidUntil?: string;
 };
 

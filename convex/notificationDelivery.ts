@@ -4,6 +4,7 @@ import { internal } from './_generated/api';
 import { internalAction, internalMutation, internalQuery } from './_generated/server';
 import { isMonthlyReportEmailEligible } from './analyst/emailEligibility';
 import { resend } from './analyst/emails';
+import { isAccountDeletionStarted } from './lib/accountDeletionGuard';
 import { renderNotificationText } from './lib/notificationMessages';
 import type { Doc, Id } from './_generated/dataModel';
 
@@ -84,6 +85,9 @@ export const queueNotificationEmail = internalMutation({
     if (!notification) {
       return { status: 'skipped' as const, emailId: null };
     }
+    if (await isAccountDeletionStarted(ctx, notification.userId)) {
+      return { status: 'skipped' as const, emailId: null };
+    }
     if (notification.emailDeliveredAtMs !== undefined) {
       return { status: 'alreadyDelivered' as const, emailId: null };
     }
@@ -113,6 +117,23 @@ export const queueNotificationEmail = internalMutation({
       text: args.text,
     });
     return { status: 'queued' as const, emailId };
+  },
+});
+
+export const maySendNotificationTelegram = internalMutation({
+  args: { notificationId: v.id('notifications'), userId: v.string(), chatId: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const notification = await ctx.db.get('notifications', args.notificationId);
+    if (!notification || notification.userId !== args.userId ||
+      notification.telegramDeliveredAtMs !== undefined || !isDeliverableType(notification.type) ||
+      await isAccountDeletionStarted(ctx, args.userId)) return false;
+    const settings = await ctx.db.query('userSettings')
+      .withIndex('by_userId', (q) => q.eq('userId', args.userId)).unique();
+    if (settings?.notifications?.telegramEnabled !== true) return false;
+    const link = await ctx.db.query('telegramLinks')
+      .withIndex('by_chatId', (q) => q.eq('chatId', args.chatId)).unique();
+    return link?.userId === args.userId && !!link.verifiedAtMs;
   },
 });
 
@@ -190,6 +211,8 @@ export const deliverNotifications = internalAction({
       ) {
         try {
           await ctx.runAction(internal.analyst.telegramActions.sendNotificationTelegram, {
+            notificationId,
+            userId: context.notification.userId,
             chatId: context.telegramLink.chatId,
             text: `${text.title}\n${text.body}`,
           });

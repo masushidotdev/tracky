@@ -65,6 +65,14 @@ from a checkout on the tag.
 The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and
 a second one would silently change how the remote build installs dependencies.
+Vite 8 requires Node 22.12.0 or later on the Node 22 line. The project pins
+Node 22.23.2 in `.node-version` and `.nvmrc`; CI reads `.nvmrc`. Run
+`nvm install` and `nvm use` before `npm ci` in a local checkout. Vite 8 resolves
+TypeScript paths through `resolve.tsconfigPaths`, without a separate plugin.
+The dependency lockfile is validated by `npm ci` with the npm 10 bundled with
+Node 22. If npm 10.9.8 fails internally while running `npm audit fix` on this
+tree, run that command with a Node-22-compatible npm 11 and validate the result
+again with `npm ci`.
 
 `convex deploy --cmd` pushes Convex functions to the deployment and injects
 `VITE_CONVEX_URL` into the client build, so the deployed frontend can never

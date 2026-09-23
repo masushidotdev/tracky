@@ -8,6 +8,7 @@ import { activePlanForUser, computePlanMonthState } from './banking/planRead';
 import { addRecurringInterval } from './banking/subscriptionDetection';
 import { absoluteMinorUnits, minorUnitFactor } from './lib/money';
 import { notificationTypeValidator } from './lib/validators';
+import { isAccountDeletionStarted } from './lib/accountDeletionGuard';
 import type { Doc, Id } from './_generated/dataModel';
 
 type NotificationType = Doc<'notifications'>['type'];
@@ -392,8 +393,16 @@ export const upsertCandidates = internalMutation({
     let inserted = 0;
     let updated = 0;
     const insertedIds: Array<Id<'notifications'>> = [];
+    const deletionState = new Map<string, boolean>();
 
     for (const candidate of args.candidates) {
+      let deleting = deletionState.get(candidate.userId);
+      if (deleting === undefined) {
+        deleting = await isAccountDeletionStarted(ctx, candidate.userId);
+        deletionState.set(candidate.userId, deleting);
+      }
+      if (deleting) continue;
+
       const existing = await ctx.db
         .query('notifications')
         .withIndex('by_userId_and_dedupeKey', (q) =>

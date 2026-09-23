@@ -4,6 +4,13 @@
 
 ### Added
 
+- Immediate account erasure from Settings: email confirmation, an optional
+  export first, server-side progress that continues after the browser closes,
+  bounded deletion of financial and Analyst data, best-effort bank-consent
+  revocation, and WorkOS sign-in deletion last. A hashed deletion record is
+  retained temporarily; existing email-delivery records and opt-in analytics
+  follow their separate retention schedules.
+
 - Opt-in product analytics. Tracky can now collect pseudonymous usage
   statistics — pages visited and features used, never amounts, balances,
   notes, account names, or message text — through a EU-hosted PostHog

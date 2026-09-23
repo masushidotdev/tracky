@@ -424,14 +424,8 @@ async function createAutoAssignFixture(t: TestHarness, userId: string) {
   const { asUser, planId } = await createPlan(t, userId, 'Main plan', [accountId]);
   const firstBucketId = await bucketForCategory(t, planId, firstCategoryId);
   const secondBucketId = await bucketForCategory(t, planId, secondCategoryId);
-  for (const [period, firstMinor, secondMinor] of [
-    ['2026-05', 3_000n, 1_000n],
-    ['2026-06', 1_000n, 2_000n],
-    ['2026-07', 300n, 700n],
-  ] as const) {
-    await setAssigned(asUser, planId, firstBucketId, period, firstMinor);
-    await setAssigned(asUser, planId, secondBucketId, period, secondMinor);
-  }
+  // Seed activity before assignments schedule historical snapshots. Direct test inserts
+  // bypass the production transaction mutations that invalidate those snapshots.
   await seedTransaction(t, userId, {
     accountId,
     categoryId: firstCategoryId,
@@ -446,6 +440,14 @@ async function createAutoAssignFixture(t: TestHarness, userId: string) {
     amountMinor: 600n,
     dedupeKey: `${userId}_second_spend`,
   });
+  for (const [period, firstMinor, secondMinor] of [
+    ['2026-05', 3_000n, 1_000n],
+    ['2026-06', 1_000n, 2_000n],
+    ['2026-07', 300n, 700n],
+  ] as const) {
+    await setAssigned(asUser, planId, firstBucketId, period, firstMinor);
+    await setAssigned(asUser, planId, secondBucketId, period, secondMinor);
+  }
   for (const bucketId of [firstBucketId, secondBucketId]) {
     await asUser.mutation(api.banking.plan.setTarget, {
       bucketId,

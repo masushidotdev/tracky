@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values';
 import { internal } from '../_generated/api';
 import { internalMutation, mutation, query } from '../_generated/server';
 import { requireAuthUser } from '../auth';
+import { isAccountDeletionStarted } from '../lib/accountDeletionGuard';
 import {
   currentPeriod,
   isPlanActivityEligible,
@@ -1764,6 +1765,7 @@ export const recomputePlanSnapshots = internalMutation({
     assertPeriod(args.fromPeriod);
     const plan = await ctx.db.get('plans', args.planId);
     if (!plan) return null;
+    if (await isAccountDeletionStarted(ctx, plan.userId)) return null;
     const throughPeriod = newestStableSnapshotPeriod();
     await deleteUnstableSnapshots(ctx, plan._id, throughPeriod);
     if (args.fromPeriod > throughPeriod) return null;

@@ -146,7 +146,7 @@ describe('WorkOS user profile sync', () => {
     await t
       .withIdentity({ subject: authUserId })
       .mutation(api.authProfiles.ensureCurrentUserProfile, {});
-    const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId));
+    const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId!));
 
     expect(profile).toMatchObject({
       email: 'existing@example.com',
@@ -170,7 +170,7 @@ describe('WorkOS user profile sync', () => {
     await t
       .withIdentity({ subject: authUserId })
       .mutation(api.authProfiles.ensureCurrentUserProfile, {});
-    const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId));
+    const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId!));
 
     expect(profile?.status).toBe('deleted');
     expect(profile?.deletedAtMs).toEqual(expect.any(Number));
@@ -223,7 +223,7 @@ describe('WorkOS user profile sync', () => {
     });
 
     const updated = await t.run(async (ctx) => {
-      return await ctx.db.get('userProfiles', profileId);
+      return await ctx.db.get('userProfiles', profileId!);
     });
 
     expect(updated?.authUserId).toBe(authUserId);
@@ -239,7 +239,7 @@ describe('WorkOS user profile sync', () => {
     await t.mutation(internal.authProfiles.markWorkosUserDeleted, { authUserId });
 
     const deleted = await t.run(async (ctx) => {
-      return await ctx.db.get('userProfiles', profileId);
+      return await ctx.db.get('userProfiles', profileId!);
     });
 
     expect(deleted?.status).toBe('deleted');
@@ -254,7 +254,7 @@ describe('WorkOS user profile sync', () => {
     });
 
     const reactivated = await t.run(async (ctx) => {
-      return await ctx.db.get('userProfiles', reactivatedProfileId);
+      return await ctx.db.get('userProfiles', reactivatedProfileId!);
     });
 
     expect(reactivatedProfileId).toBe(profileId);

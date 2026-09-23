@@ -3,6 +3,7 @@ import { ConvexError, v } from 'convex/values';
 import { action, internalMutation, mutation, query } from '../_generated/server';
 import { components } from '../_generated/api';
 import { requireAuthUser } from '../auth';
+import { isAccountDeletionStarted } from '../lib/accountDeletionGuard';
 import { analystFunctionRefs } from './functionRefs';
 import { claimAnalystTurn } from './turnLocks';
 import {
@@ -69,6 +70,7 @@ export const storeLinkCode = internalMutation({
   args: { userId: v.string(), codeHash: v.string(), expiresAtMs: v.number() },
   handler: async (ctx, args) => {
     const now = Date.now();
+    if (await isAccountDeletionStarted(ctx, args.userId)) throw new ConvexError('deletion_in_progress');
     if (!/^[a-f0-9]{64}$/.test(args.codeHash)) throw new ConvexError('Invalid link code hash');
     if (args.expiresAtMs <= now || args.expiresAtMs > now + LINK_CODE_TTL_MS + 5_000) {
       throw new ConvexError('Invalid link code expiry');
@@ -434,6 +436,23 @@ export const saveTelegramGeneratedReply = internalMutation({
     });
     await enqueueTelegramWorker(ctx, args.updateId);
     return true;
+  },
+});
+
+// The action may hold a previously claimed reply while account erasure removes
+// the update and link. Recheck in a transaction immediately before each send.
+export const maySendTelegramChunk = internalMutation({
+  args: { updateId: v.number(), leaseToken: v.string() },
+  handler: async (ctx, args): Promise<boolean> => {
+    const update = await ctx.db.query('telegramUpdates')
+      .withIndex('by_updateId', (q) => q.eq('updateId', args.updateId)).unique();
+    if (!update || update.status !== 'processing' || update.stage !== 'send' ||
+      update.leaseToken !== args.leaseToken || (update.leaseExpiresAtMs ?? 0) <= Date.now()) return false;
+    if (!update.userId) return true;
+    if (await isAccountDeletionStarted(ctx, update.userId)) return false;
+    const link = await ctx.db.query('telegramLinks')
+      .withIndex('by_chatId', (q) => q.eq('chatId', update.chatId)).unique();
+    return link?.userId === update.userId;
   },
 });
 

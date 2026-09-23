@@ -279,6 +279,25 @@ clears the link without moving or deleting the adopted bucket. See
 7. Protected Convex functions derive the current user server-side and use the
    WorkOS/AuthKit user id for ownership checks.
 
+## Account Erasure Flow
+
+The Settings danger zone offers a final JSON export and requires the current
+email to confirm deletion. `accountDeletion.deleteMyAccount` records an erasure
+job in one authenticated mutation and schedules the first server action. The
+holding page reads `getDeletionStatus`; it does not drive the wipe. The server
+disconnects sync, deletes user-owned records in indexed batches, revokes bank
+sessions on a best-effort basis, deletes Analyst component threads, then removes
+settings and profile before calling WorkOS User Management DELETE. An error
+keeps a retryable job; a five-minute cron recovers stale jobs. Normal app calls,
+profile webhooks, and asynchronous writers check the job and hashed tombstone
+in the transaction that writes data. A callback that receives a new Enable
+Banking session after its authorization request was erased records the session
+in `detachedConsentRevocations`, then attempts a compensating DELETE; the
+five-minute recovery sweep retries failures and drops that retry state after
+at most 30 days. The completed erasure job temporarily remains without the
+raw user ID so the holding page can observe `done` before the WorkOS session
+disappears. See decision 0024 for provider and component retention limits.
+
 ## Enable Banking Constraints
 
 Enable Banking may return a `continuation_key`; sync must keep all query

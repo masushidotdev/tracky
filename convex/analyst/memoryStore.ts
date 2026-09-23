@@ -3,6 +3,7 @@ import { ConvexError, v } from 'convex/values';
 import { components } from '../_generated/api';
 import { internalMutation, internalQuery, mutation, query } from '../_generated/server';
 import { requireAuthUser } from '../auth';
+import { isAccountDeletionStarted } from '../lib/accountDeletionGuard';
 import { EMBEDDING_DIMENSIONS } from './models';
 import { normalizeMemoryContent } from './memoryCore';
 
@@ -53,6 +54,7 @@ export const upsertMemoryForUser = internalMutation({
     embedding: v.array(v.number()),
   },
   handler: async (ctx, args) => {
+    if (await isAccountDeletionStarted(ctx, args.userId)) throw new ConvexError('deletion_in_progress');
     const content = args.content.trim();
     if (content.length === 0 || content.length > 500) throw new ConvexError('Memory content must be 1-500 characters');
     if (

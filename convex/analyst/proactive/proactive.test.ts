@@ -3,7 +3,7 @@ import { createThread, listMessages } from '@convex-dev/agent';
 import agentTest from '@convex-dev/agent/test';
 import { makeFunctionReference } from 'convex/server';
 import { convexTest } from 'convex-test';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { components } from '../../_generated/api';
 import schema from '../../schema';
 import type { Doc, Id } from '../../_generated/dataModel';
@@ -96,6 +96,8 @@ function createTest() {
   return t;
 }
 
+afterEach(() => vi.useRealTimers());
+
 async function seedTransactionContext(t: ReturnType<typeof createTest>) {
   return await t.run(async (ctx) => {
     const now = Date.UTC(2026, 6, 1);
@@ -132,6 +134,27 @@ async function seedTransactionContext(t: ReturnType<typeof createTest>) {
 }
 
 describe('proactive analyst persistence and inputs', () => {
+  test('does not enqueue jobs after erasure starts or after its tombstone remains', async () => {
+    const t = createTest();
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('user_done'));
+    const userHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+    await t.run(async (ctx) => {
+      await ctx.db.insert('accountDeletions', {
+        userId: 'user_wiping', userHash: 'pending-hash', status: 'failed', currentStep: 'misc',
+        requestedAtMs: 1, updatedAtMs: 1, attemptCount: 1, workosDeleted: false,
+      });
+      await ctx.db.insert('deletedUsers', { userHash, deletedAtMs: 2 });
+    });
+
+    const input = { kind: 'healthScore' as const, asOfDate: '2026-07-11', locale: 'en' };
+    expect(await t.mutation(refs.enqueueJob, { ...input, userId: 'user_wiping' }))
+      .toMatchObject({ jobId: null, inserted: false, status: 'skipped' });
+    expect(await t.mutation(refs.enqueueJob, { ...input, userId: 'user_done' }))
+      .toMatchObject({ jobId: null, inserted: false, status: 'skipped' });
+    expect(await t.run(async (ctx) => await ctx.db.query('proactiveJobs').take(10)))
+      .toHaveLength(0);
+  });
+
   test('paginates only active user profiles', async () => {
     const t = createTest();
     await t.run(async (ctx) => {
@@ -363,6 +386,9 @@ describe('proactive analyst persistence and inputs', () => {
   });
 
   test('durable proactive queue dedupes, retries, recovers expired leases, and stops at max attempts', async () => {
+    // enqueueProactiveJob also schedules an immediate watchdog. Keep that
+    // background timer paused while this test drives each lease explicitly.
+    vi.useFakeTimers();
     const t = createTest();
     const input = { userId: 'user_queue', kind: 'healthScore' as const, asOfDate: '2026-07-11', locale: 'en', nowMs: 1_000 };
     const first = await t.mutation(refs.enqueueJob, input);

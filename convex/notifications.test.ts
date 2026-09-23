@@ -219,6 +219,54 @@ async function seedNotificationPlan(
 }
 
 describe('notifications', () => {
+  test('does not recreate or update notifications after erasure starts or completes', async () => {
+    const t = createTest();
+    const candidate = (userId: string, dedupeKey: string) => ({
+      userId,
+      type: 'analystReport' as const,
+      severity: 'info' as const,
+      titleKey: 'notifications.report.title',
+      bodyKey: 'notifications.report.body',
+      params: { period: '2026-06' },
+      dedupeKey,
+    });
+    await t.mutation(internal.notifications.upsertCandidates, {
+      candidates: [candidate('user_wiping', 'existing')],
+    });
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('user_done'));
+    const userHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+    await t.run(async (ctx) => {
+      await ctx.db.insert('accountDeletions', {
+        userId: 'user_wiping', userHash: 'pending-hash', status: 'wiping', currentStep: 'personalData',
+        requestedAtMs: 1, updatedAtMs: 1, attemptCount: 0, workosDeleted: false,
+      });
+      await ctx.db.insert('deletedUsers', { userHash, deletedAtMs: 2 });
+    });
+
+    const result = await t.mutation(internal.notifications.upsertCandidates, {
+      candidates: [
+        { ...candidate('user_wiping', 'existing'), bodyKey: 'changed' },
+        candidate('user_wiping', 'late'),
+        candidate('user_done', 'late'),
+        candidate('user_active', 'allowed'),
+      ],
+    });
+
+    expect(result).toMatchObject({ inserted: 1, updated: 0 });
+    await t.run(async (ctx) => {
+      const wiping = await ctx.db.query('notifications')
+        .withIndex('by_userId_and_createdAtMs', (q) => q.eq('userId', 'user_wiping')).take(10);
+      const done = await ctx.db.query('notifications')
+        .withIndex('by_userId_and_createdAtMs', (q) => q.eq('userId', 'user_done')).take(10);
+      const active = await ctx.db.query('notifications')
+        .withIndex('by_userId_and_createdAtMs', (q) => q.eq('userId', 'user_active')).take(10);
+      expect(wiping).toHaveLength(1);
+      expect(wiping[0]?.bodyKey).toBe('notifications.report.body');
+      expect(done).toHaveLength(0);
+      expect(active).toHaveLength(1);
+    });
+  });
+
   test('collects upcoming payment candidates and dedupes persisted notifications', async () => {
     const t = createTest();
     const userId = 'user_test';
