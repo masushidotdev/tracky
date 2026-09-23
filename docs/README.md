@@ -35,6 +35,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0024-account-erasure-immediate-wipe.md` - immediate account wipe, provider and WorkOS ordering, retries, tombstone, and component residue.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
+- `execution-plans/new-user-auth-sync.md` - first sign-in AuthKit sync race, app bootstrap gate, and verification.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.
 - `execution-plans/card-statement-auto-close.md` - automated card-statement closing, facility editing, and live Planning projection.
 - `execution-plans/planning-cashflow-cycle-preferences.md` - planning cashflow cycle preferences and projected balances.

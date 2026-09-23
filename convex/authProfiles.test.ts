@@ -119,9 +119,7 @@ describe('WorkOS user profile sync', () => {
       await Promise.all(categories.map((category) => ctx.db.delete('categories', category._id)));
     });
 
-    await t
-      .withIdentity({ subject: authUserId })
-      .mutation(api.authProfiles.ensureCurrentUserProfile, {});
+    await t.withIdentity({ subject: authUserId }).mutation(api.authProfiles.ensureCurrentUserProfile, {});
 
     const categories = await t.run(async (ctx) =>
       ctx.db
@@ -143,9 +141,10 @@ describe('WorkOS user profile sync', () => {
       locale: 'en-US',
     });
 
-    await t
+    const result = await t
       .withIdentity({ subject: authUserId })
       .mutation(api.authProfiles.ensureCurrentUserProfile, {});
+    expect(result).toBeNull();
     const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId!));
 
     expect(profile).toMatchObject({
@@ -167,9 +166,7 @@ describe('WorkOS user profile sync', () => {
     });
     await t.mutation(internal.authProfiles.markWorkosUserDeleted, { authUserId });
 
-    await t
-      .withIdentity({ subject: authUserId })
-      .mutation(api.authProfiles.ensureCurrentUserProfile, {});
+    await t.withIdentity({ subject: authUserId }).mutation(api.authProfiles.ensureCurrentUserProfile, {});
     const profile = await t.run(async (ctx) => await ctx.db.get('userProfiles', profileId!));
 
     expect(profile?.status).toBe('deleted');
@@ -182,11 +179,9 @@ describe('WorkOS user profile sync', () => {
     const t = createTest();
     const authUserId = 'user_deleted_before_bootstrap';
 
-    await expect(
-      t
-        .withIdentity({ subject: authUserId })
-        .mutation(api.authProfiles.ensureCurrentUserProfile, {}),
-    ).rejects.toThrow('WorkOS profile sync pending');
+    expect(
+      await t.withIdentity({ subject: authUserId }).mutation(api.authProfiles.ensureCurrentUserProfile, {}),
+    ).toBeNull();
     const profile = await t.run(async (ctx) => {
       return await ctx.db
         .query('userProfiles')
@@ -195,6 +190,11 @@ describe('WorkOS user profile sync', () => {
     });
 
     expect(profile).toBeNull();
+
+    await seedAuthKitUser(t, authUserId);
+    expect(
+      await t.withIdentity({ subject: authUserId }).mutation(api.authProfiles.ensureCurrentUserProfile, {}),
+    ).not.toBeNull();
   });
 
   test('upserts, soft-deletes, and reactivates app-level profiles', async () => {

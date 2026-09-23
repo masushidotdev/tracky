@@ -145,13 +145,17 @@ async function getProfileByAuthUserId(ctx: QueryCtx | MutationCtx, authUserId: s
 }
 
 async function upsertUserProfile(ctx: MutationCtx, args: ProfileSyncArgs): Promise<Id<'userProfiles'> | null> {
-  const deletion = await ctx.db.query('accountDeletions')
-    .withIndex('by_userId', (q) => q.eq('userId', args.authUserId)).unique();
+  const deletion = await ctx.db
+    .query('accountDeletions')
+    .withIndex('by_userId', (q) => q.eq('userId', args.authUserId))
+    .unique();
   if (deletion) return null;
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(args.authUserId));
   const userHash = Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
-  const tombstone = await ctx.db.query('deletedUsers')
-    .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
+  const tombstone = await ctx.db
+    .query('deletedUsers')
+    .withIndex('by_userHash', (q) => q.eq('userHash', userHash))
+    .unique();
   if (tombstone) return null;
   const now = Date.now();
   const existing = await getProfileByAuthUserId(ctx, args.authUserId);
@@ -194,7 +198,10 @@ async function ensureUserHasDefaultCategories(ctx: MutationCtx, userId: string) 
   }
 }
 
-export async function syncUserProfileFromWorkosUser(ctx: MutationCtx, user: WorkosUserProfilePayload): Promise<Id<'userProfiles'> | null> {
+export async function syncUserProfileFromWorkosUser(
+  ctx: MutationCtx,
+  user: WorkosUserProfilePayload,
+): Promise<Id<'userProfiles'> | null> {
   return await upsertUserProfile(ctx, {
     authUserId: user.id,
     email: user.email,
@@ -246,19 +253,22 @@ export const ensureCurrentUserProfile = mutation({
       throw new ConvexError('Unauthorized');
     }
 
-    const deletion = await ctx.db.query('accountDeletions')
-      .withIndex('by_userId', (q) => q.eq('userId', identity.subject)).unique();
+    const deletion = await ctx.db
+      .query('accountDeletions')
+      .withIndex('by_userId', (q) => q.eq('userId', identity.subject))
+      .unique();
     if (deletion) throw new ConvexError('deletion_in_progress');
     const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(identity.subject));
     const userHash = Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
-    const tombstone = await ctx.db.query('deletedUsers')
-      .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
+    const tombstone = await ctx.db
+      .query('deletedUsers')
+      .withIndex('by_userHash', (q) => q.eq('userHash', userHash))
+      .unique();
     if (tombstone) throw new ConvexError('deletion_in_progress');
 
-    const workosUser: WorkosUserProfilePayload | null = await ctx.runQuery(
-      components.workOSAuthKit.lib.getAuthUser,
-      { id: identity.subject },
-    );
+    const workosUser: WorkosUserProfilePayload | null = await ctx.runQuery(components.workOSAuthKit.lib.getAuthUser, {
+      id: identity.subject,
+    });
 
     if (workosUser) {
       const profileId = await syncUserProfileFromWorkosUser(ctx, workosUser);
@@ -267,18 +277,10 @@ export const ensureCurrentUserProfile = mutation({
       return profileId;
     }
 
-    // Standard WorkOS access tokens intentionally contain session claims such
-    // as `sub`, but not the user's email/profile fields. During the short window
-    // before a webhook or backfill has populated the AuthKit component, leave
-    // existing trusted lifecycle and recipient data unchanged. With no existing
-    // profile, fail closed so a stale JWT cannot recreate a deleted user.
-    const existing = await getProfileByAuthUserId(ctx, identity.subject);
-    if (existing) {
-      // No self-heal here: with no WorkOS data we cannot tell a pre-seeding
-      // account from a post-deletion one, so leave trusted data untouched.
-      return existing._id;
-    }
-    throw new ConvexError('WorkOS profile sync pending');
+    // A valid JWT can arrive before the AuthKit webhook has populated its user
+    // table. Do not open app queries or alter an existing profile until that
+    // trusted user record is available. Null means the client should retry.
+    return null;
   },
 });
 
