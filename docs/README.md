@@ -82,6 +82,7 @@ resume from source-controlled context instead of chat history.
 - `execution-plans/posthog-tracking.md` - PostHog MVP implementation: foundations, core events, deviations, staging QA checklist, and operator steps.
 - `execution-plans/jev-decision-layer.md` - jev decision layer implementation: phases, verification evidence, and follow-ups.
 - `execution-plans/account-erasure-immediate-wipe.md` - immediate irreversible account wipe implementation and rollout evidence.
+- `execution-plans/account-deletion-survey-and-return.md` - deletion reason survey, 12-month retention, consent-gated analytics, and homepage return after erasure.
 
 ## Harness Notes
 

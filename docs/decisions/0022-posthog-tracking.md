@@ -24,6 +24,9 @@ Client-only PostHog via `posthog-js`, lazy init after explicit opt-in banner:
 - Single Accept/Reject banner; revocation in Settings -> Usage analytics.
 - Account deletion: Phase 1 manual PostHog Person delete (operator checklist);
   automation deferred.
+- The deletion survey records only the fixed reason and whether an `Other`
+  comment exists in PostHog, under the existing analytics opt-in. The free text,
+  email, and name remain in Convex; they are never event properties.
 
 ## Why
 

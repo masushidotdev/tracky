@@ -45,7 +45,7 @@ afterEach(() => {
 
 test('normal app stays unmounted during a pending or accepted deletion', () => {
   window.sessionStorage.setItem(deletionPendingKey, JSON.stringify({
-    userId: 'confirmed_user', deletionExportId: null,
+    userId: 'confirmed_user', deletionExportId: null, feedback: { reason: 'privacy' },
   }));
   const element = renderGuard();
   expect(element.textContent).not.toContain('normal app');
