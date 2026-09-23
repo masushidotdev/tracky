@@ -225,12 +225,16 @@ untracked session in a dedicated, bounded retry record before attempting a
 compensating DELETE. This is separate from the ordinary connection revocation
 list because that list can only see sessions already saved in
 `providerConnections`. Recovery retries failures without restoring account
-data, and removes the provider session ID on success or after 30 days.
+data through the five-minute sweep, and removes the provider session ID on
+success or after 30 days. The sweep moves the retry due time before dispatch;
+direct scheduling alongside the sweep could start overlapping DELETE requests
+and accelerate backoff attempts.
 
 The original headless test exercised several tables and a batch boundary, but
-did not seed every app-owned table. A new schema-driven fixture now inserts one
-row into each of the 45 app-owned tables and verifies that headless erasure
-removes them all. Focused interleaving tests cover the discovered writers and
+did not seed every app-owned table. A schema-driven fixture now inserts rows
+for the erased user and a second user into each of the 45 app-owned tables,
+then verifies that headless erasure removes only the erased user's rows.
+Focused interleaving tests cover the discovered writers and
 both immediate and retried detached-session revocation. A staging fixture
 with provider dashboard checks remains a rollout verification item.
 

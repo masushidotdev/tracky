@@ -49,7 +49,10 @@ compensating DELETE. That separate retry record contains a hashed user ID and
 the provider session ID, works even if the erasure job has finished, and is
 removed on successful revocation or abandoned after 30 days. This boundary is
 necessary because a revocation scan of saved connections cannot find a session
-that was never saved. WorkOS `DELETE /user_management/users/:id` runs last,
+that was never saved. The five-minute sweep is the sole dispatcher for detached
+consent retries: it moves the due time before dispatch so overlapping sweep
+runs do not start duplicate provider requests. The callback still attempts the
+first DELETE immediately. WorkOS `DELETE /user_management/users/:id` runs last,
 after the app's user data and
 profile have been removed. WorkOS 404 is treated as success; transient failures
 keep a retryable job. The `user.deleted` webhook sees no profile and is a no-op.

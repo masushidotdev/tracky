@@ -240,12 +240,11 @@ export const captureDetachedConsent = internalMutation({
       .withIndex('by_sessionId', (q) => q.eq('sessionId', sessionId)).unique();
     if (existing) return null;
     const now = Date.now();
-    const revocationId = await ctx.db.insert('detachedConsentRevocations', {
+    await ctx.db.insert('detachedConsentRevocations', {
       userHash: await hashUserId(userId), sessionId,
       requestedAtMs: now, updatedAtMs: now, attemptCount: 0,
       nextRetryAtMs: now + 60_000,
     });
-    await ctx.scheduler.runAfter(60_000, internal.accountDeletionActions.retryDetachedConsent, { revocationId });
     return null;
   },
 });
@@ -284,7 +283,6 @@ export const recordDetachedConsentAttempt = internalMutation({
       attemptCount, updatedAtMs: now, nextRetryAtMs: now + delay,
       lastError: code?.slice(0, 100),
     });
-    await ctx.scheduler.runAfter(delay, internal.accountDeletionActions.retryDetachedConsent, { revocationId });
     return null;
   },
 });

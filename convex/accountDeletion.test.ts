@@ -27,6 +27,7 @@ const acknowledgeDeletionExportDownload = makeFunctionReference<'mutation', { ex
 const captureDetachedConsent = makeFunctionReference<'mutation', { userId: string; sessionId: string }, null>('accountDeletion:captureDetachedConsent');
 const markDetachedConsentRevoked = makeFunctionReference<'mutation', { sessionId: string }, null>('accountDeletion:markDetachedConsentRevoked');
 const recordDetachedConsentAttempt = makeFunctionReference<'mutation', { revocationId: Id<'detachedConsentRevocations'>; ok: boolean; code?: string }, null>('accountDeletion:recordDetachedConsentAttempt');
+const sweepDeletions = makeFunctionReference<'mutation', Record<string, never>, null>('accountDeletion:sweepDeletions');
 
 function createTest() {
   const t = convexTest(schema, modules);
@@ -213,6 +214,8 @@ test('temporary WorkOS failure retries after wipe and succeeds headlessly', asyn
 });
 
 test('an unlinked bank session survives a failed revoke for retry and drops its raw session ID on success', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-09-23T10:00:00.000Z'));
   const t = createTest();
   await t.mutation(captureDetachedConsent, { userId: 'erased_user', sessionId: 'late_session' });
   await t.mutation(captureDetachedConsent, { userId: 'erased_user', sessionId: 'late_session' });
@@ -223,12 +226,24 @@ test('an unlinked bank session survives a failed revoke for retry and drops its 
     sessionId: 'late_session',
     attemptCount: 0,
   });
+  const scheduled = () => t.run(async (ctx) => ctx.db.system.query('_scheduled_functions').collect());
+  expect(await scheduled()).toHaveLength(0);
+
+  vi.setSystemTime(rows[0].nextRetryAtMs + 1);
+  await t.mutation(sweepDeletions, {});
+  expect(await scheduled()).toHaveLength(1);
+  const dispatched = await t.run(async (ctx) => ctx.db.get('detachedConsentRevocations', rows[0]._id));
+  expect(dispatched?.nextRetryAtMs).toBe(Date.now() + 15 * 60_000);
+  await t.mutation(sweepDeletions, {});
+  expect(await scheduled()).toHaveLength(1);
+
   await t.mutation(recordDetachedConsentAttempt, {
     revocationId: rows[0]._id, ok: false, code: 'HTTP_503',
   });
   const pending = await t.run(async (ctx) => ctx.db.get('detachedConsentRevocations', rows[0]._id));
   expect(pending).toMatchObject({ attemptCount: 1, lastError: 'HTTP_503' });
   expect(pending?.nextRetryAtMs).toBeGreaterThanOrEqual(rows[0].nextRetryAtMs);
+  expect(await scheduled()).toHaveLength(1);
   await t.mutation(markDetachedConsentRevoked, { sessionId: 'late_session' });
   expect(await t.run(async (ctx) => ctx.db.get('detachedConsentRevocations', rows[0]._id))).toBeNull();
 });
@@ -241,25 +256,30 @@ type FixtureValidator = {
   json: { value?: unknown; tableName?: string };
 };
 
-test('headless erasure drains every app-owned table in the current schema', async () => {
+test('headless erasure removes the user from every app-owned table and preserves another user', async () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-09-23T10:00:00.000Z'));
   vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(new Response(null, { status: 204 }))));
   const t = createTest();
   const userId = 'user_full_fixture';
+  const otherUserId = 'user_other_fixture';
   await seedUser(t, userId);
+  await seedUser(t, otherUserId);
   const retainedTables = new Set(['accountDeletions', 'deletedUsers', 'detachedConsentRevocations']);
   const fixtureTables = Object.keys(schema.tables).filter((table) => !retainedTables.has(table));
+  const erasedIds = new Map<string, string>();
+  const otherIds = new Map<string, string>();
 
   await t.run(async (ctx) => {
     const definitions = schema.tables as unknown as Record<string, { validator: { fields: Record<string, FixtureValidator> } }>;
-    const inserted = new Map<string, string>();
+    let inserted = erasedIds;
+    let owner = userId;
     const inserting = new Set<string>();
     const insert = ctx.db.insert.bind(ctx.db) as (table: string, doc: Record<string, unknown>) => Promise<string>;
 
     async function sample(validator: FixtureValidator): Promise<unknown> {
       switch (validator.kind) {
-        case 'string': return 'fixture';
+        case 'string': return `${owner}_fixture`;
         case 'float64': return 1;
         case 'int64': return 1n;
         case 'boolean': return true;
@@ -288,7 +308,7 @@ test('headless erasure drains every app-owned table in the current schema', asyn
       const doc: Record<string, unknown> = {};
       for (const [field, validator] of Object.entries(fields)) {
         if (field === 'userId' || field === 'authUserId') {
-          doc[field] = userId;
+          doc[field] = owner;
         } else if (validator.isOptional === 'required') {
           doc[field] = await sample(validator);
         }
@@ -299,9 +319,12 @@ test('headless erasure drains every app-owned table in the current schema', asyn
       return id;
     }
 
-    for (const table of fixtureTables) {
-      if (table === 'userProfiles') continue; // WorkOS webhook already seeded it.
-      await seedTable(table);
+    for (const fixture of [{ user: userId, ids: erasedIds }, { user: otherUserId, ids: otherIds }]) {
+      owner = fixture.user;
+      inserted = fixture.ids;
+      for (const table of fixtureTables) {
+        await seedTable(table);
+      }
     }
   });
 
@@ -311,7 +334,9 @@ test('headless erasure drains every app-owned table in the current schema', asyn
     const query = ctx.db.query.bind(ctx.db) as (table: string) => { collect: () => Promise<Array<Record<string, unknown>>> };
     for (const table of fixtureTables) {
       const rows = await query(table).collect();
-      expect(rows, table).toHaveLength(0);
+      expect(rows, table).toHaveLength(1);
+      expect(rows[0]?._id, `${table} kept the other user's row`).toBe(otherIds.get(table));
+      expect(rows[0]?._id, `${table} erased the requested user's row`).not.toBe(erasedIds.get(table));
     }
     expect(await query('deletedUsers').collect()).toHaveLength(1);
   });
