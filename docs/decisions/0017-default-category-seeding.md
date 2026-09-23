@@ -20,9 +20,10 @@ empty reports until their first bank sync. Seeding at profile insert fixes new
 accounts; the bootstrap self-heal (one indexed `by_userId` read when healthy)
 repairs accounts created before this change.
 
-The fail-closed path stays fail-closed: when no WorkOS data exists we still
-throw `WorkOS profile sync pending` without seeding, so a stale JWT cannot
-provision taxonomy for a deleted or never-synced user.
+The fail-closed path stays fail-closed: when no WorkOS component user exists,
+`ensureCurrentUserProfile` returns `null` without seeding or changing an
+existing profile. The app waits and retries before mounting protected queries,
+so a stale JWT cannot provision taxonomy for a deleted or never-synced user.
 
 ## Alternatives considered
 

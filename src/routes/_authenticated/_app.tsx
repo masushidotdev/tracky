@@ -1,16 +1,14 @@
 import { Outlet, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getCookie } from '@tanstack/react-start/server';
-import { useConvexAuth, useMutation } from 'convex/react';
-import { useEffect } from 'react';
 
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
 
-import { api } from '../../../convex/_generated/api';
 import type { CSSProperties } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { CommandMenu, CommandMenuProvider } from '@/components/app/command-menu';
 import { DeletionRouteGuard } from '@/components/settings/deletion-route-guard';
+import { ProfileBootstrap } from '@/components/auth/profile-bootstrap';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { BalancePrivacyProvider } from '@/lib/balance-privacy-context';
@@ -37,7 +35,7 @@ export const Route = createFileRoute('/_authenticated/_app')({
 });
 
 function AppLayout() {
-  const { balancesHidden } = Route.useLoaderData();
+  const { balancesHidden, user } = Route.useLoaderData();
   const deleting = useRouterState({ select: (state) => state.location.pathname === '/app/settings/deleting' });
 
   return (
@@ -45,49 +43,32 @@ function AppLayout() {
       {deleting ? (
         <Outlet />
       ) : (
-        <BalancePrivacyProvider initialHidden={balancesHidden}>
-          <CommandMenuProvider>
-            <SidebarProvider
-              style={
-                {
-                  '--sidebar-width': 'calc(var(--spacing) * 72)',
-                  '--header-height': 'calc(var(--spacing) * 12)',
-                } as CSSProperties
-              }
-            >
-              <ProfileBootstrap />
-              <CommandMenu />
-              <AppSidebar variant="inset" />
-              <SidebarInset>
-                <SiteHeader />
-                <div className="flex flex-1 flex-col">
-                  <div className="@container/main flex flex-1 flex-col gap-2">
-                    <Outlet />
+        <ProfileBootstrap key={user?.id}>
+          <BalancePrivacyProvider initialHidden={balancesHidden}>
+            <CommandMenuProvider>
+              <SidebarProvider
+                style={
+                  {
+                    '--sidebar-width': 'calc(var(--spacing) * 72)',
+                    '--header-height': 'calc(var(--spacing) * 12)',
+                  } as CSSProperties
+                }
+              >
+                <CommandMenu />
+                <AppSidebar variant="inset" />
+                <SidebarInset>
+                  <SiteHeader />
+                  <div className="flex flex-1 flex-col">
+                    <div className="@container/main flex flex-1 flex-col gap-2">
+                      <Outlet />
+                    </div>
                   </div>
-                </div>
-              </SidebarInset>
-            </SidebarProvider>
-          </CommandMenuProvider>
-        </BalancePrivacyProvider>
+                </SidebarInset>
+              </SidebarProvider>
+            </CommandMenuProvider>
+          </BalancePrivacyProvider>
+        </ProfileBootstrap>
       )}
     </DeletionRouteGuard>
   );
-}
-
-function ProfileBootstrap() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const deleting = useRouterState({ select: (state) => state.location.pathname === '/app/settings/deleting' });
-  const ensureCurrentUserProfile = useMutation(api.authProfiles.ensureCurrentUserProfile);
-
-  useEffect(() => {
-    if (isLoading || !isAuthenticated || deleting) {
-      return;
-    }
-
-    void ensureCurrentUserProfile({}).catch((error: unknown) => {
-      console.warn('Unable to ensure WorkOS profile sync', error);
-    });
-  }, [deleting, ensureCurrentUserProfile, isAuthenticated, isLoading]);
-
-  return null;
 }

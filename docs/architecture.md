@@ -271,10 +271,11 @@ clears the link without moving or deleting the adopted bucket. See
    upserts or soft-deletes `userProfiles`.
 5. The authenticated app bootstrap repairs its app-owned profile from the
    server-side AuthKit component user, not from sparse access-token claims.
-   If component sync is still pending, the bootstrap preserves any previously
-   trusted email, verification, and lifecycle fields instead of clearing them
-   or reactivating a soft-deleted profile from a stale token. If neither source
-   has a user, bootstrap fails closed and does not create an active profile.
+   If component sync is still pending, the mutation returns `null` without
+   changing trusted profile fields. The app shell retries and keeps dashboard,
+   sidebar, and other protected queries unmounted until the component user is
+   present and the profile is ensured. A stale JWT cannot create or reactivate
+   a profile. After a prolonged delay, the user sees a retry control.
 6. Existing WorkOS users can be replayed with `npx convex run auth:backfillUsers`.
 7. Protected Convex functions derive the current user server-side and use the
    WorkOS/AuthKit user id for ownership checks.
