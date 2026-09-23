@@ -94,14 +94,24 @@ export function DangerZoneCard() {
     setDeleting(true);
     // Leave the normal app before creating the deletion row. Its subscriptions
     // are intentionally rejected as soon as erasure starts.
-    window.sessionStorage.setItem(deletionPendingKey, JSON.stringify({
-      userId: user.id,
-      deletionExportId: selectedExportId,
-    }));
+    try {
+      window.sessionStorage.setItem(deletionPendingKey, JSON.stringify({
+        userId: user.id,
+        deletionExportId: selectedExportId,
+      }));
+    } catch {
+      toast.error(t('settings.danger.deleteFailed'));
+      setDeleting(false);
+      return;
+    }
     try {
       await navigate({ to: '/app/settings/deleting', replace: true });
     } catch {
-      window.sessionStorage.removeItem(deletionPendingKey);
+      try {
+        window.sessionStorage.removeItem(deletionPendingKey);
+      } catch {
+        // The failed handoff cannot be resumed until browser storage recovers.
+      }
       toast.error(t('settings.danger.deleteFailed'));
       setDeleting(false);
     }

@@ -79,9 +79,17 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                window.sessionStorage.removeItem(deletionPendingKey);
-                window.sessionStorage.removeItem(deletionStartedKey);
-                resetAnalyticsUser();
+                try {
+                  window.sessionStorage.removeItem(deletionPendingKey);
+                  window.sessionStorage.removeItem(deletionStartedKey);
+                } catch {
+                  // Unavailable browser storage must not prevent sign-out.
+                }
+                try {
+                  resetAnalyticsUser();
+                } catch {
+                  // Analytics cleanup is best effort during logout.
+                }
                 signOut();
               }}
             >

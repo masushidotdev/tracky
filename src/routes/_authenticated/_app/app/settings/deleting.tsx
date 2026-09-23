@@ -118,10 +118,18 @@ function DeletingRoute() {
     const finish = async () => {
       if (signingOutRef.current) return;
       signingOutRef.current = true;
-      window.sessionStorage.removeItem(deletionStartedKey);
-      window.sessionStorage.removeItem(deletionPendingKey);
-      window.sessionStorage.removeItem('tracky.deletionExportId');
-      resetAnalyticsUser();
+      try {
+        window.sessionStorage.removeItem(deletionStartedKey);
+        window.sessionStorage.removeItem(deletionPendingKey);
+        window.sessionStorage.removeItem('tracky.deletionExportId');
+      } catch {
+        // Browser storage cleanup must not prevent sign-out after erasure.
+      }
+      try {
+        resetAnalyticsUser();
+      } catch {
+        // Analytics cleanup is best effort; the identity has been erased.
+      }
       try {
         await signOut({ returnTo: '/' });
       } catch {
