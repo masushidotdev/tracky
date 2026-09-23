@@ -7,6 +7,10 @@ import type { Id } from './_generated/dataModel';
 
 const STALE_MS = 15 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
+// A permanently failing revocation (revoked app, bad credentials) must not
+// keep its done row and sessionId forever: decision 0024 keeps that state
+// only temporarily.
+const REVOCATION_RETRY_MAX_AGE_MS = 30 * DAY_MS;
 const STEPS = [
   'disconnect', 'personalData', 'telegram', 'bankingLeaves', 'providerRevocation',
   'bankingCore', 'planning', 'forecast', 'misc', 'agentThreads', 'profile', 'workos',
@@ -176,7 +180,15 @@ export const sweepDeletions = internalMutation({
     const oldDone = await ctx.db.query('accountDeletions')
       .withIndex('by_status_and_updatedAtMs', (q) => q.eq('status', 'done').lt('updatedAtMs', now - DAY_MS)).take(100);
     for (const row of oldDone) {
-      if (!row.revocationResults?.some((result) => !result.ok)) await ctx.db.delete('accountDeletions', row._id);
+      const pending = row.revocationResults?.some((result) => !result.ok) ?? false;
+      // Without an age cap, stuck rows keep the first index page forever and
+      // block later completed rows behind them; without touching updatedAtMs,
+      // markRetriedRevocation would also keep them first after every retry.
+      const expired = row.requestedAtMs < now - REVOCATION_RETRY_MAX_AGE_MS;
+      if (!pending || expired) {
+        if (pending) console.error('Account erasure revocation abandoned', { deletionId: row._id });
+        await ctx.db.delete('accountDeletions', row._id);
+      }
     }
     return null;
   },
@@ -282,6 +294,9 @@ export const markRetriedRevocation = internalMutation({
       revocationResults: results,
       // Keep the done marker for the holding page until the retention sweep.
       nextRetryAtMs: results.every((result) => result.ok) ? undefined : Date.now() + DAY_MS,
+      // Refresh the retention cursor so retried rows cannot pin the first
+      // page of the oldDone scan and block rows behind them.
+      updatedAtMs: Date.now(),
     });
     return null;
   },

@@ -57,6 +57,9 @@ export default defineSchema({
         telegramEnabled: v.boolean(),
       }),
     ),
+    // Compatibility for clearLegacyDeletionFlags: remove after the migration
+    // completes in staging and production (decision 0024 rollout constraint).
+    deletionRequestedAtMs: v.optional(v.number()),
     jevTriageUsage: v.optional(
       v.object({
         date: v.string(),
