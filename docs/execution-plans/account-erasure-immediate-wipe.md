@@ -1,6 +1,6 @@
 # Execution Plan: Account Erasure Immediate Wipe
 
-Status: planned (frozen for future multi-subagent execution; not implemented).
+Status: implemented (workstreams A-H landed on t3code/clarify-account-deletion; rollout verification pending).
 
 ## Scope
 
@@ -171,7 +171,17 @@ convex-test pattern from `convex/user-settings.test.ts`:
 
 ## Current Verification Evidence
 
-- 2026-09-23: plan frozen only. Nothing implemented. Current code is still
-  request-only flag (`convex/userSettings.ts:87`), no consumer, no cron
-  (`convex/crons.ts` has only export cleanup). Decisions 0006/0015 describe the
-  old model. Next step: Phase 0 checks, then workstreams A–H.
+- 2026-09-23: workstreams A-H implemented. `npm test` passes
+  (`npm test -- --pool forks --max-workers 2 --sequence.seed 42`:
+  127 files / 987 tests), `npm run lint` (tsc + eslint) passes,
+  `npm run build` passes. Note: the default parallel run is flaky on one
+  pre-existing `resetAvailable` case in `convex/plan-read.test.ts` (June
+  activity occasionally ignored under parallel load; fails on the clean
+  baseline plan too when new wipe files are present in the tree, passes in
+  isolation and with `--pool forks --max-workers 2`). No production change
+  was made for it; it needs a separate determinism fix outside this wipe.
+  `convex/accountDeletion.test.ts` + `convex/accountDeletionPlanning.test.ts`
+  (7 tests) cover double-submit idempotency, deletion-export reuse under the
+  daily limit, headless full wipe with storage cleanup, EB failure retry, and
+  WorkOS failure retry. Remaining rollout step: staging fixture
+  wipe with WorkOS/EB dashboard checks per Rollout above.

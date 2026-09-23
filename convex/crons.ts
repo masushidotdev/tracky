@@ -45,6 +45,10 @@ crons.cron('review analyst subscriptions', '30 6 3 * *', internal.analyst.proact
 });
 crons.interval('cleanup analyst report emails', { hours: 24 }, internal.analyst.emails.cleanupResendEmails, {});
 crons.cron('cleanup expired data exports', '20 3 * * *', internal.dataExport.cleanupExpiredExports, {});
+crons.cron('recover account erasures', '40 3 * * *', internal.accountDeletion.sweepDeletions, {});
+crons.cron('prune account erasure tombstones', '45 3 * * *', internal.accountDeletion.pruneTombstones, {});
+crons.cron('prune anonymous Telegram updates', '50 3 * * *', internal.accountDeletionBanking.pruneAnonymousTelegramUpdates, {
+});
 // Recovery only: `acceptUpdate` enqueues the worker immediately and retries
 // reschedule themselves, so this only picks up updates whose lease expired.
 crons.interval('recover Telegram Analyst updates', { minutes: 5 }, internal.analyst.telegram.watchdogTelegramUpdates, {

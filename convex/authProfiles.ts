@@ -144,7 +144,15 @@ async function getProfileByAuthUserId(ctx: QueryCtx | MutationCtx, authUserId: s
     .unique();
 }
 
-async function upsertUserProfile(ctx: MutationCtx, args: ProfileSyncArgs): Promise<Id<'userProfiles'>> {
+async function upsertUserProfile(ctx: MutationCtx, args: ProfileSyncArgs): Promise<Id<'userProfiles'> | null> {
+  const deletion = await ctx.db.query('accountDeletions')
+    .withIndex('by_userId', (q) => q.eq('userId', args.authUserId)).unique();
+  if (deletion) return null;
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(args.authUserId));
+  const userHash = Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const tombstone = await ctx.db.query('deletedUsers')
+    .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
+  if (tombstone) return null;
   const now = Date.now();
   const existing = await getProfileByAuthUserId(ctx, args.authUserId);
   const patch = profilePatchFromSyncArgs(args);
@@ -186,7 +194,7 @@ async function ensureUserHasDefaultCategories(ctx: MutationCtx, userId: string) 
   }
 }
 
-export async function syncUserProfileFromWorkosUser(ctx: MutationCtx, user: WorkosUserProfilePayload): Promise<Id<'userProfiles'>> {
+export async function syncUserProfileFromWorkosUser(ctx: MutationCtx, user: WorkosUserProfilePayload): Promise<Id<'userProfiles'> | null> {
   return await upsertUserProfile(ctx, {
     authUserId: user.id,
     email: user.email,
@@ -238,6 +246,15 @@ export const ensureCurrentUserProfile = mutation({
       throw new ConvexError('Unauthorized');
     }
 
+    const deletion = await ctx.db.query('accountDeletions')
+      .withIndex('by_userId', (q) => q.eq('userId', identity.subject)).unique();
+    if (deletion) throw new ConvexError('deletion_in_progress');
+    const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(identity.subject));
+    const userHash = Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+    const tombstone = await ctx.db.query('deletedUsers')
+      .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
+    if (tombstone) throw new ConvexError('deletion_in_progress');
+
     const workosUser: WorkosUserProfilePayload | null = await ctx.runQuery(
       components.workOSAuthKit.lib.getAuthUser,
       { id: identity.subject },
@@ -245,6 +262,7 @@ export const ensureCurrentUserProfile = mutation({
 
     if (workosUser) {
       const profileId = await syncUserProfileFromWorkosUser(ctx, workosUser);
+      if (!profileId) throw new ConvexError('deletion_in_progress');
       await ensureUserHasDefaultCategories(ctx, identity.subject);
       return profileId;
     }

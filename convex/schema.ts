@@ -57,7 +57,6 @@ export default defineSchema({
         telegramEnabled: v.boolean(),
       }),
     ),
-    deletionRequestedAtMs: v.optional(v.number()),
     jevTriageUsage: v.optional(
       v.object({
         date: v.string(),
@@ -74,6 +73,44 @@ export default defineSchema({
     createdAtMs: v.number(),
     updatedAtMs: v.number(),
   }).index('by_userId', ['userId']),
+
+  accountDeletions: defineTable({
+    userId: v.optional(v.string()),
+    userHash: v.string(),
+    status: v.union(v.literal('wiping'), v.literal('done'), v.literal('failed')),
+    currentStep: v.string(),
+    requestedAtMs: v.number(),
+    updatedAtMs: v.number(),
+    attemptCount: v.number(),
+    nextRetryAtMs: v.optional(v.number()),
+    lastError: v.optional(v.string()),
+    revocationResults: v.optional(
+      v.array(v.object({
+        connectionId: v.id('providerConnections'),
+        provider: bankProviderValidator,
+        sessionId: v.optional(v.string()),
+        ok: v.boolean(),
+        code: v.optional(v.string()),
+      })),
+    ),
+    workosDeleted: v.boolean(),
+    wipeCompletedAtMs: v.optional(v.number()),
+    // Retained across retries because the agent component deletes thread metadata
+    // before it finishes deleting the thread's stream records.
+    currentAgentThreadId: v.optional(v.string()),
+  })
+    .index('by_userId', ['userId'])
+    .index('by_userHash', ['userHash'])
+    .index('by_status', ['status'])
+    .index('by_status_and_updatedAtMs', ['status', 'updatedAtMs'])
+    .index('by_status_and_nextRetryAtMs', ['status', 'nextRetryAtMs']),
+
+  deletedUsers: defineTable({
+    userHash: v.string(),
+    deletedAtMs: v.number(),
+  })
+    .index('by_userHash', ['userHash'])
+    .index('by_deletedAtMs', ['deletedAtMs']),
 
   dataExports: defineTable({
     userId: v.string(),
@@ -603,7 +640,9 @@ export default defineSchema({
     readyToAssignEndMinor: v.optional(v.int64()),
     cashOverspendingMinor: v.optional(v.int64()),
     computedAtMs: v.number(),
-  }).index('by_planId_and_period', ['planId', 'period']),
+  })
+    .index('by_planId_and_period', ['planId', 'period'])
+    .index('by_userId', ['userId']),
 
   transactionTags: defineTable({
     userId: v.string(),
@@ -684,7 +723,9 @@ export default defineSchema({
     sortOrder: v.number(),
     createdAtMs: v.number(),
     updatedAtMs: v.number(),
-  }).index('by_scenarioId_and_sortOrder', ['scenarioId', 'sortOrder']),
+  })
+    .index('by_scenarioId_and_sortOrder', ['scenarioId', 'sortOrder'])
+    .index('by_userId', ['userId']),
 
   forecastLifeEvents: defineTable({
     userId: v.string(),
@@ -693,7 +734,9 @@ export default defineSchema({
     event: forecastLifeEventValidator,
     createdAtMs: v.number(),
     updatedAtMs: v.number(),
-  }).index('by_scenarioId', ['scenarioId']),
+  })
+    .index('by_scenarioId', ['scenarioId'])
+    .index('by_userId', ['userId']),
 
   creditFacilities: defineTable({
     userId: v.string(),
@@ -887,6 +930,7 @@ export default defineSchema({
     updatedAtMs: v.number(),
     completedAtMs: v.optional(v.number()),
   })
+    .index('by_userId', ['userId'])
     .index('by_dedupeKey', ['dedupeKey'])
     .index('by_status_and_nextRunAtMs', ['status', 'nextRunAtMs'])
     .index('by_status_and_leaseExpiresAtMs', ['status', 'leaseExpiresAtMs']),
@@ -913,7 +957,9 @@ export default defineSchema({
     threadId: v.string(),
     expiresAtMs: v.number(),
     createdAtMs: v.number(),
-  }).index('by_threadId', ['threadId']),
+  })
+    .index('by_threadId', ['threadId'])
+    .index('by_userId', ['userId']),
 
   telegramLinks: defineTable({
     userId: v.string(),
@@ -963,6 +1009,8 @@ export default defineSchema({
     completedAtMs: v.optional(v.number()),
   })
     .index('by_updateId', ['updateId'])
+    .index('by_userId', ['userId'])
+    .index('by_userId_and_status_and_updatedAtMs', ['userId', 'status', 'updatedAtMs'])
     .index('by_chatId_and_status_and_updateId', ['chatId', 'status', 'updateId'])
     .index('by_status_and_nextRunAtMs', ['status', 'nextRunAtMs'])
     .index('by_status_and_leaseExpiresAtMs', ['status', 'leaseExpiresAtMs'])

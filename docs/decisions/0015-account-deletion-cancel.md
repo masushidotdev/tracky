@@ -1,6 +1,6 @@
 # Decision 0015: Make account deletion requests reversible
 
-Status: accepted
+Status: superseded by decision 0024. This records the earlier request-only behavior.
 
 ## Context
 

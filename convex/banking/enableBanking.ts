@@ -131,7 +131,7 @@ function makeJwt(appId: string, privateKey: string, ttlSeconds = 3600) {
   return `${signingInput}.${base64Url(signer.sign(privateKey))}`;
 }
 
-async function enableBankingRequest(
+export async function enableBankingRequest(
   method: string,
   path: string,
   options: { body?: JsonObject; query?: Record<string, string> } = {},

@@ -63,6 +63,7 @@ import { Route as AuthenticatedAppAppSettingsIndexRouteImport } from './routes/_
 import { Route as AuthenticatedAppAppSettingsAccountsRouteImport } from './routes/_authenticated/_app/app/settings/accounts'
 import { Route as AuthenticatedAppAppSettingsBankConnectionsRouteImport } from './routes/_authenticated/_app/app/settings/bank-connections'
 import { Route as AuthenticatedAppAppSettingsCreditRouteImport } from './routes/_authenticated/_app/app/settings/credit'
+import { Route as AuthenticatedAppAppSettingsDeletingRouteImport } from './routes/_authenticated/_app/app/settings/deleting'
 import { Route as AuthenticatedAppAppSettingsImportRouteImport } from './routes/_authenticated/_app/app/settings/import'
 import { Route as AuthenticatedAppAppSubscriptionsIndexRouteImport } from './routes/_authenticated/_app/app/subscriptions/index'
 import { Route as AuthenticatedAppAppSubscriptionsCreateRouteImport } from './routes/_authenticated/_app/app/subscriptions/create'
@@ -360,6 +361,12 @@ const AuthenticatedAppAppSettingsCreditRoute =
     path: '/credit',
     getParentRoute: () => AuthenticatedAppAppSettingsRoute,
   } as any)
+const AuthenticatedAppAppSettingsDeletingRoute =
+  AuthenticatedAppAppSettingsDeletingRouteImport.update({
+    id: '/deleting',
+    path: '/deleting',
+    getParentRoute: () => AuthenticatedAppAppSettingsRoute,
+  } as any)
 const AuthenticatedAppAppSettingsImportRoute =
   AuthenticatedAppAppSettingsImportRouteImport.update({
     id: '/import',
@@ -429,6 +436,7 @@ export interface FileRoutesByFullPath {
   '/app/settings/accounts': typeof AuthenticatedAppAppSettingsAccountsRoute
   '/app/settings/bank-connections': typeof AuthenticatedAppAppSettingsBankConnectionsRoute
   '/app/settings/credit': typeof AuthenticatedAppAppSettingsCreditRoute
+  '/app/settings/deleting': typeof AuthenticatedAppAppSettingsDeletingRoute
   '/app/settings/import': typeof AuthenticatedAppAppSettingsImportRoute
   '/app/subscriptions/create': typeof AuthenticatedAppAppSubscriptionsCreateRoute
   '/app/accounts/': typeof AuthenticatedAppAppAccountsIndexRoute
@@ -484,6 +492,7 @@ export interface FileRoutesByTo {
   '/app/settings/accounts': typeof AuthenticatedAppAppSettingsAccountsRoute
   '/app/settings/bank-connections': typeof AuthenticatedAppAppSettingsBankConnectionsRoute
   '/app/settings/credit': typeof AuthenticatedAppAppSettingsCreditRoute
+  '/app/settings/deleting': typeof AuthenticatedAppAppSettingsDeletingRoute
   '/app/settings/import': typeof AuthenticatedAppAppSettingsImportRoute
   '/app/subscriptions/create': typeof AuthenticatedAppAppSubscriptionsCreateRoute
   '/app/accounts': typeof AuthenticatedAppAppAccountsIndexRoute
@@ -544,6 +553,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/app/settings/accounts': typeof AuthenticatedAppAppSettingsAccountsRoute
   '/_authenticated/_app/app/settings/bank-connections': typeof AuthenticatedAppAppSettingsBankConnectionsRoute
   '/_authenticated/_app/app/settings/credit': typeof AuthenticatedAppAppSettingsCreditRoute
+  '/_authenticated/_app/app/settings/deleting': typeof AuthenticatedAppAppSettingsDeletingRoute
   '/_authenticated/_app/app/settings/import': typeof AuthenticatedAppAppSettingsImportRoute
   '/_authenticated/_app/app/subscriptions/create': typeof AuthenticatedAppAppSubscriptionsCreateRoute
   '/_authenticated/_app/app/accounts/': typeof AuthenticatedAppAppAccountsIndexRoute
@@ -603,6 +613,7 @@ export interface FileRouteTypes {
     | '/app/settings/accounts'
     | '/app/settings/bank-connections'
     | '/app/settings/credit'
+    | '/app/settings/deleting'
     | '/app/settings/import'
     | '/app/subscriptions/create'
     | '/app/accounts/'
@@ -658,6 +669,7 @@ export interface FileRouteTypes {
     | '/app/settings/accounts'
     | '/app/settings/bank-connections'
     | '/app/settings/credit'
+    | '/app/settings/deleting'
     | '/app/settings/import'
     | '/app/subscriptions/create'
     | '/app/accounts'
@@ -717,6 +729,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/app/settings/accounts'
     | '/_authenticated/_app/app/settings/bank-connections'
     | '/_authenticated/_app/app/settings/credit'
+    | '/_authenticated/_app/app/settings/deleting'
     | '/_authenticated/_app/app/settings/import'
     | '/_authenticated/_app/app/subscriptions/create'
     | '/_authenticated/_app/app/accounts/'
@@ -1141,6 +1154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAppSettingsCreditRouteImport
       parentRoute: typeof AuthenticatedAppAppSettingsRoute
     }
+    '/_authenticated/_app/app/settings/deleting': {
+      id: '/_authenticated/_app/app/settings/deleting'
+      path: '/deleting'
+      fullPath: '/app/settings/deleting'
+      preLoaderRoute: typeof AuthenticatedAppAppSettingsDeletingRouteImport
+      parentRoute: typeof AuthenticatedAppAppSettingsRoute
+    }
     '/_authenticated/_app/app/settings/import': {
       id: '/_authenticated/_app/app/settings/import'
       path: '/import'
@@ -1185,6 +1205,7 @@ interface AuthenticatedAppAppSettingsRouteChildren {
   AuthenticatedAppAppSettingsAccountsRoute: typeof AuthenticatedAppAppSettingsAccountsRoute
   AuthenticatedAppAppSettingsBankConnectionsRoute: typeof AuthenticatedAppAppSettingsBankConnectionsRoute
   AuthenticatedAppAppSettingsCreditRoute: typeof AuthenticatedAppAppSettingsCreditRoute
+  AuthenticatedAppAppSettingsDeletingRoute: typeof AuthenticatedAppAppSettingsDeletingRoute
   AuthenticatedAppAppSettingsImportRoute: typeof AuthenticatedAppAppSettingsImportRoute
   AuthenticatedAppAppSettingsIndexRoute: typeof AuthenticatedAppAppSettingsIndexRoute
 }
@@ -1197,6 +1218,8 @@ const AuthenticatedAppAppSettingsRouteChildren: AuthenticatedAppAppSettingsRoute
       AuthenticatedAppAppSettingsBankConnectionsRoute,
     AuthenticatedAppAppSettingsCreditRoute:
       AuthenticatedAppAppSettingsCreditRoute,
+    AuthenticatedAppAppSettingsDeletingRoute:
+      AuthenticatedAppAppSettingsDeletingRoute,
     AuthenticatedAppAppSettingsImportRoute:
       AuthenticatedAppAppSettingsImportRoute,
     AuthenticatedAppAppSettingsIndexRoute:

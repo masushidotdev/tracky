@@ -1,4 +1,6 @@
 import { ConvexError, v } from 'convex/values';
+import { paginationOptsValidator } from 'convex/server';
+import { internal } from './_generated/api';
 import { internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { requireAuthUser } from './auth';
 import type { Doc } from './_generated/dataModel';
@@ -84,52 +86,6 @@ export const updateNotificationPreferences = mutation({
   },
 });
 
-export const requestAccountDeletion = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const user = await requireAuthUser(ctx);
-    const existing = await settingsForUser(ctx, user.id);
-    if (existing?.deletionRequestedAtMs !== undefined) {
-      return existing.deletionRequestedAtMs;
-    }
-
-    const deletionRequestedAtMs = Date.now();
-    if (existing) {
-      await ctx.db.patch('userSettings', existing._id, {
-        deletionRequestedAtMs,
-        updatedAtMs: deletionRequestedAtMs,
-      });
-    } else {
-      await ctx.db.insert('userSettings', {
-        userId: user.id,
-        deletionRequestedAtMs,
-        createdAtMs: deletionRequestedAtMs,
-        updatedAtMs: deletionRequestedAtMs,
-      });
-    }
-
-    return deletionRequestedAtMs;
-  },
-});
-
-export const cancelAccountDeletion = mutation({
-  args: {},
-  handler: async (ctx): Promise<null> => {
-    const user = await requireAuthUser(ctx);
-    const existing = await settingsForUser(ctx, user.id);
-    if (!existing || existing.deletionRequestedAtMs === undefined) {
-      return null;
-    }
-
-    const now = Date.now();
-    await ctx.db.patch('userSettings', existing._id, {
-      deletionRequestedAtMs: undefined,
-      updatedAtMs: now,
-    });
-    return null;
-  },
-});
-
 export const getUserSettingsForUser = internalQuery({
   args: { userId: v.string() },
   handler: async (ctx, args) => await settingsForUser(ctx, args.userId),
@@ -160,5 +116,29 @@ export const setUserPlanTier = internalMutation({
       updatedAtMs: now,
     });
     return null;
+  },
+});
+
+// Rollout-only migration. Deploy this while the legacy field is still optional
+// in the schema, run it to completion, then deploy the final strict schema.
+export const clearLegacyDeletionFlags = internalMutation({
+  args: { paginationOpts: paginationOptsValidator },
+  returns: v.object({ changed: v.number(), done: v.boolean(), cursor: v.union(v.string(), v.null()) }),
+  handler: async (ctx, { paginationOpts }) => {
+    const page = await ctx.db.query('userSettings').paginate(paginationOpts);
+    let changed = 0;
+    for (const row of page.page) {
+      const legacy = row as typeof row & { deletionRequestedAtMs?: number };
+      if (legacy.deletionRequestedAtMs === undefined) continue;
+      const { deletionRequestedAtMs: _removed, _id, _creationTime, ...clean } = legacy;
+      await ctx.db.replace('userSettings', row._id, clean);
+      changed += 1;
+    }
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.userSettings.clearLegacyDeletionFlags, {
+        paginationOpts: { cursor: page.continueCursor, numItems: 100 },
+      });
+    }
+    return { changed, done: page.isDone, cursor: page.isDone ? null : page.continueCursor };
   },
 });

@@ -14,7 +14,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0003-harness-engineering.md` - repository-readable harness practices and documentation invariants.
 - `decisions/0004-planned-expense-occurrence-payments.md` - occurrence-scoped planned-transaction payments and conservative reconciliation.
 - `decisions/0005-analyst-agent-rebuild.md` - Convex-native Analyst threads, resumable streaming, and approval-gated writes.
-- `decisions/0006-data-deletion-and-export.md` - deletion-request boundaries, JSON v1 exports, and seven-day expiry.
+- `decisions/0006-data-deletion-and-export.md` - historical deletion-request boundary (superseded by 0024), JSON exports, and seven-day expiry.
 - `decisions/0007-multi-kind-categories.md` - shared category identity, compatible transaction kinds, and localization.
 - `decisions/0008-money-boxes-as-virtual-accounts.md` - money boxes as virtual account views and non-liquidity Plan reserves without double-counting balances.
 - `decisions/0009-zero-based-plan.md` - zero-based Plan, global category partitioning, observed cash liquidity, card-payment revision, and legacy Budget removal.
@@ -23,7 +23,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0012-unified-planned-transactions.md` - one stored model for planned movements with legacy API compatibility.
 - `decisions/0013-loans-adopt-paired-plan-buckets.md` - paired loans reuse user Plan buckets instead of generating duplicate funding rows.
 - `decisions/0014-cross-month-plan-transfers.md` - confirmed in-plan cash transfers stay neutral across booking months while their fee remains activity.
-- `decisions/0015-account-deletion-cancel.md` - reversible account deletion requests without promising an unimplemented erasure pipeline.
+- `decisions/0015-account-deletion-cancel.md` - historical reversible deletion request (superseded by 0024).
 - `decisions/0016-analyst-env-gating.md` - default-off build-time Analyst frontend gate and localized disabled route.
 - `decisions/0017-default-category-seeding.md` - default category seeding at profile creation and bootstrap self-heal.
 - `decisions/0018-deploy-environments.md` - shared dev/staging Convex deployment, production deployment, WorkOS profiles, Cloudflare workers, and the gitignored wrangler config.
@@ -32,6 +32,7 @@ resume from source-controlled context instead of chat history.
 - `decisions/0021-public-marketing-seo.md` - public Vivi marketing pages, EN-root + /it/ URLs, hreflang/sitemap/robots, OOS-honest copy.
 - `decisions/0022-posthog-tracking.md` - opt-in EU PostHog analytics: client-only capture, single project with app_env separation, managed proxy, replay masks, and no-PII event rules.
 - `decisions/0023-self-hosted-geist-fonts.md` - Geist Variable self-hosted from public/fonts; no bare fontsource import in app.css.
+- `decisions/0024-account-erasure-immediate-wipe.md` - immediate account wipe, provider and WorkOS ordering, retries, tombstone, and component residue.
 - `decisions/plan-effective-origin.md` - effective plan origin and pre-origin liquidity reconciliation.
 - `execution-plans/banking-mvp.md` - active execution plan and verification checklist.
 - `execution-plans/credit-card-and-financing-planning.md` - card-cycle and financing planning implementation.
@@ -79,7 +80,7 @@ resume from source-controlled context instead of chat history.
 - `execution-plans/public-repository-governance.md` - public repository governance: branch rulesets, merge settings, fork workflow approval, and security configuration.
 - `execution-plans/posthog-tracking.md` - PostHog MVP implementation: foundations, core events, deviations, staging QA checklist, and operator steps.
 - `execution-plans/jev-decision-layer.md` - jev decision layer implementation: phases, verification evidence, and follow-ups.
-- `execution-plans/account-erasure-immediate-wipe.md` - immediate irreversible account wipe: holding page, chunked Convex hard-delete, best-effort revocations, WorkOS last (planned, frozen).
+- `execution-plans/account-erasure-immediate-wipe.md` - immediate irreversible account wipe implementation and rollout evidence.
 
 ## Harness Notes
 

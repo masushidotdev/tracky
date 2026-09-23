@@ -189,6 +189,41 @@ export const requestDataExport = mutation({
   },
 });
 
+// The destructive flow offers one last portable copy. It must be possible to
+// create it even when the user already requested the normal daily export.
+export const requestDeletionDataExport = mutation({
+  args: {},
+  returns: v.id('dataExports'),
+  handler: async (ctx) => {
+    const user = await requireAuthUser(ctx);
+    const deletion = await ctx.db
+      .query('accountDeletions')
+      .withIndex('by_userId', (q) => q.eq('userId', user.id))
+      .unique();
+    if (deletion) {
+      throw new ConvexError('deletion_in_progress');
+    }
+    const recent = await ctx.db
+      .query('dataExports')
+      .withIndex('by_userId_and_requestedAtMs', (q) => q.eq('userId', user.id))
+      .order('desc')
+      .take(5);
+    const reusable = recent.find((row) => row.status === 'queued' || row.status === 'running' ||
+      (row.status === 'completed' && row.storageId && row.expiresAtMs > Date.now()));
+    if (reusable) return reusable._id;
+    const now = Date.now();
+    const exportId = await ctx.db.insert('dataExports', {
+      userId: user.id,
+      status: 'queued',
+      format: 'json',
+      requestedAtMs: now,
+      expiresAtMs: now + EXPORT_RETENTION_MS,
+    });
+    await ctx.scheduler.runAfter(0, internal.dataExport.runDataExport, { exportId });
+    return exportId;
+  },
+});
+
 export const listMyDataExports = query({
   args: {},
   handler: async (ctx) => {

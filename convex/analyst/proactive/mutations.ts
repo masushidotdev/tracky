@@ -1,9 +1,21 @@
 import { createThread, getThreadMetadata, saveMessage } from '@convex-dev/agent';
 import { makeFunctionReference } from 'convex/server';
-import { v } from 'convex/values';
+import { ConvexError, v } from 'convex/values';
 import { components } from '../../_generated/api';
 import { internalMutation } from '../../_generated/server';
 import type { Id } from '../../_generated/dataModel';
+import type { MutationCtx } from '../../_generated/server';
+
+async function assertNotDeleting(ctx: MutationCtx, userId: string) {
+  const deletion = await ctx.db.query('accountDeletions')
+    .withIndex('by_userId', (q) => q.eq('userId', userId)).unique();
+  if (deletion) throw new ConvexError('deletion_in_progress');
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(userId));
+  const userHash = Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const tombstone = await ctx.db.query('deletedUsers')
+    .withIndex('by_userHash', (q) => q.eq('userHash', userHash)).unique();
+  if (tombstone) throw new ConvexError('deletion_in_progress');
+}
 
 // The durable proactive-job lease is fifteen minutes. A crashed report claim is
 // reclaimable before that lease is recovered, so the watchdog never hits a
@@ -94,6 +106,7 @@ function monthlyReportCandidate(userId: string, period: string, threadId: string
 export const claimReport = internalMutation({
   args: { userId: v.string(), kind: reportKindValidator, period: v.string(), locale: v.string() },
   handler: async (ctx, args) => {
+    await assertNotDeleting(ctx, args.userId);
     const now = Date.now();
     const existing = await ctx.db
       .query('agentReports')
@@ -314,6 +327,7 @@ export const saveHealthSnapshot = internalMutation({
     components: healthComponentsValidator,
   },
   handler: async (ctx, args) => {
+    await assertNotDeleting(ctx, args.userId);
     const score = Math.min(100, Math.max(0, Math.round(args.score)));
     const currency = args.currency.toUpperCase();
     const existing = await ctx.db
@@ -382,6 +396,7 @@ export const persistAnomalyNotifications = internalMutation({
     })),
   },
   handler: async (ctx, args) => {
+    await assertNotDeleting(ctx, args.userId);
     const candidates = args.anomalies.slice(0, 10).map((anomaly) => {
       const currency = anomaly.currency.toUpperCase();
       const severity = anomaly.jevSeverity ?? (anomaly.zScore >= 4 ? ('critical' as const) : ('warning' as const));
@@ -425,6 +440,7 @@ export const persistSubscriptionReview = internalMutation({
     })),
   },
   handler: async (ctx, args) => {
+    await assertNotDeleting(ctx, args.userId);
     const now = Date.now();
     const existing = await ctx.db
       .query('agentReports')
@@ -488,6 +504,7 @@ export const persistSubscriptionReview = internalMutation({
 export const persistCompletedReportNotification = internalMutation({
   args: { reportId: v.id('agentReports'), userId: v.string(), period: v.string(), threadId: v.string() },
   handler: async (ctx, args) => {
+    await assertNotDeleting(ctx, args.userId);
     const report = await ctx.db.get('agentReports', args.reportId);
     if (
       !report ||

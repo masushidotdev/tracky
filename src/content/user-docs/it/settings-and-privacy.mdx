@@ -1,10 +1,10 @@
 ---
 title: Impostazioni, piano e privacy
-description: Controlla profilo e piano, scegli come ricevere le notifiche e gestisci memorie, export e richiesta di eliminazione.
+description: Controlla profilo e piano, scegli come ricevere le notifiche e gestisci memorie, export ed eliminazione dell’account.
 section: Impostazioni
 order: 140
 locale: it
-updatedAt: 2026-09-15
+updatedAt: 2026-09-23
 keywords: [impostazioni, privacy, Free, Pro, preferenze notifiche, Telegram, memorie Analyst, export dati, eliminazione account]
 related: [analyst-notifications-automations, csv-import, manual-accounts, security-and-glossary]
 ---
@@ -67,10 +67,9 @@ la disattivazione la ferma subito. Le registrazioni di sessione (catture
 schermo per usabilità) seguono la stessa scelta e mascherano ogni campo di
 input oltre a saldi e importi.
 
-<Callout title="Richieste di eliminazione e analisi">
-  La richiesta di eliminazione segnala i tuoi record Tracky per follow-up; il
-  profilo di analisi collegato al tuo account viene eliminato in quella sede.
-</Callout>
+L’eliminazione dell’account interrompe l’invio di nuovi eventi di utilizzo
+collegati all’account. Il processo rimuove i record Tracky e chiude l’account
+di accesso; gli eventi di analisi già raccolti seguono il proprio periodo di conservazione.
 
 ## Preferenze di notifica
 
@@ -101,15 +100,14 @@ Richiedi un export JSON versione 3 per ottenere i record Tracky associati al tuo
 
 Sono compresi saldi e movimenti gestiti tramite [conti manuali](/app/docs/manual-accounts) o [importazione CSV](/app/docs/csv-import). Gli embedding delle memorie Analyst non sono inclusi.
 
-Può esserci un solo export in coda o in elaborazione. Dopo il completamento attendi 24 ore prima di richiederne un altro. Il link per scaricarlo scade sette giorni dopo la richiesta.
+Può esserci un solo export in coda o in elaborazione. Dopo il completamento attendi 24 ore prima di richiederne un altro dalla scheda Esportazione dati. Il link per scaricarlo scade sette giorni dopo la richiesta. La finestra di eliminazione può richiedere un export senza il limite giornaliero, oppure offrirne uno recente già completato, così puoi salvare una copia prima della cancellazione.
 
-## Richiedere l'eliminazione dell'account
+## Eliminare l'account
 
-Confermando **Richiedi eliminazione**, Tracky registra data e ora della richiesta e la mostra come in attesa. Ripetere l'azione non crea una seconda richiesta.
+Nella **Zona pericolosa**, scegli **Elimina account**. Puoi preparare un export facoltativo e scaricarlo prima della conferma. Se richiedi un export nella finestra, attendi che sia pronto e scaricalo prima di procedere. Digita l’indirizzo email mostrato per abilitare **Elimina tutto**.
 
-La richiesta è reversibile: scegli **Annulla richiesta di eliminazione** nella scheda Zona pericolosa per rimuoverla. Lo stato in attesa scompare e puoi inviare una nuova richiesta in seguito.
+La conferma avvia la cancellazione immediata e irreversibile. Tracky scollega le banche, rimuove in gruppi export, dati finanziari, piani, previsioni, notifiche, memorie Analyst e impostazioni, quindi chiude per ultimo l’account di accesso. La pagina di avanzamento si aggiorna durante il processo; puoi chiudere il browser e il server continua. Al termine Tracky esce dall’account e torna alla pagina iniziale. Non sono previsti periodi di attesa né annullamento.
 
-<Callout title="Solo una richiesta">
-  Questo comando non cancella ancora automaticamente i record Tracky, non scollega i conti e non chiude il profilo
-  di accesso. Registra una richiesta da gestire successivamente, che puoi annullare da questa pagina. Non è prevista una scadenza automatica per la cancellazione dei dati.
+<Callout title="Cosa rimane">
+  Tracky conserva l’hash SHA-256 dell’identificativo dell’account e la data della cancellazione per un massimo di 12 mesi come traccia tecnica. Non contiene email, nome, dati finanziari o file di export. La revoca dei consensi bancari viene tentata durante la cancellazione e riprovata se il provider non è disponibile; puoi anche revocare l’accesso direttamente presso la banca. I dati di consegna delle email già inviate possono restare fino alla pulizia prevista dal servizio email. Le analisi d’uso già raccolte seguono la procedura di conservazione separata descritta sopra.
 </Callout>

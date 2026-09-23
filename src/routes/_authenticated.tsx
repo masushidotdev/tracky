@@ -6,6 +6,7 @@ export const Route = createFileRoute('/_authenticated')({
     const { user } = await getAuth();
     if (!user) {
       const path = location.pathname;
+      if (path === '/app/settings/deleting') throw redirect({ to: '/' });
       const href = await getSignInUrl({ data: { returnPathname: path } });
       throw redirect({ href });
     }

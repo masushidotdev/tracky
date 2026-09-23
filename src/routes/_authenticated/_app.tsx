@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { Outlet, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getCookie } from '@tanstack/react-start/server';
 import { useConvexAuth, useMutation } from 'convex/react';
@@ -68,17 +68,18 @@ function AppLayout() {
 
 function ProfileBootstrap() {
   const { isAuthenticated, isLoading } = useConvexAuth();
+  const deleting = useRouterState({ select: (state) => state.location.pathname === '/app/settings/deleting' });
   const ensureCurrentUserProfile = useMutation(api.authProfiles.ensureCurrentUserProfile);
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated) {
+    if (isLoading || !isAuthenticated || deleting) {
       return;
     }
 
     void ensureCurrentUserProfile({}).catch((error: unknown) => {
       console.warn('Unable to ensure WorkOS profile sync', error);
     });
-  }, [ensureCurrentUserProfile, isAuthenticated, isLoading]);
+  }, [deleting, ensureCurrentUserProfile, isAuthenticated, isLoading]);
 
   return null;
 }
