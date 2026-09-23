@@ -51,6 +51,11 @@ export const telegramFunctionRefs = {
     { updateId: number; leaseToken: string; outboundText: string },
     boolean
   >('analyst/telegram:saveTelegramGeneratedReply'),
+  maySendChunk: makeFunctionReference<
+    'mutation',
+    { updateId: number; leaseToken: string },
+    boolean
+  >('analyst/telegram:maySendTelegramChunk'),
   advanceChunk: makeFunctionReference<
     'mutation',
     { updateId: number; leaseToken: string; sentChunkCount: number; totalChunks: number },

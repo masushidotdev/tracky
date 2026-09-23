@@ -134,4 +134,20 @@ export const retryRevocations = internalAction({
   },
 });
 
+export const retryDetachedConsent = internalAction({
+  args: { revocationId: v.id('detachedConsentRevocations') },
+  returns: v.null(),
+  handler: async (ctx, { revocationId }): Promise<null> => {
+    const row: Doc<'detachedConsentRevocations'> | null = await ctx.runQuery(
+      internal.accountDeletion.getDetachedConsent, { revocationId },
+    );
+    if (!row) return null;
+    const result = await revokeSession(row.sessionId);
+    await ctx.runMutation(internal.accountDeletion.recordDetachedConsentAttempt, {
+      revocationId, ...result,
+    });
+    return null;
+  },
+});
+
 export type { Id };

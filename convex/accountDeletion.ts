@@ -204,6 +204,87 @@ export const sweepDeletions = internalMutation({
         await ctx.db.delete('accountDeletions', row._id);
       }
     }
+    const detachedDue = await ctx.db.query('detachedConsentRevocations')
+      .withIndex('by_nextRetryAtMs', (q) => q.lt('nextRetryAtMs', now)).take(100);
+    for (const row of detachedDue) {
+      if (row.requestedAtMs < now - REVOCATION_RETRY_MAX_AGE_MS) {
+        console.error('Detached bank consent revocation abandoned', { revocationId: row._id });
+        await ctx.db.delete('detachedConsentRevocations', row._id);
+      } else {
+        // Move the due time before scheduling, so repeated sweep runs cannot
+        // dispatch the same revocation while its network request is in flight.
+        await ctx.db.patch('detachedConsentRevocations', row._id, { nextRetryAtMs: now + STALE_MS });
+        await ctx.scheduler.runAfter(0, internal.accountDeletionActions.retryDetachedConsent, { revocationId: row._id });
+      }
+    }
+    const detachedExpired = await ctx.db.query('detachedConsentRevocations')
+      .withIndex('by_requestedAtMs', (q) => q.lt('requestedAtMs', now - REVOCATION_RETRY_MAX_AGE_MS)).take(100);
+    for (const row of detachedExpired) {
+      console.error('Detached bank consent revocation abandoned', { revocationId: row._id });
+      await ctx.db.delete('detachedConsentRevocations', row._id);
+    }
+    return null;
+  },
+});
+
+// The Enable Banking callback may receive a session after erasure has already
+// removed its auth request. Persist it before trying to revoke the session so
+// a failed DELETE or crashed callback has a retry path independent of the
+// already-erased providerConnections table.
+export const captureDetachedConsent = internalMutation({
+  args: { userId: v.string(), sessionId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { userId, sessionId }) => {
+    if (!sessionId.trim()) throw new Error('missing_detached_session_id');
+    const existing = await ctx.db.query('detachedConsentRevocations')
+      .withIndex('by_sessionId', (q) => q.eq('sessionId', sessionId)).unique();
+    if (existing) return null;
+    const now = Date.now();
+    const revocationId = await ctx.db.insert('detachedConsentRevocations', {
+      userHash: await hashUserId(userId), sessionId,
+      requestedAtMs: now, updatedAtMs: now, attemptCount: 0,
+      nextRetryAtMs: now + 60_000,
+    });
+    await ctx.scheduler.runAfter(60_000, internal.accountDeletionActions.retryDetachedConsent, { revocationId });
+    return null;
+  },
+});
+
+export const markDetachedConsentRevoked = internalMutation({
+  args: { sessionId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { sessionId }) => {
+    const row = await ctx.db.query('detachedConsentRevocations')
+      .withIndex('by_sessionId', (q) => q.eq('sessionId', sessionId)).unique();
+    if (row) await ctx.db.delete('detachedConsentRevocations', row._id);
+    return null;
+  },
+});
+
+export const getDetachedConsent = internalQuery({
+  args: { revocationId: v.id('detachedConsentRevocations') },
+  returns: v.union(v.null(), schema.doc('detachedConsentRevocations')),
+  handler: async (ctx, { revocationId }) => await ctx.db.get('detachedConsentRevocations', revocationId),
+});
+
+export const recordDetachedConsentAttempt = internalMutation({
+  args: { revocationId: v.id('detachedConsentRevocations'), ok: v.boolean(), code: v.optional(v.string()) },
+  returns: v.null(),
+  handler: async (ctx, { revocationId, ok, code }) => {
+    const row = await ctx.db.get('detachedConsentRevocations', revocationId);
+    if (!row) return null;
+    if (ok || row.requestedAtMs < Date.now() - REVOCATION_RETRY_MAX_AGE_MS) {
+      await ctx.db.delete('detachedConsentRevocations', revocationId);
+      return null;
+    }
+    const attemptCount = row.attemptCount + 1;
+    const delay = Math.min(DAY_MS, 60_000 * 2 ** Math.min(attemptCount - 1, 10));
+    const now = Date.now();
+    await ctx.db.patch('detachedConsentRevocations', revocationId, {
+      attemptCount, updatedAtMs: now, nextRetryAtMs: now + delay,
+      lastError: code?.slice(0, 100),
+    });
+    await ctx.scheduler.runAfter(delay, internal.accountDeletionActions.retryDetachedConsent, { revocationId });
     return null;
   },
 });

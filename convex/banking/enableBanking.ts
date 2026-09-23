@@ -72,6 +72,35 @@ type ExchangeCallbackResult = {
   scheduledSyncs?: number;
 };
 
+async function revokeDetachedSession(ctx: ActionCtx, userId: string, sessionId: string): Promise<void> {
+  let captured = false;
+  try {
+    await ctx.runMutation(internal.accountDeletion.captureDetachedConsent, { userId, sessionId });
+    captured = true;
+  } catch (error) {
+    // Still make the immediate attempt if Convex cannot persist the retry.
+    console.error('Could not persist detached Enable Banking consent for retry', { code: apiErrorCode(error) });
+  }
+
+  try {
+    await enableBankingRequest('DELETE', `/sessions/${encodeURIComponent(sessionId)}`);
+  } catch (error) {
+    if (!(error instanceof EnableBankingApiError && error.status === 404)) {
+      console.error('Detached Enable Banking session revocation failed', { code: apiErrorCode(error) });
+      return;
+    }
+  }
+
+  if (captured) {
+    try {
+      await ctx.runMutation(internal.accountDeletion.markDetachedConsentRevoked, { sessionId });
+    } catch (error) {
+      // The durable retry will see HTTP 404 if the marker update failed.
+      console.error('Could not mark detached Enable Banking consent revoked', { code: apiErrorCode(error) });
+    }
+  }
+}
+
 class EnableBankingApiError extends Error {
   constructor(
     readonly status: number,
@@ -677,13 +706,20 @@ export const exchangeCallback = internalAction({
         },
       });
 
-      const providerConnectionId: Id<'providerConnections'> = await ctx.runMutation(
-        internal.banking.providerMutations.completeEnableBankingSession,
-        {
-          state: args.state,
-          session,
-        },
-      );
+      let providerConnectionId: Id<'providerConnections'>;
+      try {
+        providerConnectionId = await ctx.runMutation(
+          internal.banking.providerMutations.completeEnableBankingSession,
+          { state: args.state, session },
+        );
+      } catch (error) {
+        // POST /sessions has already created external consent. It was never
+        // attached to a connection, so the account wipe cannot discover it.
+        if (typeof session?.session_id === 'string' && session.session_id) {
+          await revokeDetachedSession(ctx, request.userId, session.session_id);
+        }
+        throw error;
+      }
       await ctx.runMutation(internal.banking.providerMutations.completeImportJob, {
         importJobId,
         providerConnectionId,

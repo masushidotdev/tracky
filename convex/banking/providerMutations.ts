@@ -422,6 +422,7 @@ export const createAuthRequest = internalMutation({
     expiresAtMs: v.number(),
   },
   handler: async (ctx, args) => {
+    await assertAccountNotDeleting(ctx, args.userId);
     const now = Date.now();
     return await ctx.db.insert('providerAuthRequests', {
       userId: args.userId,

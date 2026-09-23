@@ -3,7 +3,7 @@
 import { listMessages } from '@convex-dev/agent';
 import { v } from 'convex/values';
 import { internalAction } from '../_generated/server';
-import { components } from '../_generated/api';
+import { components, internal } from '../_generated/api';
 import { makeAnalystAgent } from './agent';
 import { DEFAULT_MODEL } from './models';
 import { retrieveMemoryContext } from './memoryActions';
@@ -44,13 +44,19 @@ async function sendTelegramChunk(chatId: string, text: string) {
 }
 
 export const sendNotificationTelegram = internalAction({
-  args: { chatId: v.string(), text: v.string() },
-  handler: async (_ctx, args): Promise<{ sent: true; chunkCount: number }> => {
+  args: { notificationId: v.id('notifications'), userId: v.string(), chatId: v.string(), text: v.string() },
+  handler: async (ctx, args): Promise<{ sent: true; chunkCount: number }> => {
     const chunks = telegramTextChunks(args.text);
     if (chunks.length === 0) {
       throw new SafeTelegramError('empty_outbound_message');
     }
     for (const chunk of chunks) {
+      const allowed: boolean = await ctx.runMutation(internal.notificationDelivery.maySendNotificationTelegram, {
+        notificationId: args.notificationId,
+        userId: args.userId,
+        chatId: args.chatId,
+      });
+      if (!allowed) throw new SafeTelegramError('notification_cancelled');
       await sendTelegramChunk(args.chatId, chunk);
     }
     return { sent: true, chunkCount: chunks.length };
@@ -131,6 +137,11 @@ export const processTelegramUpdate = internalAction({
       const chunks = telegramTextChunks(claim.outboundText ?? '');
       if (chunks.length === 0) throw new SafeTelegramError('empty_outbound_message');
       for (let index = claim.sentChunkCount; index < chunks.length; index += 1) {
+        const allowed = await ctx.runMutation(telegramFunctionRefs.maySendChunk, {
+          updateId: claim.updateId,
+          leaseToken: claim.leaseToken,
+        });
+        if (!allowed) return null;
         await sendTelegramChunk(claim.chatId, chunks[index]);
         const acknowledgement = await ctx.runMutation(telegramFunctionRefs.advanceChunk, {
           updateId: claim.updateId,

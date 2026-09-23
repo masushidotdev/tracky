@@ -29,16 +29,28 @@ data, Telegram updates, bank records, planning/forecast data, Analyst threads,
 settings, and profile. Progress and retries are stored in `accountDeletions`;
 the browser only displays progress and signs out. The first batch disconnects
 providers and removes sync state and queued proactive jobs, so background work
-cannot intentionally continue for this account. A sweeper runs every five
-minutes and resumes jobs whose heartbeat has been stale for 15 minutes; it
+cannot intentionally continue for this account. Asynchronous writers check
+the job and tombstone in their own write transaction; an earlier read or
+authentication check cannot authorize a later write after its wipe batch.
+A sweeper runs every five minutes and resumes jobs whose heartbeat has been
+stale for 15 minutes; it
 also retries failed jobs with backoff. Normal progress is scheduled
 immediately after each batch.
 
 Enable Banking `DELETE /sessions/{session_id}` is attempted after connection
 IDs have been captured and before provider connection rows are deleted. A
 missing session (HTTP 404) is already revoked. Other failures are logged and
-stored for retry after user deletion; they never block erasure. WorkOS
-`DELETE /user_management/users/:id` runs last, after the app's user data and
+stored for retry after user deletion; they never block erasure.
+
+An Enable Banking callback can receive a newly created session after the wipe
+has removed its authorization request. If saving the session then fails, the
+callback records it in `detachedConsentRevocations` before attempting a
+compensating DELETE. That separate retry record contains a hashed user ID and
+the provider session ID, works even if the erasure job has finished, and is
+removed on successful revocation or abandoned after 30 days. This boundary is
+necessary because a revocation scan of saved connections cannot find a session
+that was never saved. WorkOS `DELETE /user_management/users/:id` runs last,
+after the app's user data and
 profile have been removed. WorkOS 404 is treated as success; transient failures
 keep a retryable job. The `user.deleted` webhook sees no profile and is a no-op.
 

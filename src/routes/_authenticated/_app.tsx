@@ -10,6 +10,7 @@ import { api } from '../../../convex/_generated/api';
 import type { CSSProperties } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { CommandMenu, CommandMenuProvider } from '@/components/app/command-menu';
+import { DeletionRouteGuard } from '@/components/settings/deletion-route-guard';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { BalancePrivacyProvider } from '@/lib/balance-privacy-context';
@@ -39,30 +40,32 @@ function AppLayout() {
   const { balancesHidden } = Route.useLoaderData();
 
   return (
-    <BalancePrivacyProvider initialHidden={balancesHidden}>
-      <CommandMenuProvider>
-        <SidebarProvider
-          style={
-            {
-              '--sidebar-width': 'calc(var(--spacing) * 72)',
-              '--header-height': 'calc(var(--spacing) * 12)',
-            } as CSSProperties
-          }
-        >
-          <ProfileBootstrap />
-          <CommandMenu />
-          <AppSidebar variant="inset" />
-          <SidebarInset>
-            <SiteHeader />
-            <div className="flex flex-1 flex-col">
-              <div className="@container/main flex flex-1 flex-col gap-2">
-                <Outlet />
+    <DeletionRouteGuard>
+      <BalancePrivacyProvider initialHidden={balancesHidden}>
+        <CommandMenuProvider>
+          <SidebarProvider
+            style={
+              {
+                '--sidebar-width': 'calc(var(--spacing) * 72)',
+                '--header-height': 'calc(var(--spacing) * 12)',
+              } as CSSProperties
+            }
+          >
+            <ProfileBootstrap />
+            <CommandMenu />
+            <AppSidebar variant="inset" />
+            <SidebarInset>
+              <SiteHeader />
+              <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                  <Outlet />
+                </div>
               </div>
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
-      </CommandMenuProvider>
-    </BalancePrivacyProvider>
+            </SidebarInset>
+          </SidebarProvider>
+        </CommandMenuProvider>
+      </BalancePrivacyProvider>
+    </DeletionRouteGuard>
   );
 }
 

@@ -24,6 +24,9 @@ const getDeletionStatus = makeFunctionReference<'query', Record<string, never>,
 const requestDataExport = makeFunctionReference<'mutation', Record<string, never>, string>('dataExport:requestDataExport');
 const requestDeletionDataExport = makeFunctionReference<'mutation', Record<string, never>, Id<'dataExports'>>('dataExport:requestDeletionDataExport');
 const acknowledgeDeletionExportDownload = makeFunctionReference<'mutation', { exportId: Id<'dataExports'> }, null>('dataExport:acknowledgeDeletionExportDownload');
+const captureDetachedConsent = makeFunctionReference<'mutation', { userId: string; sessionId: string }, null>('accountDeletion:captureDetachedConsent');
+const markDetachedConsentRevoked = makeFunctionReference<'mutation', { sessionId: string }, null>('accountDeletion:markDetachedConsentRevoked');
+const recordDetachedConsentAttempt = makeFunctionReference<'mutation', { revocationId: Id<'detachedConsentRevocations'>; ok: boolean; code?: string }, null>('accountDeletion:recordDetachedConsentAttempt');
 
 function createTest() {
   const t = convexTest(schema, modules);
@@ -207,4 +210,109 @@ test('temporary WorkOS failure retries after wipe and succeeds headlessly', asyn
   expect(fetchMock).toHaveBeenCalledTimes(2);
   expect(await t.withIdentity({ subject: 'user_workos_retry' }).query(getDeletionStatus, {}))
     .toEqual({ status: 'done', currentStep: 'done' });
+});
+
+test('an unlinked bank session survives a failed revoke for retry and drops its raw session ID on success', async () => {
+  const t = createTest();
+  await t.mutation(captureDetachedConsent, { userId: 'erased_user', sessionId: 'late_session' });
+  await t.mutation(captureDetachedConsent, { userId: 'erased_user', sessionId: 'late_session' });
+  const rows = await t.run(async (ctx) => ctx.db.query('detachedConsentRevocations').collect());
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({
+    userHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+    sessionId: 'late_session',
+    attemptCount: 0,
+  });
+  await t.mutation(recordDetachedConsentAttempt, {
+    revocationId: rows[0]._id, ok: false, code: 'HTTP_503',
+  });
+  const pending = await t.run(async (ctx) => ctx.db.get('detachedConsentRevocations', rows[0]._id));
+  expect(pending).toMatchObject({ attemptCount: 1, lastError: 'HTTP_503' });
+  expect(pending?.nextRetryAtMs).toBeGreaterThanOrEqual(rows[0].nextRetryAtMs);
+  await t.mutation(markDetachedConsentRevoked, { sessionId: 'late_session' });
+  expect(await t.run(async (ctx) => ctx.db.get('detachedConsentRevocations', rows[0]._id))).toBeNull();
+});
+
+type FixtureValidator = {
+  kind: string;
+  isOptional: string;
+  fields?: Record<string, FixtureValidator>;
+  members?: Array<FixtureValidator>;
+  json: { value?: unknown; tableName?: string };
+};
+
+test('headless erasure drains every app-owned table in the current schema', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-09-23T10:00:00.000Z'));
+  vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(new Response(null, { status: 204 }))));
+  const t = createTest();
+  const userId = 'user_full_fixture';
+  await seedUser(t, userId);
+  const retainedTables = new Set(['accountDeletions', 'deletedUsers', 'detachedConsentRevocations']);
+  const fixtureTables = Object.keys(schema.tables).filter((table) => !retainedTables.has(table));
+
+  await t.run(async (ctx) => {
+    const definitions = schema.tables as unknown as Record<string, { validator: { fields: Record<string, FixtureValidator> } }>;
+    const inserted = new Map<string, string>();
+    const inserting = new Set<string>();
+    const insert = ctx.db.insert.bind(ctx.db) as (table: string, doc: Record<string, unknown>) => Promise<string>;
+
+    async function sample(validator: FixtureValidator): Promise<unknown> {
+      switch (validator.kind) {
+        case 'string': return 'fixture';
+        case 'float64': return 1;
+        case 'int64': return 1n;
+        case 'boolean': return true;
+        case 'literal': return validator.json.value;
+        case 'array': return [];
+        case 'record': return {};
+        case 'union': return await sample(validator.members![0]);
+        case 'id': return await seedTable(validator.json.tableName!);
+        case 'object': {
+          const value: Record<string, unknown> = {};
+          for (const [field, child] of Object.entries(validator.fields!)) {
+            if (child.isOptional === 'required') value[field] = await sample(child);
+          }
+          return value;
+        }
+        default: throw new Error(`Unseeded validator kind: ${validator.kind}`);
+      }
+    }
+
+    async function seedTable(table: string): Promise<string> {
+      const prior = inserted.get(table);
+      if (prior) return prior;
+      if (inserting.has(table)) throw new Error(`Required fixture ID cycle at ${table}`);
+      inserting.add(table);
+      const fields = definitions[table].validator.fields;
+      const doc: Record<string, unknown> = {};
+      for (const [field, validator] of Object.entries(fields)) {
+        if (field === 'userId' || field === 'authUserId') {
+          doc[field] = userId;
+        } else if (validator.isOptional === 'required') {
+          doc[field] = await sample(validator);
+        }
+      }
+      const id = await insert(table, doc);
+      inserted.set(table, id);
+      inserting.delete(table);
+      return id;
+    }
+
+    for (const table of fixtureTables) {
+      if (table === 'userProfiles') continue; // WorkOS webhook already seeded it.
+      await seedTable(table);
+    }
+  });
+
+  await t.withIdentity({ subject: userId }).mutation(deleteMyAccount, {});
+  await t.finishAllScheduledFunctions(vi.runAllTimers);
+  await t.run(async (ctx) => {
+    const query = ctx.db.query.bind(ctx.db) as (table: string) => { collect: () => Promise<Array<Record<string, unknown>>> };
+    for (const table of fixtureTables) {
+      const rows = await query(table).collect();
+      expect(rows, table).toHaveLength(0);
+    }
+    expect(await query('deletedUsers').collect()).toHaveLength(1);
+  });
 });

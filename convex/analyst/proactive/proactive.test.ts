@@ -132,6 +132,27 @@ async function seedTransactionContext(t: ReturnType<typeof createTest>) {
 }
 
 describe('proactive analyst persistence and inputs', () => {
+  test('does not enqueue jobs after erasure starts or after its tombstone remains', async () => {
+    const t = createTest();
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('user_done'));
+    const userHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+    await t.run(async (ctx) => {
+      await ctx.db.insert('accountDeletions', {
+        userId: 'user_wiping', userHash: 'pending-hash', status: 'failed', currentStep: 'misc',
+        requestedAtMs: 1, updatedAtMs: 1, attemptCount: 1, workosDeleted: false,
+      });
+      await ctx.db.insert('deletedUsers', { userHash, deletedAtMs: 2 });
+    });
+
+    const input = { kind: 'healthScore' as const, asOfDate: '2026-07-11', locale: 'en' };
+    expect(await t.mutation(refs.enqueueJob, { ...input, userId: 'user_wiping' }))
+      .toMatchObject({ jobId: null, inserted: false, status: 'skipped' });
+    expect(await t.mutation(refs.enqueueJob, { ...input, userId: 'user_done' }))
+      .toMatchObject({ jobId: null, inserted: false, status: 'skipped' });
+    expect(await t.run(async (ctx) => await ctx.db.query('proactiveJobs').take(10)))
+      .toHaveLength(0);
+  });
+
   test('paginates only active user profiles', async () => {
     const t = createTest();
     await t.run(async (ctx) => {

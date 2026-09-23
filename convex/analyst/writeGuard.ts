@@ -7,6 +7,7 @@
 import { v } from 'convex/values';
 import { internalMutation, internalQuery, query } from '../_generated/server';
 import { requireAuthUser } from '../auth';
+import { isAccountDeletionStarted } from '../lib/accountDeletionGuard';
 import { recordCountForApproval, riskForTool, routeWriteGuardBadge } from './writeGuardBadge';
 import type { WriteGuardBadge } from './writeGuardBadge';
 
@@ -54,6 +55,7 @@ type ApprovalRequestPart = {
 export const scanApprovalsForThread = internalMutation({
   args: { userId: v.string(), threadId: v.string() },
   handler: async (ctx, args) => {
+    if (await isAccountDeletionStarted(ctx, args.userId)) return { pending: 0 };
     const { makeAnalystAgent } = await import('./agent');
     const agent = makeAnalystAgent('anthropic/claude-fable-5', 'en');
     const recent = await agent.listMessages(ctx, {
@@ -101,4 +103,3 @@ export const scanApprovalsForThread = internalMutation({
     return { pending: cached };
   },
 });
-

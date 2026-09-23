@@ -108,6 +108,21 @@ export default defineSchema({
     .index('by_status_and_updatedAtMs', ['status', 'updatedAtMs'])
     .index('by_status_and_nextRetryAtMs', ['status', 'nextRetryAtMs']),
 
+  // A bank session can be created externally just as account erasure removes
+  // its auth request. Keep that unlinked session only while revocation retries.
+  detachedConsentRevocations: defineTable({
+    userHash: v.string(),
+    sessionId: v.string(),
+    requestedAtMs: v.number(),
+    updatedAtMs: v.number(),
+    attemptCount: v.number(),
+    nextRetryAtMs: v.number(),
+    lastError: v.optional(v.string()),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_nextRetryAtMs', ['nextRetryAtMs'])
+    .index('by_requestedAtMs', ['requestedAtMs']),
+
   deletedUsers: defineTable({
     userHash: v.string(),
     deletedAtMs: v.number(),

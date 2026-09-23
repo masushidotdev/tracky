@@ -9,6 +9,7 @@ import { internal } from '../_generated/api';
 import { internalAction, internalMutation, internalQuery } from '../_generated/server';
 import { decide, jevChoice, jevNoul, minimizeJevText } from '../lib/jev';
 import { JEV_IMPORT } from '../lib/jevThresholds';
+import { isAccountDeletionStarted } from '../lib/accountDeletionGuard';
 import { normalizeMerchantKey } from './subscriptionDetection';
 import type { Id } from '../_generated/dataModel';
 
@@ -65,6 +66,7 @@ export const triageBudgetForUser = internalQuery({
 export const recordTriageSpend = internalMutation({
   args: { userId: v.string(), today: v.string(), count: v.number() },
   handler: async (ctx, args) => {
+    if (await isAccountDeletionStarted(ctx, args.userId)) return;
     const settings = await ctx.db
       .query('userSettings')
       .withIndex('by_userId', (q) => q.eq('userId', args.userId))
@@ -114,6 +116,7 @@ export const triageRowForUser = internalQuery({
 export const requestRowTriage = internalMutation({
   args: { userId: v.string(), transactionId: v.id('transactions'), today: v.string(), dailyBudget: v.number() },
   handler: async (ctx, args): Promise<{ routing: TriageRouting; queued: boolean }> => {
+    if (await isAccountDeletionStarted(ctx, args.userId)) return { routing: 'queue', queued: false };
     const transaction = await ctx.db.get('transactions', args.transactionId);
     if (!transaction || transaction.userId !== args.userId) return { routing: 'queue', queued: false };
     if (transaction.classificationKind !== 'uncategorized') return { routing: 'queue', queued: false };

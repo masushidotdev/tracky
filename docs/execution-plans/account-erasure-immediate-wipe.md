@@ -201,6 +201,35 @@ convex-test pattern from `convex/user-settings.test.ts`:
   `convex/plan-read.test.ts` passed ten consecutive focused runs on Node 22.
   Account-deletion tests cover double-submit idempotency, selected-export
   acknowledgment (including an omitted ID), failed-export fallback,
-  deletion-export reuse under the daily limit, headless full wipe with storage
+  deletion-export reuse under the daily limit, headless batch wipe with storage
   cleanup, EB failure retry, and WorkOS failure retry. Remaining rollout step:
   staging fixture wipe with WorkOS/EB dashboard checks per Rollout above.
+
+## Review remediation (2026-09-23)
+
+The post-implementation review found that checking authentication before an
+asynchronous action was insufficient: the action could cross an erasure batch
+before its later mutation wrote data. Notification upserts and email queueing,
+proactive job enqueue, Telegram link-code storage, Analyst memory and approval
+badge writes, import triage and plan snapshot writes, and bank authorization
+request storage now check the erasure job and tombstone in the transaction that
+writes. Telegram replies and notification deliveries check whether the user and
+their current link remain eligible before sending each outbound chunk. An
+external request that has already started cannot be recalled. App navigation during a wipe returns to
+the holding page; pricing FAQs and the EN/IT privacy guides now describe the
+actual irreversible flow and the email-component residue.
+
+An Enable Banking callback can receive a `/sessions` result after erasure has
+removed its authorization request. The callback now captures that otherwise
+untracked session in a dedicated, bounded retry record before attempting a
+compensating DELETE. This is separate from the ordinary connection revocation
+list because that list can only see sessions already saved in
+`providerConnections`. Recovery retries failures without restoring account
+data, and removes the provider session ID on success or after 30 days.
+
+The original headless test exercised several tables and a batch boundary, but
+did not seed every app-owned table. A new schema-driven fixture now inserts one
+row into each of the 45 app-owned tables and verifies that headless erasure
+removes them all. Focused interleaving tests cover the discovered writers and
+both immediate and retried detached-session revocation. A staging fixture
+with provider dashboard checks remains a rollout verification item.

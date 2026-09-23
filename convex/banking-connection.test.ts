@@ -74,6 +74,23 @@ async function seedConnection(t: TestHarness) {
 }
 
 describe('bank connection state', () => {
+  test('refuses an auth request committed after deletion begins', async () => {
+    const t = createTest();
+    await t.run(async (ctx) => {
+      await ctx.db.insert('accountDeletions', {
+        userId: 'user_late_auth', userHash: 'f'.repeat(64), status: 'wiping',
+        currentStep: 'bankingCore', requestedAtMs: Date.now(), updatedAtMs: Date.now(),
+        attemptCount: 0, workosDeleted: false,
+      });
+    });
+    await expect(t.mutation(internal.banking.providerMutations.createAuthRequest, {
+      userId: 'user_late_auth', provider: 'enableBanking', state: 'late_state',
+      redirectUrl: 'https://example.test/callback', aspspName: 'Test Bank',
+      aspspCountry: 'IT', psuType: 'personal', expiresAtMs: Date.now() + 60_000,
+    })).rejects.toThrow('deletion_in_progress');
+    expect(await t.run(async (ctx) => ctx.db.query('providerAuthRequests').take(1))).toHaveLength(0);
+  });
+
   test('lists active sync states for a newly authorized connection', async () => {
     const t = createTest();
     const fixture = await seedConnection(t);

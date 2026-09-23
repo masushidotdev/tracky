@@ -288,12 +288,15 @@ holding page reads `getDeletionStatus`; it does not drive the wipe. The server
 disconnects sync, deletes user-owned records in indexed batches, revokes bank
 sessions on a best-effort basis, deletes Analyst component threads, then removes
 settings and profile before calling WorkOS User Management DELETE. An error
-keeps a retryable job; a daily cron recovers stale jobs. Normal app calls and
-profile webhooks check the job and hashed tombstone so another tab or a late
-event cannot recreate data after confirmation. The completed job temporarily
-remains without the raw user ID so the holding page can observe `done` before
-the WorkOS session disappears. See decision 0024 for provider and component
-retention limits.
+keeps a retryable job; a five-minute cron recovers stale jobs. Normal app calls,
+profile webhooks, and asynchronous writers check the job and hashed tombstone
+in the transaction that writes data. A callback that receives a new Enable
+Banking session after its authorization request was erased records the session
+in `detachedConsentRevocations`, then attempts a compensating DELETE; the
+five-minute recovery sweep retries failures and drops that retry state after
+at most 30 days. The completed erasure job temporarily remains without the
+raw user ID so the holding page can observe `done` before the WorkOS session
+disappears. See decision 0024 for provider and component retention limits.
 
 ## Enable Banking Constraints
 
