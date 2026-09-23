@@ -288,8 +288,10 @@ That authenticated mutation records an erasure job and schedules the first
 server action. A pending request is tied to the confirming WorkOS account, and
 the route guard keeps normal screens unmounted if the user presses Back before
 the request finishes. It withholds normal screens until it can read tab storage
-and offers a retry if storage is unavailable. The holding page reads `getDeletionStatus` to display progress;
-it does not drive the wipe. If the request itself fails, it offers a return to
+and offers a retry if storage is unavailable. The holding page reads
+`getDeletionStatus` to display progress; it does not drive the wipe. Marker
+storage failures cannot interrupt status polling or sign-out after erasure.
+If the request itself fails, it offers a return to
 Settings before any erasure job exists. The server
 disconnects sync, deletes user-owned records in indexed batches, revokes bank
 sessions on a best-effort basis, deletes Analyst component threads, then removes

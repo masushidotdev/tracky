@@ -47,7 +47,32 @@ function isUnauthorized(error: unknown) {
   return /Unauthorized|Unauthenticated|not authenticated/i.test(String(error));
 }
 
-function DeletingRoute() {
+/** Keep browser storage failures separate from deletion status and sign-out. */
+function readMarker(key: string): string | null | undefined {
+  try {
+    return window.sessionStorage.getItem(key);
+  } catch {
+    return undefined;
+  }
+}
+
+function writeMarker(key: string, value: string) {
+  try {
+    window.sessionStorage.setItem(key, value);
+  } catch {
+    // The server's deletion job remains the source of truth.
+  }
+}
+
+function removeMarker(key: string) {
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    // Storage cleanup must not interrupt polling or sign-out.
+  }
+}
+
+export function DeletingRoute() {
   const { t } = useI18n();
   const convex = useConvex();
   const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
@@ -66,11 +91,11 @@ function DeletingRoute() {
 
   React.useEffect(() => {
     if (authLoading || requestAttemptedRef.current) return;
-    const raw = window.sessionStorage.getItem(deletionPendingKey);
-    if (raw === null) return;
+    const raw = readMarker(deletionPendingKey);
+    if (raw == null) return;
     const pending = parsePendingDeletion(raw, user?.id);
     if (!pending) {
-      window.sessionStorage.removeItem(deletionPendingKey);
+      removeMarker(deletionPendingKey);
       return;
     }
     requestAttemptedRef.current = true;
@@ -93,11 +118,11 @@ function DeletingRoute() {
       } finally {
         pendingRef.current = false;
         // Keep the guard active until status polling observes the durable job.
-        if (!accepted) window.sessionStorage.removeItem(deletionPendingKey);
+        if (!accepted) removeMarker(deletionPendingKey);
       }
       if (accepted) {
         startedRef.current = true;
-        window.sessionStorage.setItem(deletionStartedKey, pending.userId);
+        writeMarker(deletionStartedKey, pending.userId);
         setRequestAccepted(true);
         if (created) {
           try {
@@ -111,7 +136,7 @@ function DeletingRoute() {
   }, [authLoading, deleteAccount, user?.id]);
 
   React.useEffect(() => {
-    startedRef.current ||= Boolean(user?.id && window.sessionStorage.getItem(deletionStartedKey) === user.id);
+    startedRef.current ||= Boolean(user?.id && readMarker(deletionStartedKey) === user.id);
     let active = true;
     let inFlight = false;
 
@@ -149,16 +174,16 @@ function DeletingRoute() {
         setLoading(false);
         if (result) {
           setRequestAccepted(true);
-          window.sessionStorage.removeItem(deletionPendingKey);
+          removeMarker(deletionPendingKey);
         }
         if (result?.status === 'wiping' || result?.status === 'failed') {
           startedRef.current = true;
-          if (user?.id) window.sessionStorage.setItem(deletionStartedKey, user.id);
+          if (user?.id) writeMarker(deletionStartedKey, user.id);
         }
         if (result?.status === 'done') {
           await finish();
         } else if (!result && !startedRef.current && !pendingRef.current &&
-          window.sessionStorage.getItem(deletionPendingKey) === null && !requestErrorRef.current) {
+          readMarker(deletionPendingKey) === null && !requestErrorRef.current) {
           await navigate({ to: '/app/settings' });
         }
       } catch (error) {
