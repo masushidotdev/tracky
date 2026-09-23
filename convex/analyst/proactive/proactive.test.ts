@@ -3,7 +3,7 @@ import { createThread, listMessages } from '@convex-dev/agent';
 import agentTest from '@convex-dev/agent/test';
 import { makeFunctionReference } from 'convex/server';
 import { convexTest } from 'convex-test';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { components } from '../../_generated/api';
 import schema from '../../schema';
 import type { Doc, Id } from '../../_generated/dataModel';
@@ -95,6 +95,8 @@ function createTest() {
   agentTest.register(t);
   return t;
 }
+
+afterEach(() => vi.useRealTimers());
 
 async function seedTransactionContext(t: ReturnType<typeof createTest>) {
   return await t.run(async (ctx) => {
@@ -384,6 +386,9 @@ describe('proactive analyst persistence and inputs', () => {
   });
 
   test('durable proactive queue dedupes, retries, recovers expired leases, and stops at max attempts', async () => {
+    // enqueueProactiveJob also schedules an immediate watchdog. Keep that
+    // background timer paused while this test drives each lease explicitly.
+    vi.useFakeTimers();
     const t = createTest();
     const input = { userId: 'user_queue', kind: 'healthScore' as const, asOfDate: '2026-07-11', locale: 'en', nowMs: 1_000 };
     const first = await t.mutation(refs.enqueueJob, input);

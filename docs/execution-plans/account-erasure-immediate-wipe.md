@@ -215,9 +215,9 @@ badge writes, import triage and plan snapshot writes, and bank authorization
 request storage now check the erasure job and tombstone in the transaction that
 writes. Telegram replies and notification deliveries check whether the user and
 their current link remain eligible before sending each outbound chunk. An
-external request that has already started cannot be recalled. App navigation during a wipe returns to
-the holding page; pricing FAQs and the EN/IT privacy guides now describe the
-actual irreversible flow and the email-component residue.
+external request that has already started cannot be recalled. App navigation
+during a wipe returns to the holding page; pricing FAQs and the EN/IT privacy
+guides now describe the actual irreversible flow and the email-component residue.
 
 An Enable Banking callback can receive a `/sessions` result after erasure has
 removed its authorization request. The callback now captures that otherwise
@@ -233,3 +233,9 @@ row into each of the 45 app-owned tables and verifies that headless erasure
 removes them all. Focused interleaving tests cover the discovered writers and
 both immediate and retried detached-session revocation. A staging fixture
 with provider dashboard checks remains a rollout verification item.
+
+The PR CI run also exposed a timing race in the existing proactive-queue test:
+enqueue scheduled its real watchdog while the test manually advanced the same
+job through three leases. The test now pauses scheduled timers while exercising
+those explicit watchdog calls, so a concurrent watchdog cannot consume an
+attempt between assertions.
