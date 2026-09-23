@@ -109,10 +109,10 @@ export function DangerZoneCard() {
     } catch {
       try {
         window.sessionStorage.removeItem(deletionPendingKey);
+        toast.error(t('settings.danger.deleteFailed'));
       } catch {
-        // The failed handoff cannot be resumed until browser storage recovers.
+        // Keep the saved request; it can resume when browser storage recovers.
       }
-      toast.error(t('settings.danger.deleteFailed'));
       setDeleting(false);
     }
   };
