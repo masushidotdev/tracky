@@ -291,6 +291,8 @@ the request finishes. It withholds normal screens until it can read tab storage
 and offers a retry if storage is unavailable. The holding page reads
 `getDeletionStatus` to display progress; it does not drive the wipe. Marker
 storage failures cannot interrupt status polling or sign-out after erasure.
+If the first pending-marker read fails, the holding page retries it until it can
+submit the saved request once.
 If the request itself fails, it offers a return to
 Settings before any erasure job exists. The server
 disconnects sync, deletes user-owned records in indexed batches, revokes bank

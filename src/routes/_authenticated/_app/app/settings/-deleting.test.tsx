@@ -43,6 +43,7 @@ afterEach(() => {
   container = null;
   vi.restoreAllMocks();
   vi.clearAllMocks();
+  vi.useRealTimers();
   window.sessionStorage.clear();
 });
 
@@ -81,4 +82,31 @@ test('an unreadable pending marker does not send the user back to Settings', asy
 
   expect(mocks.navigate).not.toHaveBeenCalled();
   expect(container.textContent).not.toContain('settings.deleting.connectionError');
+});
+
+test('the pending request starts once after storage reads recover', async () => {
+  vi.useFakeTimers();
+  mocks.query.mockResolvedValue(null);
+  mocks.mutation.mockResolvedValue(undefined);
+  let available = false;
+  const pending = JSON.stringify({ userId: 'confirmed_user', deletionExportId: null });
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
+    if (!available) throw new Error('storage unavailable');
+    return key === 'tracky.deletionPending' ? pending : null;
+  });
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => {
+    root?.render(<DeletingRoute />);
+    await Promise.resolve();
+  });
+  expect(mocks.mutation).not.toHaveBeenCalled();
+
+  available = true;
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(4_000);
+  });
+  expect(mocks.mutation).toHaveBeenCalledTimes(1);
 });

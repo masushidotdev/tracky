@@ -83,6 +83,7 @@ export function DeletingRoute() {
   const [connectionError, setConnectionError] = React.useState(false);
   const [requestError, setRequestError] = React.useState(false);
   const [requestAccepted, setRequestAccepted] = React.useState(false);
+  const [storageReadAttempt, retryStorageRead] = React.useReducer((count: number) => count + 1, 0);
   const startedRef = React.useRef(false);
   const pendingRef = React.useRef(false);
   const requestErrorRef = React.useRef(false);
@@ -92,7 +93,11 @@ export function DeletingRoute() {
   React.useEffect(() => {
     if (authLoading || requestAttemptedRef.current) return;
     const raw = readMarker(deletionPendingKey);
-    if (raw == null) return;
+    if (raw === undefined) {
+      const timer = window.setTimeout(retryStorageRead, 2_000);
+      return () => window.clearTimeout(timer);
+    }
+    if (raw === null) return;
     const pending = parsePendingDeletion(raw, user?.id);
     if (!pending) {
       removeMarker(deletionPendingKey);
@@ -133,7 +138,7 @@ export function DeletingRoute() {
         }
       }
     })();
-  }, [authLoading, deleteAccount, user?.id]);
+  }, [authLoading, deleteAccount, storageReadAttempt, user?.id]);
 
   React.useEffect(() => {
     startedRef.current ||= Boolean(user?.id && readMarker(deletionStartedKey) === user.id);
