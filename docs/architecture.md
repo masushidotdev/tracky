@@ -282,23 +282,24 @@ clears the link without moving or deleting the adopted bucket. See
 
 ## Account Erasure Flow
 
-The Settings danger zone offers a final JSON export and requires the current
-email to confirm deletion. The client first opens the isolated holding page,
+The Settings danger zone asks for a deletion reason, offers a final JSON export,
+and requires the current email to confirm deletion. The client first opens the isolated holding page,
 unmounting normal app queries, then calls `accountDeletion.deleteMyAccount`.
-That authenticated mutation records an erasure job and schedules the first
+That authenticated mutation stores the survey and a 12-month user contact
+snapshot in `accountDeletionFeedback`, records an erasure job, and schedules the first
 server action. A pending request is tied to the confirming WorkOS account, and
 the route guard keeps normal screens unmounted if the user presses Back before
 the request finishes. It withholds normal screens until it can read tab storage
 and offers a retry if storage is unavailable. The holding page reads
 `getDeletionStatus` to display progress; it does not drive the wipe. Marker
-storage failures cannot interrupt status polling or sign-out after erasure.
+storage failures cannot interrupt status polling or local session cleanup after erasure.
 If the first pending-marker read fails, the holding page retries it until it can
 submit the saved request once.
 If navigation fails and the pending marker cannot be cleared, the saved request
 remains pending without a misleading failure message. If the request itself
 fails, it offers a return to Settings before any erasure job exists. If a job
 already started but its completed status row has expired, the holding page
-signs out instead of returning to Settings. The server
+clears its local session and returns home instead of returning to Settings. The server
 disconnects sync, deletes user-owned records in indexed batches, revokes bank
 sessions on a best-effort basis, deletes Analyst component threads, then removes
 settings and profile before calling WorkOS User Management DELETE. An error

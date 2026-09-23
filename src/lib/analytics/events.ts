@@ -54,6 +54,7 @@ export const analyticsEvents = {
   notificationPrefsUpdated: 'notification_prefs_updated',
   dataExportRequested: 'data_export_requested',
   accountDeletionRequested: 'account_deletion_requested',
+  accountDeletionFeedbackSubmitted: 'account_deletion_feedback_submitted',
   accountDeletionCancelled: 'account_deletion_cancelled',
   trackingConsentChanged: 'tracking_consent_changed',
   commandMenuOpened: 'command_menu_opened',

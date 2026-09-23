@@ -18,7 +18,11 @@ const modules = import.meta.glob([
   './accountDeletion.ts', './accountDeletionActions.ts', './accountDeletionBanking.ts',
   './accountDeletionPlanning.ts', './banking/enableBanking.ts', './dataExport.ts',
 ]);
-const deleteMyAccount = makeFunctionReference<'mutation', { deletionExportId?: Id<'dataExports'> }, null>('accountDeletion:deleteMyAccount');
+const deleteMyAccount = makeFunctionReference<'mutation', {
+  deletionExportId?: Id<'dataExports'>;
+  feedback: { reason: 'too_complex' | 'missing_features' | 'bank_connection' | 'privacy' | 'no_longer_needed' | 'other'; otherText?: string };
+}, null>('accountDeletion:deleteMyAccount');
+const deleteArgs = { feedback: { reason: 'no_longer_needed' as const } };
 const getDeletionStatus = makeFunctionReference<'query', Record<string, never>,
   { status: 'wiping' | 'failed' | 'done'; currentStep: string } | null>('accountDeletion:getDeletionStatus');
 const requestDataExport = makeFunctionReference<'mutation', Record<string, never>, string>('dataExport:requestDataExport');
@@ -59,12 +63,43 @@ test('double submit is rejected before the scheduled wipe starts', async () => {
   const t = createTest();
   await seedUser(t, 'user_delete_double');
   const asUser = t.withIdentity({ subject: 'user_delete_double' });
-  expect(await asUser.mutation(deleteMyAccount, {})).toBeNull();
-  await expect(asUser.mutation(deleteMyAccount, {})).rejects.toThrow('deletion_in_progress');
+  expect(await asUser.mutation(deleteMyAccount, deleteArgs)).toBeNull();
+  await expect(asUser.mutation(deleteMyAccount, deleteArgs)).rejects.toThrow('deletion_in_progress');
   expect(await asUser.query(getDeletionStatus, {})).toMatchObject({ status: 'wiping', currentStep: 'disconnect' });
-  await expect(t.mutation(deleteMyAccount, {})).rejects.toThrow('Unauthorized');
+  await expect(t.mutation(deleteMyAccount, deleteArgs)).rejects.toThrow('Unauthorized');
   await expect(t.query(getDeletionStatus, {})).rejects.toThrow('Unauthorized');
   await expect(t.mutation(requestDeletionDataExport, {})).rejects.toThrow('Unauthorized');
+});
+
+test('deletion stores the authenticated user and validated survey exactly once', async () => {
+  const t = createTest();
+  await seedUser(t, 'user_feedback');
+  const asUser = t.withIdentity({ subject: 'user_feedback' });
+  await expect(asUser.mutation(deleteMyAccount, { feedback: { reason: 'other', otherText: '   ' } }))
+    .rejects.toThrow('invalid_deletion_feedback');
+  await expect(asUser.mutation(deleteMyAccount, { feedback: { reason: 'privacy', otherText: 'unexpected' } }))
+    .rejects.toThrow('invalid_deletion_feedback');
+  await asUser.mutation(deleteMyAccount, { feedback: { reason: 'other', otherText: '  Clear reason  ' } });
+  await expect(asUser.mutation(deleteMyAccount, deleteArgs)).rejects.toThrow('deletion_in_progress');
+  const rows = await t.run(async (ctx) => ctx.db.query('accountDeletionFeedback')
+    .withIndex('by_userId', (q) => q.eq('userId', 'user_feedback')).take(10));
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({
+    email: 'user_feedback@example.com', firstName: 'Test', lastName: 'User',
+    reason: 'other', otherText: 'Clear reason',
+  });
+  expect(rows[0].expiresAtMs - rows[0].submittedAtMs).toBe(365 * 24 * 60 * 60_000);
+});
+
+test('failed deletion validation does not retain feedback', async () => {
+  const t = createTest();
+  await seedUser(t, 'user_feedback_export');
+  const asUser = t.withIdentity({ subject: 'user_feedback_export' });
+  await asUser.mutation(requestDeletionDataExport, {});
+  await expect(asUser.mutation(deleteMyAccount, deleteArgs))
+    .rejects.toThrow('deletion_export_not_acknowledged');
+  expect(await t.run(async (ctx) => ctx.db.query('accountDeletionFeedback')
+    .withIndex('by_userId', (q) => q.eq('userId', 'user_feedback_export')).take(1))).toHaveLength(0);
 });
 
 test('deletion dialog can reuse an export despite the daily export limit', async () => {
@@ -90,7 +125,7 @@ test('an ordinary export does not block direct deletion', async () => {
       requestedAtMs: Date.now(), completedAtMs: Date.now(), expiresAtMs: Date.now() + 60_000,
     });
   });
-  expect(await t.withIdentity({ subject: 'user_direct_deletion' }).mutation(deleteMyAccount, {})).toBeNull();
+  expect(await t.withIdentity({ subject: 'user_direct_deletion' }).mutation(deleteMyAccount, deleteArgs)).toBeNull();
 });
 
 test('selected export requires a completed, acknowledged file before erasure', async () => {
@@ -100,7 +135,7 @@ test('selected export requires a completed, acknowledged file before erasure', a
   const selected = t.withIdentity({ subject: 'user_selected_export' });
   const other = t.withIdentity({ subject: 'user_other_export' });
   const exportId = await selected.mutation(requestDeletionDataExport, {});
-  await expect(selected.mutation(deleteMyAccount, {})).rejects.toThrow('deletion_export_not_acknowledged');
+  await expect(selected.mutation(deleteMyAccount, deleteArgs)).rejects.toThrow('deletion_export_not_acknowledged');
   await expect(selected.mutation(acknowledgeDeletionExportDownload, { exportId }))
     .rejects.toThrow('deletion_export_not_ready');
   await t.run(async (ctx) => {
@@ -111,9 +146,9 @@ test('selected export requires a completed, acknowledged file before erasure', a
   });
   await expect(other.mutation(acknowledgeDeletionExportDownload, { exportId }))
     .rejects.toThrow('deletion_export_not_ready');
-  await expect(selected.mutation(deleteMyAccount, {})).rejects.toThrow('deletion_export_not_acknowledged');
+  await expect(selected.mutation(deleteMyAccount, deleteArgs)).rejects.toThrow('deletion_export_not_acknowledged');
   expect(await selected.mutation(acknowledgeDeletionExportDownload, { exportId })).toBeNull();
-  expect(await selected.mutation(deleteMyAccount, { deletionExportId: exportId })).toBeNull();
+  expect(await selected.mutation(deleteMyAccount, { ...deleteArgs, deletionExportId: exportId })).toBeNull();
 });
 
 test('a failed selected export does not prevent direct deletion', async () => {
@@ -124,7 +159,7 @@ test('a failed selected export does not prevent direct deletion', async () => {
   await t.run(async (ctx) => {
     await ctx.db.patch('dataExports', exportId, { status: 'failed', errorCode: 'export_failed' });
   });
-  expect(await asUser.mutation(deleteMyAccount, {})).toBeNull();
+  expect(await asUser.mutation(deleteMyAccount, deleteArgs)).toBeNull();
 });
 
 test('scheduled wipe completes without an open browser and removes stored export files', async () => {
@@ -151,7 +186,7 @@ test('scheduled wipe completes without an open browser and removes stored export
     }
     return id;
   });
-  await t.withIdentity({ subject: 'user_wipe' }).mutation(deleteMyAccount, {});
+  await t.withIdentity({ subject: 'user_wipe' }).mutation(deleteMyAccount, deleteArgs);
   await t.finishAllScheduledFunctions(vi.runAllTimers);
   await t.run(async (ctx) => {
     expect(await ctx.db.query('userProfiles').withIndex('by_authUserId', (q) => q.eq('authUserId', 'user_wipe')).take(1)).toHaveLength(0);
@@ -160,10 +195,27 @@ test('scheduled wipe completes without an open browser and removes stored export
     expect(await ctx.db.query('dataExports').withIndex('by_userId_and_requestedAtMs', (q) => q.eq('userId', 'user_wipe')).take(1)).toHaveLength(0);
     expect(await ctx.storage.get(storageId)).toBeNull();
     expect(await ctx.db.query('deletedUsers').take(10)).toMatchObject([{ userHash: expect.stringMatching(/^[a-f0-9]{64}$/) }]);
+    expect(await ctx.db.query('accountDeletionFeedback')
+      .withIndex('by_userId', (q) => q.eq('userId', 'user_wipe')).take(1))
+      .toMatchObject([{ reason: 'no_longer_needed', email: 'user_wipe@example.com' }]);
     expect(await ctx.db.query('userSettings').withIndex('by_userId', (q) => q.eq('userId', 'user_keep')).take(1)).toHaveLength(1);
   });
   expect(fetchMock).toHaveBeenCalledWith('https://api.workos.com/user_management/users/user_wipe',
     expect.objectContaining({ method: 'DELETE' }));
+});
+
+test('feedback expires after 365 days without removing newer responses', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-09-23T10:00:00.000Z'));
+  const t = createTest();
+  await t.run(async (ctx) => {
+    const common = { email: 'test@example.com', reason: 'privacy' as const, submittedAtMs: 1 };
+    await ctx.db.insert('accountDeletionFeedback', { ...common, userId: 'expired', expiresAtMs: Date.now() - 1 });
+    await ctx.db.insert('accountDeletionFeedback', { ...common, userId: 'current', expiresAtMs: Date.now() + 1 });
+  });
+  await t.mutation(sweepDeletions, {});
+  expect(await t.run(async (ctx) => ctx.db.query('accountDeletionFeedback').take(10)))
+    .toMatchObject([{ userId: 'current' }]);
 });
 
 test('bank consent failure never blocks identity deletion and keeps retry data without raw user ID', async () => {
@@ -180,7 +232,7 @@ test('bank consent failure never blocks identity deletion and keeps retry data w
       displayName: 'Test Bank', sessionId: 'session_test', createdAtMs: 1, updatedAtMs: 1,
     });
   });
-  await t.withIdentity({ subject: 'user_revocation' }).mutation(deleteMyAccount, {});
+  await t.withIdentity({ subject: 'user_revocation' }).mutation(deleteMyAccount, deleteArgs);
   await t.finishAllScheduledFunctions(vi.runAllTimers);
   const status = await t.withIdentity({ subject: 'user_revocation' }).query(getDeletionStatus, {});
   expect(status).toEqual({ status: 'done', currentStep: 'done' });
@@ -206,7 +258,7 @@ test('temporary WorkOS failure retries after wipe and succeeds headlessly', asyn
   vi.stubGlobal('fetch', fetchMock);
   const t = createTest();
   await seedUser(t, 'user_workos_retry');
-  await t.withIdentity({ subject: 'user_workos_retry' }).mutation(deleteMyAccount, {});
+  await t.withIdentity({ subject: 'user_workos_retry' }).mutation(deleteMyAccount, deleteArgs);
   await t.finishAllScheduledFunctions(vi.runAllTimers);
   expect(fetchMock).toHaveBeenCalledTimes(2);
   expect(await t.withIdentity({ subject: 'user_workos_retry' }).query(getDeletionStatus, {}))
@@ -265,7 +317,7 @@ test('headless erasure removes the user from every app-owned table and preserves
   const otherUserId = 'user_other_fixture';
   await seedUser(t, userId);
   await seedUser(t, otherUserId);
-  const retainedTables = new Set(['accountDeletions', 'deletedUsers', 'detachedConsentRevocations']);
+  const retainedTables = new Set(['accountDeletions', 'accountDeletionFeedback', 'deletedUsers', 'detachedConsentRevocations']);
   const fixtureTables = Object.keys(schema.tables).filter((table) => !retainedTables.has(table));
   const erasedIds = new Map<string, string>();
   const otherIds = new Map<string, string>();
@@ -328,7 +380,7 @@ test('headless erasure removes the user from every app-owned table and preserves
     }
   });
 
-  await t.withIdentity({ subject: userId }).mutation(deleteMyAccount, {});
+  await t.withIdentity({ subject: userId }).mutation(deleteMyAccount, deleteArgs);
   await t.finishAllScheduledFunctions(vi.runAllTimers);
   await t.run(async (ctx) => {
     const query = ctx.db.query.bind(ctx.db) as (table: string) => { collect: () => Promise<Array<Record<string, unknown>>> };

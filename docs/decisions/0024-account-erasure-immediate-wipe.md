@@ -23,11 +23,24 @@ requesting one. The dialog also blocks deletion while an export request is
 pending. The signed-in email must be typed before
 the delete button enables.
 
+Before this confirmation, a required survey asks for one fixed reason. `Other`
+requires a comment of at most 500 characters. The feedback and WorkOS user ID,
+email, and name are stored in a separate table in the same transaction that
+creates the erasure job, then pruned after 365 days. This user-requested product
+feedback exception means the statement below about the final erasure record
+does not describe all retained records. The dialog and user documentation
+disclose the exception. Only the reason code and presence of a comment are
+sent to PostHog, and only under the existing analytics consent.
+
+Once WorkOS has deleted the user, its logout endpoint can leave the browser on
+a blank WorkOS page. The progress page therefore clears the application's
+AuthKit session cookie locally and loads the public homepage directly.
+
 One authenticated mutation records a `wiping` job and schedules the first
 server action. Bounded, indexed mutation batches delete export files, personal
 data, Telegram updates, bank records, planning/forecast data, Analyst threads,
 settings, and profile. Progress and retries are stored in `accountDeletions`;
-the browser only displays progress and signs out. The first batch disconnects
+the browser only displays progress and clears its local session. The first batch disconnects
 providers and removes sync state and queued proactive jobs, so background work
 cannot intentionally continue for this account. Asynchronous writers check
 the job and tombstone in their own write transaction; an earlier read or
@@ -68,7 +81,7 @@ after the app's user data and
 profile have been removed. WorkOS 404 is treated as success; transient failures
 keep a retryable job. The `user.deleted` webhook sees no profile and is a no-op.
 
-The final app record is a SHA-256 hash of the high-entropy WorkOS user ID and
+The final erasure record is a SHA-256 hash of the high-entropy WorkOS user ID and
 the deletion date. The tombstone is cleaned after 365 days. Completed jobs
 drop the raw user ID; if consent revocation is pending, they temporarily keep
 the provider session ID and retry state for at most 30 days from the deletion

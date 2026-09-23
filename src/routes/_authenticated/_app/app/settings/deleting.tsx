@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Spinner } from '@/components/ui/spinner';
 import { analyticsEvents, resetAnalyticsUser, trackEvent } from '@/lib/analytics/events';
 import { deletionPendingKey, deletionStartedKey, parsePendingDeletion } from '@/lib/account-deletion-pending';
+import { clearDeletedAccountSession } from '@/lib/account-deletion-signout';
 import { useI18n } from '@/lib/i18n';
 
 export const Route = createFileRoute('/_authenticated/_app/app/settings/deleting')({
@@ -77,7 +78,7 @@ export function DeletingRoute() {
   const convex = useConvex();
   const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const navigate = useNavigate();
-  const { signOut, user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [status, setStatus] = React.useState<DeletionStatus>(null);
   const [loading, setLoading] = React.useState(true);
   const [connectionError, setConnectionError] = React.useState(false);
@@ -110,7 +111,7 @@ export function DeletingRoute() {
       let accepted = false;
       let created = false;
       try {
-        await deleteAccount({ deletionExportId: pending.deletionExportId ?? undefined });
+        await deleteAccount({ deletionExportId: pending.deletionExportId ?? undefined, feedback: pending.feedback });
         accepted = true;
         created = true;
       } catch (error) {
@@ -131,6 +132,10 @@ export function DeletingRoute() {
         setRequestAccepted(true);
         if (created) {
           try {
+            trackEvent(analyticsEvents.accountDeletionFeedbackSubmitted, {
+              reason: pending.feedback.reason,
+              has_other_text: Boolean(pending.feedback.otherText),
+            }, { sendBeacon: true });
             trackEvent(analyticsEvents.accountDeletionRequested, {});
           } catch {
             // Optional analytics must not turn a successful wipe into a UI error.
@@ -161,10 +166,12 @@ export function DeletingRoute() {
         // Analytics cleanup is best effort; the identity has been erased.
       }
       try {
-        await signOut({ returnTo: '/' });
+        await clearDeletedAccountSession();
+        window.location.replace('/');
       } catch {
-        // WorkOS may already have invalidated the deleted user's session.
-        window.location.assign('/');
+        // The WorkOS identity is gone; return to the public site even if this
+        // local cleanup request could not complete.
+        window.location.replace('/');
       }
     };
 
@@ -213,7 +220,7 @@ export function DeletingRoute() {
       active = false;
       window.clearInterval(interval);
     };
-  }, [convex, navigate, signOut, user?.id]);
+  }, [convex, navigate, user?.id]);
 
   const stageToProgress: Record<string, (typeof progressSteps)[number]> = {
     disconnect: 'disconnect',

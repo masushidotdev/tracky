@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
+import type { DeletionReason } from '@/lib/account-deletion-survey';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,9 +22,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Spinner } from '@/components/ui/spinner';
+import { Textarea } from '@/components/ui/textarea';
 import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 import { deletionPendingKey } from '@/lib/account-deletion-pending';
+import { deletionReasons } from '@/lib/account-deletion-survey';
 import { useI18n } from '@/lib/i18n';
 
 const deletionExportKey = 'tracky.deletionExportId';
@@ -37,6 +41,9 @@ export function DangerZoneCard() {
   const acknowledgeDownload = useMutation(api.dataExport.acknowledgeDeletionExportDownload);
   const [open, setOpen] = React.useState(false);
   const [typedEmail, setTypedEmail] = React.useState('');
+  const [surveyStep, setSurveyStep] = React.useState(true);
+  const [reason, setReason] = React.useState<DeletionReason | ''>('');
+  const [otherText, setOtherText] = React.useState('');
   const [exportId, setExportId] = React.useState<Id<'dataExports'> | null>(null);
   const [requestingExport, setRequestingExport] = React.useState(false);
   const [downloadStarted, setDownloadStarted] = React.useState(false);
@@ -59,7 +66,8 @@ export function DangerZoneCard() {
   const exportNeedsDownload = Boolean(selectedExportId &&
     (!exportForDeletion || (exportForDeletion.status !== 'failed' && !exportForDeletion.deletionDownloadAcknowledgedAtMs)));
   const email = user?.email ?? '';
-  const canDelete = typedEmail.trim() === email && email !== '' && Boolean(user?.id) && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
+  const validFeedback = reason !== '' && (reason !== 'other' || (otherText.trim().length > 0 && otherText.trim().length <= 500));
+  const canDelete = !surveyStep && validFeedback && typedEmail.trim() === email && email !== '' && Boolean(user?.id) && Boolean(exports) && !exportNeedsDownload && !activeExport && !requestingExport && !acknowledgingExport && !deleting;
 
   const startExport = async () => {
     setRequestingExport(true);
@@ -98,6 +106,7 @@ export function DangerZoneCard() {
       window.sessionStorage.setItem(deletionPendingKey, JSON.stringify({
         userId: user.id,
         deletionExportId: selectedExportId,
+        feedback: reason === 'other' ? { reason, otherText: otherText.trim() } : { reason },
       }));
     } catch {
       toast.error(t('settings.danger.deleteFailed'));
@@ -125,20 +134,46 @@ export function DangerZoneCard() {
         <CardAction>
           <AlertDialog open={open} onOpenChange={(next) => {
             setOpen(next);
-            if (!next) setTypedEmail('');
+            if (!next) {
+              setTypedEmail('');
+              setSurveyStep(true);
+              setReason('');
+              setOtherText('');
+            }
           }}>
             <AlertDialogTrigger asChild>
               <Button type="button" variant="destructive" size="sm" disabled={!email || deleting}>
                 {t('settings.danger.request')}
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
               <AlertDialogHeader>
                 <AlertDialogMedia><TriangleAlertIcon /></AlertDialogMedia>
-                <AlertDialogTitle>{t('settings.danger.confirmTitle')}</AlertDialogTitle>
-                <AlertDialogDescription>{t('settings.danger.confirmDescription')}</AlertDialogDescription>
+                <AlertDialogTitle>{t(surveyStep ? 'settings.danger.surveyTitle' : 'settings.danger.confirmTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>{t(surveyStep ? 'settings.danger.surveyDescription' : 'settings.danger.confirmDescription')}</AlertDialogDescription>
               </AlertDialogHeader>
-              <div className="space-y-4">
+              {surveyStep ? (
+                <div className="space-y-4">
+                  <RadioGroup value={reason} onValueChange={(value) => setReason(value as DeletionReason)} aria-label={t('settings.danger.surveyTitle')}>
+                    {deletionReasons.map((option) => (
+                      <div key={option} className="flex items-center gap-3 rounded-xl border px-3 py-2">
+                        <RadioGroupItem value={option} id={`deletion-reason-${option}`} disabled={deleting} />
+                        <label htmlFor={`deletion-reason-${option}`} className="flex-1 cursor-pointer text-sm">
+                          {t(`settings.danger.reason.${option}`)}
+                        </label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                  {reason === 'other' ? (
+                    <div className="space-y-2">
+                      <label htmlFor="deletion-reason-other-text" className="text-sm font-medium">{t('settings.danger.otherLabel')}</label>
+                      <Textarea id="deletion-reason-other-text" rows={3} maxLength={500} value={otherText}
+                        onChange={(event) => setOtherText(event.target.value)} data-ph-mask required />
+                    </div>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground">{t('settings.danger.surveyPrivacy')}</p>
+                </div>
+              ) : <div className="space-y-4">
                 <div className="space-y-2 rounded-2xl border p-3">
                   <p className="text-sm text-muted-foreground">{t('settings.danger.exportHint')}</p>
                   {activeExport || requestingExport ? (
@@ -182,12 +217,21 @@ export function DangerZoneCard() {
                     disabled={deleting}
                   />
                 </div>
-              </div>
+              </div>}
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={deleting}>{t('settings.cancel')}</AlertDialogCancel>
-                <Button type="button" variant="destructive" disabled={!canDelete} onClick={() => void confirm()}>
-                  {deleting ? <Spinner /> : null}{t('settings.danger.confirm')}
-                </Button>
+                {surveyStep ? (
+                  <Button type="button" disabled={!validFeedback} onClick={() => setSurveyStep(false)}>
+                    {t('settings.danger.surveyNext')}
+                  </Button>
+                ) : (
+                  <>
+                    <Button type="button" variant="outline" disabled={deleting} onClick={() => setSurveyStep(true)}>{t('settings.danger.surveyBack')}</Button>
+                    <Button type="button" variant="destructive" disabled={!canDelete} onClick={() => void confirm()}>
+                      {deleting ? <Spinner /> : null}{t('settings.danger.confirm')}
+                    </Button>
+                  </>
+                )}
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

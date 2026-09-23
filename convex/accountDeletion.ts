@@ -7,6 +7,12 @@ import type { Id } from './_generated/dataModel';
 
 const STALE_MS = 15 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
+const FEEDBACK_RETENTION_MS = 365 * DAY_MS;
+const feedbackReason = v.union(
+  v.literal('too_complex'), v.literal('missing_features'),
+  v.literal('bank_connection'), v.literal('privacy'),
+  v.literal('no_longer_needed'), v.literal('other'),
+);
 // A permanently failing revocation (revoked app, bad credentials) must not
 // keep its done row and sessionId forever: decision 0024 keeps that state
 // only temporarily.
@@ -23,7 +29,10 @@ export async function hashUserId(userId: string): Promise<string> {
 }
 
 export const deleteMyAccount = mutation({
-  args: { deletionExportId: v.optional(v.id('dataExports')) },
+  args: {
+    deletionExportId: v.optional(v.id('dataExports')),
+    feedback: v.object({ reason: feedbackReason, otherText: v.optional(v.string()) }),
+  },
   returns: v.null(),
   handler: async (ctx, args) => {
     const user = await requireAuthUser(ctx);
@@ -48,7 +57,24 @@ export const deleteMyAccount = mutation({
         throw new ConvexError('deletion_export_not_acknowledged');
       }
     }
+    const otherText = args.feedback.otherText?.trim();
+    if (args.feedback.reason === 'other' && (!otherText || otherText.length > 500)) {
+      throw new ConvexError('invalid_deletion_feedback');
+    }
+    if (args.feedback.reason !== 'other' && otherText) {
+      throw new ConvexError('invalid_deletion_feedback');
+    }
     const now = Date.now();
+    await ctx.db.insert('accountDeletionFeedback', {
+      userId: user.id,
+      email: user.email,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+      reason: args.feedback.reason,
+      otherText: args.feedback.reason === 'other' ? otherText : undefined,
+      submittedAtMs: now,
+      expiresAtMs: now + FEEDBACK_RETENTION_MS,
+    });
     const deletionId = await ctx.db.insert('accountDeletions', {
       userId: user.id,
       userHash,
@@ -204,6 +230,9 @@ export const sweepDeletions = internalMutation({
         await ctx.db.delete('accountDeletions', row._id);
       }
     }
+    const expiredFeedback = await ctx.db.query('accountDeletionFeedback')
+      .withIndex('by_expiresAtMs', (q) => q.lt('expiresAtMs', now)).take(100);
+    for (const row of expiredFeedback) await ctx.db.delete('accountDeletionFeedback', row._id);
     const detachedDue = await ctx.db.query('detachedConsentRevocations')
       .withIndex('by_nextRetryAtMs', (q) => q.lt('nextRetryAtMs', now)).take(100);
     for (const row of detachedDue) {
