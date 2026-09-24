@@ -194,6 +194,7 @@ export function initAnalytics(): void {
     autocapture: false,
     capture_pageview: false,
     capture_pageleave: false,
+    capture_exceptions: true,
     opt_out_capturing_by_default: true,
     before_send: sanitizeEventUrls,
     // Consent-gated: opt-in banner accepted before init, so recording starts

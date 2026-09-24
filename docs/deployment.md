@@ -62,6 +62,26 @@ cleared (empty string selects the top-level Worker; an inherited
 If Workers Builds cannot trigger on tags, run `npm run deploy:prod` manually
 from a checkout on the tag.
 
+Both Workers Builds configurations also need the source-map uploader variables
+`POSTHOG_API_KEY`, `POSTHOG_PROJECT_ID`, and `POSTHOG_HOST`. Store
+`POSTHOG_API_KEY` as an encrypted build variable; the project ID and host can
+be ordinary build variables. The Vite build runs inside `convex deploy --cmd`,
+which inherits these variables and uploads the matching source maps before
+Wrangler deploys the artifact. Keep the connected-repository checkout's Git
+metadata available to the build so the uploader derives both release name and
+release version from the deployed commit. Manual deploys must likewise run
+from the release checkout rather than from a source archive without `.git`.
+
+Client analytics uses a separate public build variable named
+`VITE_POSTHOG_KEY`; add that exact name to both Workers Builds configurations.
+The remaining client-side names are `VITE_POSTHOG_ENABLED`,
+`VITE_POSTHOG_API_HOST`, `VITE_POSTHOG_ENV`, and
+`VITE_POSTHOG_REPLAY_SAMPLE`. Add all four names as build variables to both
+Workers Builds configurations, and set `VITE_POSTHOG_ENABLED` to the literal
+string `true` in each configuration. The Wrangler configuration values are runtime
+variables and do not replace these build variables. Do not substitute the
+upload-only `POSTHOG_API_KEY` for the public client key.
+
 The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and
 a second one would silently change how the remote build installs dependencies.

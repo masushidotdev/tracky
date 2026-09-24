@@ -88,6 +88,7 @@
     "@convex-dev/eslint-plugin": "^1.2.2",
     "@edge-runtime/vm": "^5.0.0",
     "@mdx-js/rollup": "^3.1.1",
+    "@posthog/rollup-plugin": "^1.6.0",
     "@shikijs/rehype": "^4.4.3",
     "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/eslint-config": "^0.4.0",
