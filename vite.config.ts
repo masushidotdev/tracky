@@ -17,6 +17,7 @@ export default defineConfig(({ command, mode }) => {
 
   const posthogApiKey = process.env.POSTHOG_API_KEY;
   const posthogProjectId = process.env.POSTHOG_PROJECT_ID;
+  const posthogHost = process.env.POSTHOG_HOST;
 
   return {
     resolve: {
@@ -59,11 +60,11 @@ export default defineConfig(({ command, mode }) => {
       contentCollections(),
       tanstackStart(),
       viteReact({ include: /\.(js|jsx|md|mdx|ts|tsx)$/ }),
-      command === 'build' && posthogApiKey && posthogProjectId
+      command === 'build' && posthogApiKey && posthogProjectId && posthogHost
         ? posthog({
             personalApiKey: posthogApiKey,
             projectId: posthogProjectId,
-            host: process.env.POSTHOG_HOST,
+            host: posthogHost,
             sourcemaps: {
               enabled: true,
               deleteAfterUpload: true,
