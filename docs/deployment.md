@@ -77,7 +77,8 @@ Client analytics uses a separate public build variable named
 The remaining client-side names are `VITE_POSTHOG_ENABLED`,
 `VITE_POSTHOG_API_HOST`, `VITE_POSTHOG_ENV`, and
 `VITE_POSTHOG_REPLAY_SAMPLE`. Add all four names as build variables to both
-Workers Builds configurations. The Wrangler configuration values are runtime
+Workers Builds configurations, and set `VITE_POSTHOG_ENABLED` to the literal
+string `true` in each configuration. The Wrangler configuration values are runtime
 variables and do not replace these build variables. Do not substitute the
 upload-only `POSTHOG_API_KEY` for the public client key.
 
