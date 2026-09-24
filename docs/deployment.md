@@ -76,9 +76,10 @@ Client analytics uses a separate public build variable named
 `VITE_POSTHOG_KEY`; add that exact name to both Workers Builds configurations.
 The remaining client-side names are `VITE_POSTHOG_ENABLED`,
 `VITE_POSTHOG_API_HOST`, `VITE_POSTHOG_ENV`, and
-`VITE_POSTHOG_REPLAY_SAMPLE`, which are already declared in the Wrangler
-configuration. Do not substitute the upload-only `POSTHOG_API_KEY` for the
-public client key.
+`VITE_POSTHOG_REPLAY_SAMPLE`. Add all four names as build variables to both
+Workers Builds configurations. The Wrangler configuration values are runtime
+variables and do not replace these build variables. Do not substitute the
+upload-only `POSTHOG_API_KEY` for the public client key.
 
 The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and
