@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { CommandIcon } from 'lucide-react';
 
 import '../../styles/marketing/vivi.css';
 import { ProgressBar } from './vivi';
@@ -54,11 +55,13 @@ export function MarketingSite({
       <ProgressBar />
       <div className="wrap" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
         <nav className="mk-nav" aria-label="Primary">
-          <div className="logo disp" style={{ fontSize: 22 }}>
-            <a href={locale === 'it' ? '/it/' : '/'} style={{ color: '#fff' }}>
-              tracky<span style={{ color: 'var(--mk-acid)' }}>*</span>
-            </a>
-          </div>
+          <a
+            className="mk-logo"
+            href={locale === 'it' ? '/it/' : '/'}
+            aria-label={locale === 'it' ? 'Tracky — pagina iniziale' : 'Tracky — home'}
+          >
+            <CommandIcon aria-hidden="true" size={24} />
+          </a>
           <div className="mk-links" style={{ display: 'flex', gap: 24 }}>
             {navLinks.map((link) => (
               <a key={link.key} href={locale === 'it' ? link.it : link.en}>

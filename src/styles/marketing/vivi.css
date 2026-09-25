@@ -55,6 +55,21 @@
   color: #fff;
 }
 
+.mk-nav .mk-logo {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border-radius: 50%;
+}
+
+.mk-nav .mk-logo:focus-visible {
+  outline: 2px solid var(--mk-acid);
+  outline-offset: 2px;
+}
+
 .mk-btn {
   background: var(--mk-acid);
   color: var(--mk-ink);
