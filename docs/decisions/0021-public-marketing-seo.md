@@ -40,7 +40,13 @@ correct language on first paint.
 Marketing copy lives in colocated per-route dicts, not `src/lib/i18n.tsx`
 (5k lines, silent-missing-key). Vivi theme is scoped CSS under `.mk`
 (`src/styles/marketing/vivi.css`) with self-hosted fontsource display fonts,
-coexisting with Tailwind/shadcn + next-themes.
+coexisting with Tailwind/shadcn + next-themes. The public navigation uses the
+same text-free Lucide Command mark as the authenticated sidebar so the two
+surfaces share a recognizable identity. `public/tracky.svg` is the source mark
+for SVG, PNG, and multi-size ICO favicons; Apple touch and Android shortcut
+icons use opaque PNGs, while Safari pinned tabs use a monochrome SVG. The root
+head and web manifest point to those root-level assets. The navigation link
+keeps a localized accessible name.
 
 ## Boundary
 
