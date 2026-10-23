@@ -1,12 +1,10 @@
 # Deployment
 
 Tracky deploys as a Cloudflare Worker frontend backed by a Convex deployment.
-Two environments: staging (gated) and production (public). See
+Two environments exist: staging (gated) and production (public). Production is deployed automatically by Cloudflare Workers Builds after a push or merge to GitHub `main`; staging is not part of this release path. See
 `decisions/0018-deploy-environments.md` for why.
 
-`wrangler.jsonc` is local-only (gitignored, real names); the repo tracks only
-`wrangler.jsonc.example`. Copy the example to `wrangler.jsonc` and fill in
-your names.
+`wrangler.jsonc` is tracked and contains the Worker configuration; environment secrets remain outside Git.
 
 ## Topology
 
@@ -41,28 +39,13 @@ date is past 2025-04-01.
 
 ## Deploy
 
-Staging: every push to `main` can trigger Workers Builds, connected to your
-repository, which runs:
+Production: push or merge the verified changes to GitHub `main`. The connected Cloudflare Workers Builds pipeline performs the build and deployment. Follow the commit's Cloudflare check and build logs through completion; do not replace this release path with a local `wrangler deploy` or `convex deploy`.
 
-- build: `npx convex deploy --cmd 'npm run build'`
-- deploy: `npx wrangler deploy`
+The production build must select the production Convex deploy key and the top-level `tracky-oos` Worker (`CLOUDFLARE_ENV` unset or empty). Its commands build the frontend with the selected Convex URL and publish the backend/components and Worker. Verify the actual target and Node version in the resulting build evidence. The staging configuration remains available for separate, explicitly requested testing; a production request does not deploy staging first.
 
-with two build variables: `CLOUDFLARE_ENV=staging` and the encrypted
-`CONVEX_DEPLOY_KEY` (a deploy token scoped to the dev deployment, created with
-`npx convex deployment token create`; save it in Cloudflare, redacted here).
+The npm deploy commands below are manual recovery tools, not the normal production release trigger.
 
-Production: deploy from a release tag, which runs:
-
-- build: `npx convex deploy --cmd 'npm run build'`
-- deploy: `npx wrangler deploy`
-
-with only the production `CONVEX_DEPLOY_KEY` and `CLOUDFLARE_ENV` explicitly
-cleared (empty string selects the top-level Worker; an inherited
-`CLOUDFLARE_ENV=staging` would retarget both build and deploy to staging).
-If Workers Builds cannot trigger on tags, run `npm run deploy:prod` manually
-from a checkout on the tag.
-
-Both Workers Builds configurations also need the source-map uploader variables
+Workers Builds configurations also need the source-map uploader variables
 `POSTHOG_API_KEY`, `POSTHOG_PROJECT_ID`, and `POSTHOG_HOST`. Store
 `POSTHOG_API_KEY` as an encrypted build variable; the project ID and host can
 be ordinary build variables. The Vite build runs inside `convex deploy --cmd`,
@@ -86,7 +69,7 @@ The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and
 a second one would silently change how the remote build installs dependencies.
 Vite 8 requires Node 22.12.0 or later on the Node 22 line. The project pins
-Node 22.23.2 in `.node-version` and `.nvmrc`; CI reads `.nvmrc`. Run
+Node 22.23.4 in `.node-version` and `.nvmrc`; CI reads `.nvmrc`. npm engines and lifecycle checks reject older Node or another major. Workers Builds must also use 22.23.4: remove any stale `NODE_VERSION` build override or set it to the same version in both environments, then confirm the version in fresh build logs. Run
 `nvm install` and `nvm use` before `npm ci` in a local checkout. Vite 8 resolves
 TypeScript paths through `resolve.tsconfigPaths`, without a separate plugin.
 The dependency lockfile is validated by `npm ci` with the npm 10 bundled with
@@ -96,7 +79,7 @@ again with `npm ci`.
 
 `convex deploy --cmd` pushes Convex functions to the deployment and injects
 `VITE_CONVEX_URL` into the client build, so the deployed frontend can never
-drift from the backend functions it expects. Only `main` is built by default;
+drift from the backend functions it expects. The production pipeline builds `main`;
 enable preview deployments only if each preview gets its own backend, because
 a preview branch sharing one backend would talk to the same data.
 
@@ -155,3 +138,19 @@ a `npx convex dev` republishes functions to whatever backend it targets. For
 non-trivial work use a worktree —
 `scripts/init-worktree.sh` provisions a dedicated dev deployment per worktree —
 so the shared deployment changes only through pushes to `main`.
+
+## Runtime security verification
+
+The frontend executes in Cloudflare workerd; `compatibility_date` selects API behavior, not security patches. It deliberately remains unchanged during this dependency upgrade. Latest Wrangler/Vite packages refresh local tooling, but Cloudflare must confirm the hosted runtime's Brotli/security status. Workers Builds uses a separate Node installation selected by the repository pins and any dashboard override.
+
+`convex.json` selects Node major 22 for Node actions. Convex controls patch releases; deployment does not prove its executors meet the 22.23.4 baseline. After publishing this revision to the explicitly selected environment, collect read-only evidence with:
+
+```sh
+npx convex run --prod securityRuntime:inspect '{}'
+```
+
+For development, use an explicitly configured isolated deployment and omit `--prod`. The function is internal and returns only Node/Brotli versions and the Node 22 baseline result. It returns no credentials. Obtain provider confirmation as well; version strings cannot establish provenance or rule out compromise. Never add a public runtime/environment diagnostic endpoint.
+
+The [security audit runbook](security-audit-2026-10.md) lists the production checks and ordered credential-rotation process. Backend environment names are declared as optional strings in `convex/convex.config.ts`; application code imports `env` from `_generated/server`, with existing feature-level required-secret checks preserved. Optional declarations keep unconfigured integrations disabled.
+
+The shadcn CLI is not installed as a project dependency. Its MIT-licensed Tailwind stylesheet is retained in `src/styles/shadcn.css` with the upstream license. Existing UI components remain authored source. Review upstream CLI advisories before invoking it separately for future component work.

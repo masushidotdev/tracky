@@ -1,8 +1,10 @@
 'use node';
 
 import { LangfuseSpanProcessor } from '@langfuse/otel';
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import type { TelemetrySettings } from 'ai';
+import { OpenTelemetry } from '@ai-sdk/otel';
+import { TracerProvider } from '@opentelemetry/sdk-trace';
+import { env } from '../_generated/server';
+import type { TelemetryOptions } from 'ai';
 
 export function createAnalystTelemetry({
   userId,
@@ -12,21 +14,33 @@ export function createAnalystTelemetry({
   userId: string;
   threadId: string;
   modelId: string;
-}): { telemetry: TelemetrySettings | undefined; flush: () => Promise<void> } {
-  if (!process.env.LANGFUSE_PUBLIC_KEY) {
+}): { telemetry: TelemetryOptions | undefined; flush: () => Promise<void> } {
+  if (!env.LANGFUSE_PUBLIC_KEY) {
     return { telemetry: undefined, flush: () => Promise.resolve() };
   }
 
   const processor = new LangfuseSpanProcessor({
-    publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-    secretKey: process.env.LANGFUSE_SECRET_KEY,
-    baseUrl: process.env.LANGFUSE_BASE_URL,
+    publicKey: env.LANGFUSE_PUBLIC_KEY,
+    secretKey: env.LANGFUSE_SECRET_KEY,
+    baseUrl: env.LANGFUSE_BASE_URL,
     exportMode: 'immediate',
   });
-  const provider = new NodeTracerProvider({ spanProcessors: [processor] });
+  const provider = new TracerProvider({ spanProcessors: [processor] });
   const tracer = provider.getTracer('analyst');
   return {
-    telemetry: { isEnabled: true, tracer, metadata: { userId, threadId, modelId } },
+    telemetry: {
+      isEnabled: true,
+      recordInputs: false,
+      recordOutputs: false,
+      integrations: new OpenTelemetry({
+        tracer,
+        enrichSpan: () => ({
+          'langfuse.user.id': userId,
+          'langfuse.session.id': threadId,
+          'langfuse.trace.metadata.modelId': modelId,
+        }),
+      }),
+    },
     flush: async () => {
       await processor.forceFlush();
       await provider.shutdown();

@@ -37,6 +37,8 @@ crons.cron('compute analyst health scores', '30 5 * * *', internal.analyst.proac
 crons.cron('detect analyst spending anomalies', '15 6 * * *', internal.analyst.proactive.jobs.dispatchSpendingAnomalies, {
   cursor: null,
 });
+// Preserve the established monthly delivery window during the dependency security update.
+// eslint-disable-next-line @convex-dev/no-top-of-hour-crons
 crons.cron('generate analyst monthly reports', '0 6 2 * *', internal.analyst.proactive.jobs.dispatchMonthlyReports, {
   cursor: null,
 });

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Security
+
+- Require patched Node 22.23.4 for local/build tooling and select Convex Node major 22; update dependency families, add CI auditing and operator-only runtime evidence. Hosted runtime patch confirmation remains an operator/provider responsibility.
+- Remove the vulnerable shadcn CLI tree while preserving its licensed CSS, protect dynamic responses against caching/framing and stack disclosure, suppress OAuth referrers, and constrain banking credential destinations and redirects.
+- Exclude financial prompt/tool/response bodies from optional Analyst telemetry; retain per-generation attribution with AI SDK 7.
+- Fix reports that exceeded Convex's single-pagination-call limit; preserve report bounds with indexed iteration.
+
 ### Added
 
 - Immediate account erasure from Settings: email confirmation, an optional

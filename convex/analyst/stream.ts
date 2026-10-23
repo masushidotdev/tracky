@@ -44,7 +44,7 @@ export const streamReply = internalAction({
       const result = await agent.streamText(
         ctx,
         { threadId: args.threadId, userId: args.userId },
-        { promptMessageId: args.promptMessageId, experimental_telemetry: telemetry },
+        { promptMessageId: args.promptMessageId, telemetry: telemetry },
         { saveStreamDeltas: true, contextOptions: { recentMessages: 30 } },
       );
       await result.consumeStream();

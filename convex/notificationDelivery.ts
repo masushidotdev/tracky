@@ -1,7 +1,7 @@
 import { makeFunctionReference } from 'convex/server';
 import { v } from 'convex/values';
+import { env, internalAction, internalMutation, internalQuery } from './_generated/server';
 import { internal } from './_generated/api';
-import { internalAction, internalMutation, internalQuery } from './_generated/server';
 import { isMonthlyReportEmailEligible } from './analyst/emailEligibility';
 import { resend } from './analyst/emails';
 import { isAccountDeletionStarted } from './lib/accountDeletionGuard';
@@ -100,12 +100,12 @@ export const queueNotificationEmail = internalMutation({
       .query('userProfiles')
       .withIndex('by_authUserId', (q) => q.eq('authUserId', notification.userId))
       .unique();
-    const from = process.env.RESEND_FROM_EMAIL?.trim();
+    const from = env.RESEND_FROM_EMAIL?.trim();
     if (
       settings?.notifications?.emailEnabled !== true ||
       !isMonthlyReportEmailEligible(profile) ||
       !from ||
-      !process.env.RESEND_API_KEY
+      !env.RESEND_API_KEY
     ) {
       return { status: 'skipped' as const, emailId: null };
     }

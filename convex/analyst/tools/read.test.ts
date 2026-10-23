@@ -23,7 +23,7 @@ async function executeWithQuerySpy(
       },
     },
     input,
-    { toolCallId: 'call-1', messages: [] },
+    { toolCallId: 'call-1', messages: [], context: {} },
   );
   return calls.at(0);
 }
@@ -40,7 +40,7 @@ async function executePlanTool(queryResult: unknown) {
       },
     },
     { period: '2026-07' },
-    { toolCallId: 'call-plan', messages: [] },
+    { toolCallId: 'call-plan', messages: [], context: {} },
   );
 }
 
