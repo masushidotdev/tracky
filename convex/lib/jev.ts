@@ -1,5 +1,5 @@
 import { env } from '../_generated/server';
-// jev decision client (OpenRouter Decisions endpoint, Convex `use node` actions only).
+// jev decision client (OpenRouter Decisions endpoint, Convex standard-runtime actions).
 // Never import from queries/mutations: Convex forbids fetch outside actions.
 // Decisions ratified in docs/decisions/0020-jev-decision-layer.md.
 

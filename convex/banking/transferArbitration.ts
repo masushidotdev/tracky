@@ -1,6 +1,6 @@
 // UC2 — jev arbitration for ambiguous transfer candidates + planning-reconcile pairs (UC6).
 // Sync heuristic scores stay authoritative outside the arbitration band; inside it,
-// a `use node` action asks jev and only a composite gate (choice + confidence +
+// an action asks jev and only a composite gate (choice + confidence +
 // noul) may confirm. Any jev failure falls closed to a review candidate.
 import { v } from 'convex/values';
 import { internal } from '../_generated/api';

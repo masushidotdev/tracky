@@ -1,5 +1,3 @@
-'use node';
-
 import { listMessages } from '@convex-dev/agent';
 import { v } from 'convex/values';
 import { env, internalAction } from '../_generated/server';

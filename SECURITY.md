@@ -34,7 +34,7 @@ within 7 days.
 ## Telemetry
 
 The Analyst backend can send LLM traces to Langfuse, but only when
-`LANGFUSE_PUBLIC_KEY` is set — otherwise Analyst telemetry is disabled. AI SDK telemetry is scoped to each generation and does not record prompt, tool input, or output bodies. Model, timing, usage, and pseudonymous user/thread identifiers can still be exported.
+`LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are set — otherwise Analyst telemetry is disabled. AI SDK telemetry is scoped to each generation and does not record prompt, tool input, or output bodies. Model, timing, usage, and pseudonymous user/thread identifiers can still be exported.
 
 The browser can initialize PostHog only when explicitly configured and after usage-analytics consent. Inputs and sensitive financial elements are masked for session replay. See `docs/decisions/0022-posthog-tracking.md` for its separate retention and consent policy. Email delivery (Resend) is server-side only.
 
@@ -56,6 +56,6 @@ committed or pasted into issues.
 
 Use Node >=22.23.4 <23 for repository tooling; `.nvmrc`, `.node-version`, npm engines and lifecycle checks enforce the same line. CI audits the full dependency tree. An npm audit success does not attest a Node binary, managed runtime, or absence of compromise.
 
-Convex Node actions select major 22 in `convex.json`; Convex owns the patch build. Cloudflare Workers runs workerd and Node compatibility APIs, separately from the Node machine used by Workers Builds. Neither updating npm clients nor changing a compatibility date certifies either hosted runtime's patch status.
+All application Convex actions use the standard runtime. `npm run security:convex-runtime` rejects Node directives and bundles application/component imports for that runtime before builds. Banking uses Web Crypto and Langfuse uses fetch-based OTLP export. Production inspection found provider Node 22.23.2, so selecting major 22 alone was insufficient; the managed Node execution path is removed. Cloudflare Workers runs workerd and Node compatibility APIs, separately from the Node machine used by Workers Builds. Neither updating npm clients nor changing a compatibility date certifies either hosted runtime's patch status.
 
 Follow [the October 2026 audit and response runbook](docs/security-audit-2026-10.md) to verify deployed runtimes, review retained logs, rebuild from a clean checkout and rotate credentials after securing affected environments. Provider confirmation and account-level evidence are required before closing an incident.

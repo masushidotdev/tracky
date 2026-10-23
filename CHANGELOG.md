@@ -1,10 +1,15 @@
 # Changelog
 
+## Convex runtime containment — 2026-10-23
+
+- Remove application Node actions after production revealed unpatched provider executors. Banking uses compatible Web Crypto RS256; Analyst telemetry keeps per-request Langfuse metadata through native fetch.
+- Reject Node runtime regressions before build and verify application/component import compatibility; add internal synthetic capability probes.
+
 ## Unreleased
 
 ### Security
 
-- Require patched Node 22.23.4 for local/build tooling and select Convex Node major 22; update dependency families, add CI auditing and operator-only runtime evidence. Hosted runtime patch confirmation remains an operator/provider responsibility.
+- Require patched Node 22.23.4 for local/build tooling; update dependency families, add CI auditing and operator-only runtime evidence. The containment follow-up removes Convex Node action execution after the selected major 22 still yielded an unpatched managed executor.
 - Remove the vulnerable shadcn CLI tree while preserving its licensed CSS, protect dynamic responses against caching/framing and stack disclosure, suppress OAuth referrers, and constrain banking credential destinations and redirects.
 - Exclude financial prompt/tool/response bodies from optional Analyst telemetry; retain per-generation attribution with AI SDK 7.
 - Fix reports that exceeded Convex's single-pagination-call limit; preserve report bounds with indexed iteration.

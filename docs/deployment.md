@@ -143,13 +143,14 @@ so the shared deployment changes only through pushes to `main`.
 
 The frontend executes in Cloudflare workerd; `compatibility_date` selects API behavior, not security patches. It deliberately remains unchanged during this dependency upgrade. Latest Wrangler/Vite packages refresh local tooling, but Cloudflare must confirm the hosted runtime's Brotli/security status. Workers Builds uses a separate Node installation selected by the repository pins and any dashboard override.
 
-`convex.json` selects Node major 22 for Node actions. Convex controls patch releases; deployment does not prove its executors meet the 22.23.4 baseline. After publishing this revision to the explicitly selected environment, collect read-only evidence with:
+All application actions and installed components use the standard Convex runtime. `npm run security:convex-runtime` rejects Node directives and checks browser-compatible bundling before build/dev/deploy. The major-22 entry in convex.json is only a dormant fallback: it does not select a patch, and the policy prevents its use. After publishing through main, collect read-only evidence:
 
 ```sh
 npx convex run --prod securityRuntime:inspect '{}'
+npx convex run --prod securityRuntime:verifyCapabilities '{}'
 ```
 
-For development, use an explicitly configured isolated deployment and omit `--prod`. The function is internal and returns only Node/Brotli versions and the Node 22 baseline result. It returns no credentials. Obtain provider confirmation as well; version strings cannot establish provenance or rule out compromise. Never add a public runtime/environment diagnostic endpoint.
+Expect runtime `convex`, nodeVersion `null`, native fetch/WebCrypto, and a successful RSA signature verification with a 24-byte OAuth state and telemetrySerialized true. The telemetry probe initializes the real Langfuse/OTel packages and serializes a synthetic span in memory, without sending it. The capability probe creates an ephemeral synthetic key and makes no external calls or database changes. Development checks use an explicitly configured isolated deployment without `--prod`. Diagnostics remain internal and return no credentials. This verifies removal of the application Node execution path; it does not attest a provider-wide patch or exclude a historical compromise.
 
 The [security audit runbook](security-audit-2026-10.md) lists the production checks and ordered credential-rotation process. Backend environment names are declared as optional strings in `convex/convex.config.ts`; application code imports `env` from `_generated/server`, with existing feature-level required-secret checks preserved. Optional declarations keep unconfigured integrations disabled.
 

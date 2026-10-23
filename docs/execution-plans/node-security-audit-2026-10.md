@@ -1,6 +1,6 @@
 # Node and dependency security audit — 23 October 2026
 
-Status: Repository remediation and local verification complete; hosted deployment/runtime confirmation and incident response remain open.
+Status: Implementation and local verification complete; production verification evidence is recorded in release PR #56. Incident response remains separate.
 
 ## Scope and assumptions
 
@@ -24,6 +24,8 @@ The user requested an in-depth review after a Stripe notice, all npm dependency 
 
 ## Current Verification Evidence
 
+### Initial local verification (before PR #55)
+
 - Official sources reviewed: [Node October advisory](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases), [Convex runtimes](https://docs.convex.dev/functions/runtimes), [Convex Node configuration](https://docs.convex.dev/config/convex.json), [Cloudflare Node APIs](https://developers.cloudflare.com/workers/runtime-apis/nodejs/), [Workers build image](https://developers.cloudflare.com/workers/ci-cd/builds/build-image/), [TanStack advisory](https://github.com/TanStack/router/security/advisories/GHSA-qx66-fv34-fjm8), [Stripe key rotation](https://docs.stripe.com/keys#rolling-keys).
 - main and fetched origin/main matched at the base commit above. The starting worktree was clean.
 - `npm ci --include=dev`: passed on Node 22.23.4 / npm 10.9.9, including actual preinstall/prepare scripts.
@@ -43,4 +45,30 @@ The user requested an in-depth review after a Stripe notice, all npm dependency 
 - Authorized by the user after local verification; staging explicitly excluded.
 - Release via a GitHub pull request merged to main, then observe the automatic Cloudflare production pipeline.
 - Local Cloudflare token metadata checks were read-only and returned insufficient access to the Worker. No local deploy command was executed.
-- Record the PR, merge commit, pipeline outcome and runtime/site checks after publication.
+- PR #55 merged as fad29529e621800333b9503568fc31bd8dc7d3ab; build fb1979da succeeded and Worker 829fcaef served 100%. Home 200, protected /app 307, new security headers and asset hashes observed. Build and CodeQL green.
+- Production diagnostic observed provider Node 24.21.0 during major rollout, then repeatedly 22.23.2. This is below 22.23.4 and cannot be fixed by installing npm packages.
+
+## Convex runtime containment follow-up
+
+The user required resolution after finding the same issue addressed in Redirections. Reading that session and its implementation established that it removed posthog-node and the only Node action; it did not patch the provider runtime. Tracky does not use posthog-node and has banking crypto, Langfuse telemetry and inherited Analyst/account-deletion action directives.
+
+1. Branch codex/convex-runtime-containment from origin/main fad2952 in the existing isolated worktree.
+2. Move every application action to the standard runtime. Preserve banking RS256 claims, PKCS#1/PKCS#8 and all existing PEM encodings using Web Crypto. Preserve 192-bit OAuth state.
+3. Keep per-generation Langfuse/AI SDK attribution and input/output exclusions; use official OTLP JSON serialization with native HTTPS fetch, finite timeout, redirect rejection and byte-bounded batches. No Node HTTP/Brotli transport remains.
+4. Add a build/dev/deploy source/import gate, bundling all app modules and four installed components for the standard runtime. Preserve only the AsyncLocalStorage shim documented and shipped by Convex.
+5. Verify crypto against independent Node verification and in the edge test runtime; verify AI SDK-to-Langfuse synthetic transport without real model calls or financial bodies; run full tests, lint, audit and build.
+6. Release through PR/main and automatic Cloudflare production pipeline only. Verify internal runtime convex/nodeVersion null and ephemeral RSA/state probe; no configured bank key, customer record or paid AI request is used by these probes.
+
+The dormant nodeVersion 22 fallback stays explicit but is unusable while the gate is active. This is containment of the Node execution boundary, not a claim that Convex has patched its binary.
+
+
+## Follow-up local verification
+
+- All 1,044 tests in 141 files passed. Focused crypto, OTLP/AI SDK and extended synthetic telemetry capability tests also passed after the final changes.
+- TypeScript frontend/backend and ESLint passed. Production build (CLOUDFLARE_ENV empty) passed, with the existing non-blocking CSS source-map warning.
+- Runtime gate compiled 153 application sources plus all four component directories (1,093 bundled inputs). A temporary source containing an actual Node directive was rejected; the fixture was removed.
+- Full npm audit remains at zero known vulnerabilities. Three already-locked packages are declared directly for the new serializer/gate; existing dependency versions are unchanged.
+- Read-only production standard-runtime inspection confirmed availability of Web Crypto generate/import/sign, AbortSignal.timeout, fetch, performance.now/timeOrigin, TextEncoder and base64 APIs before release.
+- Exact nodeVersion patch selection is not a supported setting in the current official docs; supported values are 22 and 24. The installed CLI schema describes those values but accepts an unrestricted string locally, so merely passing local JSON validation would not establish server support.
+
+- Initial PR CI caught the repository requirement for the exact heading Current Verification Evidence after it was renamed to distinguish historical checks. The heading is restored; no policy/test suppression was introduced.
