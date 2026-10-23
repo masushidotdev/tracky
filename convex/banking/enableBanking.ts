@@ -2,13 +2,14 @@
 
 import { createSign, randomBytes } from 'node:crypto';
 import { ConvexError, v } from 'convex/values';
-import { action, internalAction } from '../_generated/server';
+import { action, env, internalAction } from '../_generated/server';
 import { internal } from '../_generated/api';
 import { requireAuthUser } from '../auth';
 import { buildConnectionHealth } from './connectionHealth';
 import { enableBankingErrorSummary, enableBankingOperationalErrorMessage } from './enableBankingErrors';
 import { isMissingEnvError } from './providerAvailability';
 import { enableBankingSyncWindow } from './syncWindow';
+import { enableBankingRequestUrl } from './enableBankingTransport';
 import type { Id } from '../_generated/dataModel';
 import type { ActionCtx } from '../_generated/server';
 
@@ -115,8 +116,8 @@ function base64Url(data: Buffer | string) {
   return buffer.toString('base64url');
 }
 
-function env(name: string) {
-  const value = process.env[name];
+function requiredEnv(name: 'ENABLE_BANKING_APP_ID' | 'ENABLE_BANKING_PRIVATE_KEY' | 'ENABLE_BANKING_REDIRECT_URL') {
+  const value = env[name];
   if (!value) {
     throw new ConvexError(`Missing Convex environment variable: ${name}`);
   }
@@ -124,7 +125,7 @@ function env(name: string) {
 }
 
 function privateKeyPem() {
-  const raw = env('ENABLE_BANKING_PRIVATE_KEY');
+  const raw = requiredEnv('ENABLE_BANKING_PRIVATE_KEY');
   if (raw.includes('BEGIN')) {
     return raw.replace(/\\n/g, '\n');
   }
@@ -133,10 +134,10 @@ function privateKeyPem() {
 
 function enableBankingConfig() {
   return {
-    appId: env('ENABLE_BANKING_APP_ID'),
+    appId: requiredEnv('ENABLE_BANKING_APP_ID'),
     privateKey: privateKeyPem(),
-    apiBase: process.env.ENABLE_BANKING_API_BASE ?? 'https://api.enablebanking.com',
-    redirectUrl: env('ENABLE_BANKING_REDIRECT_URL'),
+    apiBase: env.ENABLE_BANKING_API_BASE ?? 'https://api.enablebanking.com',
+    redirectUrl: requiredEnv('ENABLE_BANKING_REDIRECT_URL'),
   };
 }
 
@@ -166,13 +167,15 @@ export async function enableBankingRequest(
   options: { body?: JsonObject; query?: Record<string, string> } = {},
 ) {
   const config = enableBankingConfig();
-  const url = new URL(path, config.apiBase);
+  const url = enableBankingRequestUrl(config.apiBase, path);
   for (const [key, value] of Object.entries(options.query ?? {})) {
     url.searchParams.set(key, value);
   }
 
   const response = await fetch(url, {
     method,
+    redirect: 'error',
+    signal: AbortSignal.timeout(30_000),
     headers: {
       Accept: 'application/json',
       Authorization: `Bearer ${makeJwt(config.appId, config.privateKey)}`,

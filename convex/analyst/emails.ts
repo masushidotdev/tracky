@@ -1,7 +1,7 @@
 import { Resend } from '@convex-dev/resend';
 import { v } from 'convex/values';
+import { env, internalMutation } from '../_generated/server';
 import { components } from '../_generated/api';
-import { internalMutation } from '../_generated/server';
 import { isMonthlyReportEmailEligible } from './emailEligibility';
 
 export const resend = new Resend(components.resend, { testMode: false });
@@ -18,8 +18,8 @@ export const queueMonthlyReportEmail = internalMutation({
       .query('userProfiles')
       .withIndex('by_authUserId', (q) => q.eq('authUserId', args.userId))
       .unique();
-    const from = process.env.RESEND_FROM_EMAIL?.trim();
-    if (!isMonthlyReportEmailEligible(profile) || !from || !process.env.RESEND_API_KEY) {
+    const from = env.RESEND_FROM_EMAIL?.trim();
+    if (!isMonthlyReportEmailEligible(profile) || !from || !env.RESEND_API_KEY) {
       await ctx.db.patch('agentReports', report._id, { emailStatus: 'skipped', updatedAtMs: Date.now() });
       return { status: 'skipped' as const, emailId: null };
     }

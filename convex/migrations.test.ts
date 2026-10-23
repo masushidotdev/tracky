@@ -24,7 +24,6 @@ type TestHarness = ReturnType<typeof createTest>;
 async function seedAuthKitUser(t: TestHarness, userId: string) {
   const timestamp = '2026-07-01T00:00:00.000Z';
   await t.mutation(components.workOSAuthKit.lib.onWebhookEvent, {
-    apiKey: 'sk_test',
     event: {
       id: `evt_${userId}`,
       createdAt: timestamp,
@@ -891,8 +890,10 @@ describe('legacy manual card installment balance repair', () => {
     expect(stored.installmentPlan).toMatchObject({
       outstandingAmount: { amountMinor: 120_000n, currency: 'EUR' },
       manualCardBalanceCorrectionApplied: true,
-      manualCardBalanceCorrectionAppliedAtMs: Date.UTC(2026, 9, 15, 12),
+      manualCardBalanceCorrectionAppliedAtMs: expect.any(Number),
     });
+    expect(stored.installmentPlan?.manualCardBalanceCorrectionAppliedAtMs).toBeGreaterThanOrEqual(Date.UTC(2026, 9, 15, 12));
+    expect(stored.installmentPlan?.manualCardBalanceCorrectionAppliedAtMs).toBeLessThan(Date.UTC(2026, 9, 15, 12) + 1000);
     expect(stored.snapshot).toBeNull();
     expect(facility?.usedAmount.amountMinor).toBe(0n);
     expect(facility?.activeInstallmentOutstanding.amountMinor).toBe(120_000n);

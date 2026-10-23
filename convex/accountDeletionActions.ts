@@ -1,8 +1,9 @@
 'use node';
 
 import { v } from 'convex/values';
+import { env, internalAction } from './_generated/server';
+
 import { internal } from './_generated/api';
-import { internalAction } from './_generated/server';
 import { enableBankingRequest } from './banking/enableBanking';
 import type { Doc, Id } from './_generated/dataModel';
 
@@ -30,7 +31,7 @@ async function revokeSession(sessionId: string): Promise<RevocationResult> {
 }
 
 async function deleteWorkosUser(userId: string): Promise<void> {
-  const apiKey = process.env.WORKOS_API_KEY;
+  const apiKey = env.WORKOS_API_KEY;
   if (!apiKey) throw new Error('Missing WORKOS_API_KEY');
   const response = await fetch(`https://api.workos.com/user_management/users/${encodeURIComponent(userId)}`, {
     method: 'DELETE',

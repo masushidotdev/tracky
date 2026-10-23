@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { flexRender, useTable } from '@tanstack/react-table';
 import { CalendarClockIcon, ChevronDown, ChevronRight, EyeOffIcon, Repeat2Icon, XIcon } from 'lucide-react';
+import { transactionTableFeatures } from './table-features';
 
 import { BulkActionBar } from './bulk-action-bar';
 import { parseFilterQuery, suggestFor } from './filter-query';
+import type { TransactionTableFeatures } from './table-features';
 import type { BulkActionLabels } from './bulk-action-bar';
 import type { FilterQueryContext } from './filter-query';
 import type { TransactionRow } from './columns';
@@ -12,10 +14,10 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   ColumnSizingState,
+  ColumnVisibilityState,
   OnChangeFn,
   Row,
   SortingState,
-  VisibilityState,
 } from '@tanstack/react-table';
 import type { Doc, Id } from '../../../../convex/_generated/dataModel';
 import { Amount } from '@/components/app/amount';
@@ -76,7 +78,7 @@ export type DataTableLabels = {
 type DataTableProps = {
   accounts: Array<Doc<'financialAccounts'>>;
   categories: Array<Doc<'categories'>>;
-  columns: Array<ColumnDef<TransactionRow>>;
+  columns: Array<ColumnDef<TransactionTableFeatures, TransactionRow>>;
   data: Array<TransactionRow>;
   filterContext: FilterQueryContext;
   filterQuery: string;
@@ -111,10 +113,10 @@ type DataTableProps = {
    */
   paginationCount?: number;
   /** Editor row for a new entry, rendered inside this table so it inherits the column geometry. */
-  renderInlineEditorRows?: (columns: Array<Column<TransactionRow, unknown>>) => React.ReactNode;
+  renderInlineEditorRows?: (columns: Array<Column<TransactionTableFeatures, TransactionRow, unknown>>) => React.ReactNode;
   renderInlineEditorCard?: () => React.ReactNode;
   editingScheduledRowId?: string;
-  renderScheduledInlineEditorRows?: (columns: Array<Column<TransactionRow, unknown>>) => React.ReactNode;
+  renderScheduledInlineEditorRows?: (columns: Array<Column<TransactionTableFeatures, TransactionRow, unknown>>) => React.ReactNode;
   renderScheduledInlineEditorCard?: () => React.ReactNode;
   scanCapped: boolean;
   scanLimit: number;
@@ -229,11 +231,11 @@ export function DataTable({
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   // Classification repeats what the payee and category already say, so it starts hidden; it stays
   // in the Columns menu for when the icon is the quickest way to spot a misfiled transfer.
-  const initialColumnVisibility: VisibilityState = {
+  const initialColumnVisibility: ColumnVisibilityState = {
     classificationKind: false,
     ...(scopeAccountId ? { account: false } : {}),
   };
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialColumnVisibility);
+  const [columnVisibility, setColumnVisibility] = React.useState<ColumnVisibilityState>(initialColumnVisibility);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [rowSelection, setRowSelection] = React.useState({});
   const [bulkTagIds, setBulkTagIds] = React.useState<Array<Id<'transactionTags'>>>([]);
@@ -271,7 +273,8 @@ export function DataTable({
     [columnSizingStorageKey],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: transactionTableFeatures,
     data,
     columns,
     manualSorting: true,
@@ -290,20 +293,19 @@ export function DataTable({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     getRowId: (row) => row._id,
-    getCoreRowModel: getCoreRowModel(),
   });
 
   // The scheduled band is part of the same ledger: same column defs, same sizing state, rendered as
   // a second <tbody> of the same <table>. A second instance only exists to build its cells — it owns
   // no selection and no pagination, so a plan can never be counted with the booked rows.
-  const scheduledTable = useReactTable({
+  const scheduledTable = useTable({
+    features: transactionTableFeatures,
     data: scheduledRows ?? [],
     columns,
     manualSorting: true,
     enableColumnResizing: true,
     state: { columnSizing, columnVisibility },
     getRowId: (row) => row._id,
-    getCoreRowModel: getCoreRowModel(),
   });
   const [scheduledOpen, setScheduledOpen] = React.useState(true);
   const hasScheduled = (scheduledRows?.length ?? 0) > 0;
@@ -408,7 +410,7 @@ export function DataTable({
   };
 
   const renderTableRow = (
-    row: Row<TransactionRow>,
+    row: Row<TransactionTableFeatures, TransactionRow>,
     handleClick: (transaction: TransactionRow) => void,
     blankColumnIds?: Set<string>,
   ) => (
@@ -445,7 +447,7 @@ export function DataTable({
     </TableRow>
   );
 
-  const renderMobileCard = (row: Row<TransactionRow>, handleClick: (transaction: TransactionRow) => void) => {
+  const renderMobileCard = (row: Row<TransactionTableFeatures, TransactionRow>, handleClick: (transaction: TransactionRow) => void) => {
     const summary = transactionSummary(accountsById, row.original, labels);
     const amount = row.original.transferPresentation?.neutralAmount ?? row.original.amount;
     const rowTags = (row.original.tagIds ?? [])

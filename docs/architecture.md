@@ -21,6 +21,12 @@ WorkOS.
   bank discovery, diagnostics, consent start, and manual sync; Convex owns the
   provider HTTP calls, signing, credentials, callback exchange, and cron sync.
 
+## Runtime and response security
+
+Local tooling and Workers Builds use the patched Node 22 baseline. The Worker frontend runs on workerd; Convex default functions and Convex Node actions use distinct managed runtimes. Patch ownership and operator evidence are described in `security-audit-2026-10.md`.
+
+Start request middleware applies nosniff, framing restrictions, a limited structural CSP, no-referrer and private/no-store to dynamic responses, including public SSR that can contain authenticated session state. Static hashed assets retain Cloudflare's asset handling. This CSP does not restrict scripts and is not an XSS replacement for patched framework dependencies. Production error screens omit stack traces. Banking callbacks apply no-referrer to both HTML and redirects; provider API calls require HTTPS, stay on the configured origin, reject redirects, and have a 30-second timeout.
+
 ## Application Shell And Ledger
 
 The authenticated shell has five primary destinations: Dashboard, Plan, Reports,
@@ -395,6 +401,8 @@ events to the component, which owns delivery status, retries, batching, and
 retention cleanup. AI Gateway, Langfuse, Resend API keys, sender identity, and
 webhook secrets exist only in the Convex environment, never in Vite/browser
 variables.
+
+AI SDK 7 telemetry uses a per-generation OpenTelemetry integration and tracer provider, flushed and shut down at the end of the request. No global tracer registration can carry user/thread attribution into another request. Prompt, tool input and output recording are disabled; user/thread identifiers, model and usage/timing metadata can still reach Langfuse when configured. These settings affect telemetry copies, not data required by AI providers or the application's persisted Agent history.
 
 Intermediate monthly failures retain the pending output slot for a retry. At
 the final queue attempt, the same mutation transaction reconciles report and job

@@ -33,7 +33,6 @@ const WITH_OVERDRAFT_MINOR = BOOKED_MINOR + OVERDRAFT_LIMIT_MINOR;
 async function seedAuthKitUser(t: TestHarness) {
   const timestamp = '2026-07-27T00:00:00.000Z';
   await t.mutation(components.workOSAuthKit.lib.onWebhookEvent, {
-    apiKey: 'sk_test',
     event: {
       id: `evt_${userId}`,
       createdAt: timestamp,

@@ -23,7 +23,7 @@ within 7 days.
 - All secrets live in Convex encrypted environment variables
   (`npx convex env set NAME value`) or Cloudflare Worker secrets — never in
   git, never in `VITE_` variables, never in client code.
-- Only `VITE_CONVEX_URL` is browser-visible, by design.
+- Every `VITE_` value is browser-visible. Only public configuration belongs there: the Convex URL, feature flags, and the PostHog project token/host. Personal API keys and provider credentials must never use this prefix.
 - The pre-commit hook (`githooks/pre-commit`) blocks env files and PEM blocks;
   CI runs the same scan plus an IBAN pattern check.
 - If the Enable Banking private key is ever exposed, rotate it in the Enable
@@ -34,9 +34,9 @@ within 7 days.
 ## Telemetry
 
 The Analyst backend can send LLM traces to Langfuse, but only when
-`LANGFUSE_PUBLIC_KEY` is set — otherwise telemetry is fully disabled. No
-browser analytics, error trackers, or third-party scripts ship with the app.
-Email delivery (Resend) is server-side only.
+`LANGFUSE_PUBLIC_KEY` is set — otherwise Analyst telemetry is disabled. AI SDK telemetry is scoped to each generation and does not record prompt, tool input, or output bodies. Model, timing, usage, and pseudonymous user/thread identifiers can still be exported.
+
+The browser can initialize PostHog only when explicitly configured and after usage-analytics consent. Inputs and sensitive financial elements are masked for session replay. See `docs/decisions/0022-posthog-tracking.md` for its separate retention and consent policy. Email delivery (Resend) is server-side only.
 
 ## Bank-sync disclaimer (Enable Banking)
 
@@ -51,3 +51,11 @@ keys and consent. You are responsible for:
 The maintainers never see your bank credentials. Raw provider payloads
 captured locally stay in gitignored `diagnostics/` (0600) and must never be
 committed or pasted into issues.
+
+## Runtime patching and incident response
+
+Use Node >=22.23.4 <23 for repository tooling; `.nvmrc`, `.node-version`, npm engines and lifecycle checks enforce the same line. CI audits the full dependency tree. An npm audit success does not attest a Node binary, managed runtime, or absence of compromise.
+
+Convex Node actions select major 22 in `convex.json`; Convex owns the patch build. Cloudflare Workers runs workerd and Node compatibility APIs, separately from the Node machine used by Workers Builds. Neither updating npm clients nor changing a compatibility date certifies either hosted runtime's patch status.
+
+Follow [the October 2026 audit and response runbook](docs/security-audit-2026-10.md) to verify deployed runtimes, review retained logs, rebuild from a clean checkout and rotate credentials after securing affected environments. Provider confirmation and account-level evidence are required before closing an incident.

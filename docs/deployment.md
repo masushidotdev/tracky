@@ -4,9 +4,7 @@ Tracky deploys as a Cloudflare Worker frontend backed by a Convex deployment.
 Two environments: staging (gated) and production (public). See
 `decisions/0018-deploy-environments.md` for why.
 
-`wrangler.jsonc` is local-only (gitignored, real names); the repo tracks only
-`wrangler.jsonc.example`. Copy the example to `wrangler.jsonc` and fill in
-your names.
+`wrangler.jsonc` is tracked and contains the Worker configuration; environment secrets remain outside Git.
 
 ## Topology
 
@@ -86,7 +84,7 @@ The package manager is npm and `package-lock.json` is the only lockfile on
 purpose: Workers Builds picks its package manager by looking for lockfiles, and
 a second one would silently change how the remote build installs dependencies.
 Vite 8 requires Node 22.12.0 or later on the Node 22 line. The project pins
-Node 22.23.2 in `.node-version` and `.nvmrc`; CI reads `.nvmrc`. Run
+Node 22.23.4 in `.node-version` and `.nvmrc`; CI reads `.nvmrc`. npm engines and lifecycle checks reject older Node or another major. Workers Builds must also use 22.23.4: remove any stale `NODE_VERSION` build override or set it to the same version in both environments, then confirm the version in fresh build logs. Run
 `nvm install` and `nvm use` before `npm ci` in a local checkout. Vite 8 resolves
 TypeScript paths through `resolve.tsconfigPaths`, without a separate plugin.
 The dependency lockfile is validated by `npm ci` with the npm 10 bundled with
@@ -155,3 +153,19 @@ a `npx convex dev` republishes functions to whatever backend it targets. For
 non-trivial work use a worktree —
 `scripts/init-worktree.sh` provisions a dedicated dev deployment per worktree —
 so the shared deployment changes only through pushes to `main`.
+
+## Runtime security verification
+
+The frontend executes in Cloudflare workerd; `compatibility_date` selects API behavior, not security patches. It deliberately remains unchanged during this dependency upgrade. Latest Wrangler/Vite packages refresh local tooling, but Cloudflare must confirm the hosted runtime's Brotli/security status. Workers Builds uses a separate Node installation selected by the repository pins and any dashboard override.
+
+`convex.json` selects Node major 22 for Node actions. Convex controls patch releases; deployment does not prove its executors meet the 22.23.4 baseline. After publishing this revision to the explicitly selected environment, collect read-only evidence with:
+
+```sh
+npx convex run --prod securityRuntime:inspect '{}'
+```
+
+For development, use an explicitly configured isolated deployment and omit `--prod`. The function is internal and returns only Node/Brotli versions and the Node 22 baseline result. It returns no credentials. Obtain provider confirmation as well; version strings cannot establish provenance or rule out compromise. Never add a public runtime/environment diagnostic endpoint.
+
+The [security audit runbook](security-audit-2026-10.md) lists the production checks and ordered credential-rotation process. Backend environment names are declared as optional strings in `convex/convex.config.ts`; application code imports `env` from `_generated/server`, with existing feature-level required-secret checks preserved. Optional declarations keep unconfigured integrations disabled.
+
+The shadcn CLI is not installed as a project dependency. Its MIT-licensed Tailwind stylesheet is retained in `src/styles/shadcn.css` with the upstream license. Existing UI components remain authored source. Review upstream CLI advisories before invoking it separately for future component work.

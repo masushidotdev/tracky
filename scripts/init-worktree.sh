@@ -111,6 +111,9 @@ fi
 
 log "harness=$AGENT worktree=$WORKTREE_PATH slug=$SLUG"
 
+# Fail before dependency cloning, install scripts, credentials or provider traffic.
+node scripts/check-node-version.mjs
+
 # --- dependencies ------------------------------------------------------------
 if [ -d node_modules ]; then
   log "node_modules già presente, salto l'installazione."

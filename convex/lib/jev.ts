@@ -1,3 +1,4 @@
+import { env } from '../_generated/server';
 // jev decision client (OpenRouter Decisions endpoint, Convex `use node` actions only).
 // Never import from queries/mutations: Convex forbids fetch outside actions.
 // Decisions ratified in docs/decisions/0020-jev-decision-layer.md.
@@ -92,7 +93,7 @@ export async function decide(
   questions: Record<string, JevQuestion>,
   options?: { apiKey?: string; model?: string; timeoutMs?: number },
 ): Promise<JevDecision> {
-  const apiKey = options?.apiKey ?? process.env.OPENROUTER_API_KEY;
+  const apiKey = options?.apiKey ?? env.OPENROUTER_API_KEY;
   if (!apiKey) throw new JevError('JEV_MISSING_KEY', 'OPENROUTER_API_KEY is not configured');
   const timeoutMs = options?.timeoutMs ?? JEV_TIMEOUT_MS;
   const body = jevJsonStringify({ model: options?.model ?? JEV_PINNED_MODEL, state, questions });

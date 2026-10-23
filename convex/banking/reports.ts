@@ -9,7 +9,6 @@ import type { Doc, Id } from '../_generated/dataModel';
 import type { QueryCtx } from '../_generated/server';
 import type { ReportLookups, ReportOptions } from './reportsCore';
 
-const TRANSACTION_PAGE_SIZE = 1000;
 const MAX_REPORT_ROWS = 25_000;
 const MAX_TRANSACTION_PAGE_SIZE = 100;
 const MAX_REPORT_CATEGORIES = 500;
@@ -169,28 +168,21 @@ async function loadTransactionsInRange(
 ) {
   const dateToExclusive = nextIsoDate(dateTo);
   const rows: Array<Doc<'transactions'>> = [];
-  let cursor: string | null = null;
   let truncated = false;
 
-  while (rows.length < MAX_REPORT_ROWS) {
-    const result = await ctx.db
-      .query('transactions')
-      .withIndex('by_userId_and_bookingDate', (q) =>
-        q.eq('userId', userId).gte('bookingDate', dateFrom).lt('bookingDate', dateToExclusive),
-      )
-      .order(order)
-      .paginate({ cursor, numItems: TRANSACTION_PAGE_SIZE });
-    const remaining = MAX_REPORT_ROWS - rows.length;
-    rows.push(...result.page.slice(0, remaining));
-
-    if (result.page.length > remaining || (!result.isDone && rows.length === MAX_REPORT_ROWS)) {
+  // A Convex query may paginate only once. Iterate the indexed range instead;
+  // one extra document establishes whether the bounded report was truncated.
+  for await (const row of ctx.db
+    .query('transactions')
+    .withIndex('by_userId_and_bookingDate', (q) =>
+      q.eq('userId', userId).gte('bookingDate', dateFrom).lt('bookingDate', dateToExclusive),
+    )
+    .order(order)) {
+    if (rows.length === MAX_REPORT_ROWS) {
       truncated = true;
       break;
     }
-    if (result.isDone) {
-      break;
-    }
-    cursor = result.continueCursor;
+    rows.push(row);
   }
 
   return { rows, truncated };

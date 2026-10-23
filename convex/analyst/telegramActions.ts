@@ -2,7 +2,7 @@
 
 import { listMessages } from '@convex-dev/agent';
 import { v } from 'convex/values';
-import { internalAction } from '../_generated/server';
+import { env, internalAction } from '../_generated/server';
 import { components, internal } from '../_generated/api';
 import { makeAnalystAgent } from './agent';
 import { DEFAULT_MODEL } from './models';
@@ -23,7 +23,7 @@ class SafeTelegramError extends Error {
 }
 
 function telegramConfig() {
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const token = env.TELEGRAM_BOT_TOKEN?.trim();
   if (!token) throw new SafeTelegramError('telegram_not_configured');
   return { token };
 }
@@ -175,8 +175,8 @@ export const registerTelegramWebhook = internalAction({
   args: {},
   handler: async (): Promise<{ ok: true }> => {
     const { token } = telegramConfig();
-    const secret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
-    const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL?.trim();
+    const secret = env.TELEGRAM_WEBHOOK_SECRET?.trim();
+    const webhookUrl = env.TELEGRAM_WEBHOOK_URL?.trim();
     if (!isValidTelegramWebhookSecret(secret)) {
       throw new SafeTelegramError('invalid_webhook_secret_configuration');
     }

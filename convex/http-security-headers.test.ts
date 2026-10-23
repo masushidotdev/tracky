@@ -139,3 +139,21 @@ describe('HTTP security headers', () => {
     vi.restoreAllMocks();
   });
 });
+
+test('Resend webhook fails closed without a signing secret and rejects invalid signatures', async () => {
+  const previousSecret = process.env.RESEND_WEBHOOK_SECRET;
+  try {
+    delete process.env.RESEND_WEBHOOK_SECRET;
+    const t = createTest();
+    expect((await t.fetch('/resend-webhook', { method: 'POST', body: '{}' })).status).toBe(503);
+    process.env.RESEND_WEBHOOK_SECRET = ['whsec', btoa('local-signature-test-key')].join('_');
+    const rejected = await t.fetch('/resend-webhook', {
+      method: 'POST', body: '{}', headers: { 'svix-signature': 'invalid' },
+    });
+    expect(rejected.status).toBe(401);
+    expect(rejected.headers.get('X-Content-Type-Options')).toBe('nosniff');
+  } finally {
+    if (previousSecret === undefined) delete process.env.RESEND_WEBHOOK_SECRET;
+    else process.env.RESEND_WEBHOOK_SECRET = previousSecret;
+  }
+});
