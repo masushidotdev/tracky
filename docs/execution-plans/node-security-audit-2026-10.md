@@ -1,6 +1,6 @@
 # Node and dependency security audit — 23 October 2026
 
-Status: First production release verified; Convex runtime containment follow-up in progress. Incident response remains separate.
+Status: Implementation and local verification complete; production verification evidence is recorded in release PR #56. Incident response remains separate.
 
 ## Scope and assumptions
 
@@ -22,7 +22,9 @@ The user requested an in-depth review after a Stripe notice, all npm dependency 
 - Cloudflare serves SSR through workerd, with Node compatibility APIs; it also uses a separate Node build machine. Its compatibility date selects behavior, not security patches.
 - The security policy incorrectly claimed there was no browser analytics and that only VITE_CONVEX_URL was public, despite consent-gated PostHog.
 
-## Initial local verification evidence (before PR #55)
+## Current Verification Evidence
+
+### Initial local verification (before PR #55)
 
 - Official sources reviewed: [Node October advisory](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases), [Convex runtimes](https://docs.convex.dev/functions/runtimes), [Convex Node configuration](https://docs.convex.dev/config/convex.json), [Cloudflare Node APIs](https://developers.cloudflare.com/workers/runtime-apis/nodejs/), [Workers build image](https://developers.cloudflare.com/workers/ci-cd/builds/build-image/), [TanStack advisory](https://github.com/TanStack/router/security/advisories/GHSA-qx66-fv34-fjm8), [Stripe key rotation](https://docs.stripe.com/keys#rolling-keys).
 - main and fetched origin/main matched at the base commit above. The starting worktree was clean.
@@ -68,3 +70,5 @@ The dormant nodeVersion 22 fallback stays explicit but is unusable while the gat
 - Full npm audit remains at zero known vulnerabilities. Three already-locked packages are declared directly for the new serializer/gate; existing dependency versions are unchanged.
 - Read-only production standard-runtime inspection confirmed availability of Web Crypto generate/import/sign, AbortSignal.timeout, fetch, performance.now/timeOrigin, TextEncoder and base64 APIs before release.
 - Exact nodeVersion patch selection is not a supported setting in the current official docs; supported values are 22 and 24. The installed CLI schema describes those values but accepts an unrestricted string locally, so merely passing local JSON validation would not establish server support.
+
+- Initial PR CI caught the repository requirement for the exact heading Current Verification Evidence after it was renamed to distinguish historical checks. The heading is restored; no policy/test suppression was introduced.
