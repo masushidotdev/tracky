@@ -1,6 +1,6 @@
 // UC1 — jev smart import triage for residual uncategorized rows.
 // Pipeline order is fixed: provider regex/MCC mapping, then user category rules,
-// then (only for the uncategorized residue) a `use node` action fans out one jev
+// then (only for the uncategorized residue) an action fans out one jev
 // call: choice kind + score dirtiness + noul auto_apply. Routing lives in code.
 // Q4: source stays 'system' + classificationConfidence; no new literal.
 // Q5: JEV_IMPORT caps bound cost per batch/day.

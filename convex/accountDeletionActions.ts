@@ -1,5 +1,3 @@
-'use node';
-
 import { v } from 'convex/values';
 import { env, internalAction } from './_generated/server';
 

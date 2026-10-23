@@ -23,7 +23,7 @@ WorkOS.
 
 ## Runtime and response security
 
-Local tooling and Workers Builds use the patched Node 22 baseline. The Worker frontend runs on workerd; Convex default functions and Convex Node actions use distinct managed runtimes. Patch ownership and operator evidence are described in `security-audit-2026-10.md`.
+Local tooling and Workers Builds use the patched Node 22 baseline. The Worker frontend runs on workerd; all application Convex functions and installed components use the standard Convex runtime. A build gate rejects Node actions and verifies browser-compatible transitive imports. Patch ownership and operator evidence are described in `security-audit-2026-10.md`.
 
 Start request middleware applies nosniff, framing restrictions, a limited structural CSP, no-referrer and private/no-store to dynamic responses, including public SSR that can contain authenticated session state. Static hashed assets retain Cloudflare's asset handling. This CSP does not restrict scripts and is not an XSS replacement for patched framework dependencies. Production error screens omit stack traces. Banking callbacks apply no-referrer to both HTML and redirects; provider API calls require HTTPS, stay on the configured origin, reject redirects, and have a 30-second timeout.
 
@@ -363,7 +363,7 @@ tool results rather than proposed inputs or approval requests.
 Proactive automation shares the Agent component but not the chat toolset. Its
 agent can only read bounded financial models, run pure simulations, and present
 tables/charts. It cannot call write tools, approval flows, or web search. LLM
-work runs only in an internal Node action, while roster/data reads, report
+work runs only in an internal standard-runtime action, while roster/data reads, report
 claims, snapshots, notifications, and email queue state stay in internal
 queries/mutations.
 
@@ -402,7 +402,9 @@ retention cleanup. AI Gateway, Langfuse, Resend API keys, sender identity, and
 webhook secrets exist only in the Convex environment, never in Vite/browser
 variables.
 
-AI SDK 7 telemetry uses a per-generation OpenTelemetry integration and tracer provider, flushed and shut down at the end of the request. No global tracer registration can carry user/thread attribution into another request. Prompt, tool input and output recording are disabled; user/thread identifiers, model and usage/timing metadata can still reach Langfuse when configured. These settings affect telemetry copies, not data required by AI providers or the application's persisted Agent history.
+Enable Banking signs RS256 JWTs with native Web Crypto. Existing PKCS#1, PKCS#8, escaped-newline and base64 PEM configuration remains compatible. Outbound banking and telemetry requests use native fetch; no application action selects Convex Node.
+
+AI SDK 7 telemetry uses a per-generation OpenTelemetry integration and tracer provider, flushed and shut down at the end of the request. No global tracer registration can carry user/thread attribution into another request. The Langfuse processor exports OTLP JSON through a bounded HTTPS fetch transport (no Node HTTP/compression or browser XHR). Prompt, tool input and output recording are disabled; user/thread identifiers, model and usage/timing metadata can still reach Langfuse when configured. These settings affect telemetry copies, not data required by AI providers or the application's persisted Agent history.
 
 Intermediate monthly failures retain the pending output slot for a retry. At
 the final queue attempt, the same mutation transaction reconciles report and job
