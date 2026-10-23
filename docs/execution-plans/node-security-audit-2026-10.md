@@ -4,7 +4,7 @@ Status: Repository remediation and local verification complete; hosted deploymen
 
 ## Scope and assumptions
 
-The user requested an in-depth review after a Stripe notice, all npm dependency updates, and a new worktree from main. The isolated branch is `codex/node-security-audit`, based on `4df262ac6940c716694149e84fa4135266c8896e` (also origin/main when fetched). No production deployment or credential rotation has been performed. The notice names a separate Stripe account; no Stripe implementation was found in this repository. This does not establish which environment Stripe observed or whether any key was exposed.
+The user requested an in-depth review after a Stripe notice, all npm dependency updates, and a new worktree from main. The isolated branch is `codex/node-security-audit`, based on `4df262ac6940c716694149e84fa4135266c8896e` (also origin/main when fetched). At audit completion no production deployment or credential rotation had been performed. The user subsequently authorized direct production deployment and clarified the required path: push/merge to GitHub main, then the automatic Cloudflare pipeline. No staging or manual CLI deploy is part of this release. The notice names a separate Stripe account; no Stripe implementation was found in this repository. This does not establish which environment Stripe observed or whether any key was exposed.
 
 ## Phases
 
@@ -37,3 +37,10 @@ The user requested an in-depth review after a Stripe notice, all npm dependency 
 - Limited current-tree/history secret-pattern scan: no matches; this is not forensic clearance. Browser JS/maps contained none of the checked backend secret variable names.
 - Cloudflare deployment metadata read could not authenticate without an API token. No hosted runtime patch confirmation, live log audit, key rotation or deployment was performed.
 - See [the detailed report and open response runbook](../security-audit-2026-10.md) for dependency versions, tested incompatibilities and provider obligations.
+
+## Production release follow-through
+
+- Authorized by the user after local verification; staging explicitly excluded.
+- Release via a GitHub pull request merged to main, then observe the automatic Cloudflare production pipeline.
+- Local Cloudflare token metadata checks were read-only and returned insufficient access to the Worker. No local deploy command was executed.
+- Record the PR, merge commit, pipeline outcome and runtime/site checks after publication.

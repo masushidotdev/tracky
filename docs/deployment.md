@@ -1,7 +1,7 @@
 # Deployment
 
 Tracky deploys as a Cloudflare Worker frontend backed by a Convex deployment.
-Two environments: staging (gated) and production (public). See
+Two environments exist: staging (gated) and production (public). Production is deployed automatically by Cloudflare Workers Builds after a push or merge to GitHub `main`; staging is not part of this release path. See
 `decisions/0018-deploy-environments.md` for why.
 
 `wrangler.jsonc` is tracked and contains the Worker configuration; environment secrets remain outside Git.
@@ -39,28 +39,13 @@ date is past 2025-04-01.
 
 ## Deploy
 
-Staging: every push to `main` can trigger Workers Builds, connected to your
-repository, which runs:
+Production: push or merge the verified changes to GitHub `main`. The connected Cloudflare Workers Builds pipeline performs the build and deployment. Follow the commit's Cloudflare check and build logs through completion; do not replace this release path with a local `wrangler deploy` or `convex deploy`.
 
-- build: `npx convex deploy --cmd 'npm run build'`
-- deploy: `npx wrangler deploy`
+The production build must select the production Convex deploy key and the top-level `tracky-oos` Worker (`CLOUDFLARE_ENV` unset or empty). Its commands build the frontend with the selected Convex URL and publish the backend/components and Worker. Verify the actual target and Node version in the resulting build evidence. The staging configuration remains available for separate, explicitly requested testing; a production request does not deploy staging first.
 
-with two build variables: `CLOUDFLARE_ENV=staging` and the encrypted
-`CONVEX_DEPLOY_KEY` (a deploy token scoped to the dev deployment, created with
-`npx convex deployment token create`; save it in Cloudflare, redacted here).
+The npm deploy commands below are manual recovery tools, not the normal production release trigger.
 
-Production: deploy from a release tag, which runs:
-
-- build: `npx convex deploy --cmd 'npm run build'`
-- deploy: `npx wrangler deploy`
-
-with only the production `CONVEX_DEPLOY_KEY` and `CLOUDFLARE_ENV` explicitly
-cleared (empty string selects the top-level Worker; an inherited
-`CLOUDFLARE_ENV=staging` would retarget both build and deploy to staging).
-If Workers Builds cannot trigger on tags, run `npm run deploy:prod` manually
-from a checkout on the tag.
-
-Both Workers Builds configurations also need the source-map uploader variables
+Workers Builds configurations also need the source-map uploader variables
 `POSTHOG_API_KEY`, `POSTHOG_PROJECT_ID`, and `POSTHOG_HOST`. Store
 `POSTHOG_API_KEY` as an encrypted build variable; the project ID and host can
 be ordinary build variables. The Vite build runs inside `convex deploy --cmd`,
@@ -94,7 +79,7 @@ again with `npm ci`.
 
 `convex deploy --cmd` pushes Convex functions to the deployment and injects
 `VITE_CONVEX_URL` into the client build, so the deployed frontend can never
-drift from the backend functions it expects. Only `main` is built by default;
+drift from the backend functions it expects. The production pipeline builds `main`;
 enable preview deployments only if each preview gets its own backend, because
 a preview branch sharing one backend would talk to the same data.
 
