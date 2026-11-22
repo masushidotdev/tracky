@@ -1,6 +1,6 @@
 import { httpRouter } from 'convex/server';
 import { Webhook } from 'svix';
-import { httpAction } from './_generated/server';
+import { env, httpAction } from './_generated/server';
 import { internal } from './_generated/api';
 import { authKit } from './auth';
 import { resend } from './analyst/emails';
@@ -47,7 +47,7 @@ http.route({
   path: '/resend-webhook',
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
-    const secret = process.env.RESEND_WEBHOOK_SECRET?.trim();
+    const secret = env.RESEND_WEBHOOK_SECRET?.trim();
     if (!secret) {
       return webhookResponse('Resend webhook is not configured', 503);
     }
@@ -74,7 +74,7 @@ http.route({
   path: '/telegram-webhook',
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
-    const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+    const expectedSecret = env.TELEGRAM_WEBHOOK_SECRET?.trim();
     if (!isValidTelegramWebhookSecret(expectedSecret)) {
       return webhookResponse('Telegram webhook is not configured', 503);
     }
@@ -118,7 +118,7 @@ function isLocalhost(hostname: string) {
 }
 
 function validateEnableBankingReturnUrl() {
-  const returnUrl = process.env.ENABLE_BANKING_RETURN_URL;
+  const returnUrl = env.ENABLE_BANKING_RETURN_URL;
   if (!returnUrl) {
     return null;
   }
@@ -193,12 +193,12 @@ http.route({
 
     const returnUrl = enableBankingReturnUrl(state, status);
     if (returnUrl) {
-      // No security headers on the 303: the redirect has no body and the
-      // browser renders the landing page's own headers. Verified the
-      // frontend consumes the landing URL directly (ENABLE_BANKING_RETURN_URL
-      // is an app route hit via top-level navigation), so no header is needed
-      // to keep the flow working.
-      return Response.redirect(returnUrl, 303);
+      // Referrer policy on a redirect controls the following navigation too:
+      // keep the authorization code and state out of its Referer header.
+      return new Response(null, {
+        status: 303,
+        headers: { Location: returnUrl, ...DOCUMENT_SECURITY_HEADERS },
+      });
     }
 
     return new Response(callbackHtml(status), {

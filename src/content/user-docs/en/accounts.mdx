@@ -13,6 +13,8 @@ related: [manual-accounts, dashboard-and-totals, troubleshooting]
 
 Open **Settings → Bank Connections** to connect a bank through Enable Banking. Authentication and consent happen at the bank; after returning, Tracky creates the connection, imports accounts, and schedules initial synchronization. If the provider is not configured on this instance, the connect button is disabled and the feature is unavailable.
 
+Bank connections continue to use signed provider requests. This security update preserves existing consent and synchronization; it does not require reconnecting your bank or changing your signing key.
+
 ## What is synchronized
 
 For each account, Tracky stores metadata, currency, status, balance snapshots, and transactions supplied by the institution. Automatic synchronization is evaluated every six hours, and you can request an account refresh. Availability still depends on the bank.

@@ -4,6 +4,8 @@ Status: accepted
 
 ## Decision
 
+Release-path clarification (23 October 2026): the operator confirmed production deploys automatically from GitHub `main` through Cloudflare Workers Builds. A production release uses push/merge to `main`, without a preceding staging deploy or local deploy commands. Earlier tag/manual-production instructions were stale. The environment separation below remains relevant.
+
 Two deploy environments, one shared Convex dev deployment for dev+staging, a
 Convex production deployment for prod:
 
@@ -19,8 +21,7 @@ Convex production deployment for prod:
   `tracky-oos-staging.masushi.workers.dev` behind Cloudflare Access;
   production is the top-level Worker `tracky-oos` serving `trytracky.app`,
   public.
-- `wrangler.jsonc` holds real names locally and is gitignored; the repo tracks
-  only `wrangler.jsonc.example` (sanitized, env-free template).
+- `wrangler.jsonc` is tracked with the actual Worker configuration. Credentials remain in environment/secret stores. The older local-only/template decision no longer describes the repository.
 
 ## Why
 
@@ -50,12 +51,10 @@ return, they need their own backend each — one shared backend would mix data.
   the Wrangler default, so `deploy:prod` only clears `CLOUDFLARE_ENV`
   (empty string selects top-level), and a custom domain attaches cleanly
   to it.
-- `wrangler.jsonc` tracked with real names: rejected — public repo; real
-  worker names and env blocks stay local, template stays committed.
+- Previously, tracking the actual Wrangler configuration was rejected in favor of a local template. The current repository tracks it; Worker names and domains are public configuration, while credentials remain secret.
 
 ## Verification
 
 - `npm test` (incl. `convex/knowledge-base.test.ts` docs-index check), `npm run lint`.
-- Staging: `npm run deploy` from `main`, login on staging URL, callback 200.
-- Prod: Convex production deployment created, `deploy:prod` from tag, login on
-  `https://trytracky.app`, callback 200.
+- Staging, when separately requested: validate its isolated environment and login/callback.
+- Production: verify the GitHub `main` commit, its Cloudflare build/deployment result, the Convex runtime evidence and `https://trytracky.app` responses. Full login/callback validation requires an authenticated session.

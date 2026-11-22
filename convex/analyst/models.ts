@@ -25,3 +25,11 @@ export const modelIdValidator = v.union(
   v.literal('google/gemini-3-pro-preview'),
   v.literal('zai/glm-5.2'),
 );
+
+// Bound AI SDK string-model inference to the models used by this application.
+// Agent intersects AI SDK model types; the full Gateway catalogue otherwise
+// exceeds TypeScript's union complexity limit in the v7 constructor.
+type TrackyLanguageModels = Record<SelectableModel | typeof UTILITY_MODEL | typeof SEARCH_MODEL, never>;
+declare global {
+  interface RegisteredProviderModels extends TrackyLanguageModels {}
+}

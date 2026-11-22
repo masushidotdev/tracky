@@ -4,7 +4,7 @@ description: Come sono protetti i dati e cosa significano i termini finanziari u
 section: Introduzione
 order: 20
 locale: it
-updatedAt: 2026-08-04
+updatedAt: 2026-10-23
 keywords: [sicurezza, privacy, glossario, saldo, DBIT, CRDT]
 related: [getting-started, accounts, credit-cards-and-statements]
 ---
@@ -20,6 +20,12 @@ Le pagine dell'app e questa documentazione sono nell'area autenticata. Le operaz
 - Se il consenso scade, usa **Rinnova consenso** in **Impostazioni → Connessioni bancarie**; non inserire credenziali bancarie dentro Tracky.
 - Prima di approvare una proposta dell'Analyst, leggi anteprima, importo, categoria, conto e ricorrenza.
 - Se un dispositivo non è più sotto il tuo controllo, termina la sessione dal menu utente.
+
+## Sessioni e diagnostica tecnica
+
+Tracky chiede al browser e alle cache condivise di non conservare le pagine generate dinamicamente e le risposte delle funzioni server. Le schermate di errore in produzione omettono gli stack trace tecnici. Esci sempre dall’account su un dispositivo condiviso: queste protezioni non eliminano screenshot o pagine già aperte.
+
+Quando il tracciamento tecnico dell’Analyst è attivo, i corpi di prompt, input degli strumenti e risposte sono esclusi dalle tracce. Possono comunque essere inclusi metadati tecnici e identificativi di utente e conversazione. Questo non cambia i messaggi conservati nella cronologia dell’Analyst o i dati inviati ai fornitori AI per rispondere. Le statistiche d’uso opzionali seguono la scelta separata del consenso nelle Impostazioni.
 
 ## Glossario essenziale
 

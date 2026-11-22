@@ -1,5 +1,3 @@
-'use node';
-
 import { getThreadMetadata, updateThreadMetadata } from '@convex-dev/agent';
 import { gateway, generateText } from 'ai';
 import { v } from 'convex/values';

@@ -92,3 +92,8 @@ instead of relying on chat history.
 
 `convex/knowledge-base.test.ts` enforces that durable docs stay indexed and that
 decision and execution-plan records keep explicit status metadata.
+
+- [Node security audit, October 2026](execution-plans/node-security-audit-2026-10.md)
+
+- [Security audit and response runbook, October 2026](security-audit-2026-10.md)
+- [0025 — Runtime security boundaries](decisions/0025-runtime-security-boundaries.md)

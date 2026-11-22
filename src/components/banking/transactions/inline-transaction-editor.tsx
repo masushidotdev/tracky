@@ -16,6 +16,7 @@ import {
   validateInlineEntry,
   withAmountField,
 } from './inline-entry';
+import type { TransactionTableFeatures } from './table-features';
 import type { InlineEntryDraft, InlineEntryErrorCode, InlineEntryField } from './inline-entry';
 import type { Column } from '@tanstack/react-table';
 import type { TransactionRow } from './columns';
@@ -617,7 +618,7 @@ export function InlineTransactionEditorRows({
   columns,
   controller,
 }: {
-  columns: Array<Column<TransactionRow, unknown>>;
+  columns: Array<Column<TransactionTableFeatures, TransactionRow, unknown>>;
   controller: InlineTransactionEditorController;
 }) {
   const { t } = useI18n();

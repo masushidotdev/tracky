@@ -4,7 +4,7 @@ description: How to protect your data and understand the financial terms used in
 section: Introduction
 order: 20
 locale: en
-updatedAt: 2026-08-04
+updatedAt: 2026-10-23
 keywords: [security, privacy, glossary, balance, DBIT, CRDT]
 related: [getting-started, accounts, credit-cards-and-statements]
 ---
@@ -20,6 +20,12 @@ The app and these Docs live inside the authenticated area. Backend operations de
 - When consent expires, use **Renew bank consent** in **Settings → Bank Connections**; do not enter bank credentials inside Tracky.
 - Before approving an Analyst proposal, review its amount, category, account, and recurrence.
 - End the session if a device is no longer under your control.
+
+## Sessions and technical diagnostics
+
+Tracky asks browsers and shared caches not to store dynamically generated pages or server-function responses. Error screens in production omit technical stack traces. Always sign out on a shared device; these controls do not erase a screenshot or an already opened page.
+
+If technical Analyst tracing is enabled, prompt, tool-input and answer bodies are excluded from those traces. Technical metadata and user/thread identifiers can still be included. This does not change the messages stored in your Analyst history or the data sent to AI providers to answer your request. Optional usage analytics follows your separate consent choice in Settings.
 
 ## Essential glossary
 

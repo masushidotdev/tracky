@@ -8,6 +8,7 @@
  * @module
  */
 
+import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 import type * as accountDeletion from "../accountDeletion.js";
 import type * as accountDeletionActions from "../accountDeletionActions.js";
 import type * as accountDeletionBanking from "../accountDeletionBanking.js";
@@ -91,6 +92,7 @@ import type * as banking_dashboard from "../banking/dashboard.js";
 import type * as banking_enableBanking from "../banking/enableBanking.js";
 import type * as banking_enableBankingErrors from "../banking/enableBankingErrors.js";
 import type * as banking_enableBankingTransactionMapping from "../banking/enableBankingTransactionMapping.js";
+import type * as banking_enableBankingTransport from "../banking/enableBankingTransport.js";
 import type * as banking_importTriage from "../banking/importTriage.js";
 import type * as banking_loans from "../banking/loans.js";
 import type * as banking_manualAccounts from "../banking/manualAccounts.js";
@@ -151,20 +153,23 @@ import type * as migrations from "../migrations.js";
 import type * as notificationDelivery from "../notificationDelivery.js";
 import type * as notifications from "../notifications.js";
 import type * as plannedTransactionsTestHelpers from "../plannedTransactionsTestHelpers.js";
+import type * as securityRuntime from "../securityRuntime.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as userSettings from "../userSettings.js";
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
-
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 declare const fullApi: ApiFromModules<{
-  accountDeletion: typeof accountDeletion;
-  accountDeletionActions: typeof accountDeletionActions;
-  accountDeletionBanking: typeof accountDeletionBanking;
-  accountDeletionPlanning: typeof accountDeletionPlanning;
+  "accountDeletion": typeof accountDeletion;
+  "accountDeletionActions": typeof accountDeletionActions;
+  "accountDeletionBanking": typeof accountDeletionBanking;
+  "accountDeletionPlanning": typeof accountDeletionPlanning;
   "analyst/agent": typeof analyst_agent;
   "analyst/approvalBatch": typeof analyst_approvalBatch;
   "analyst/chat": typeof analyst_chat;
@@ -226,8 +231,8 @@ declare const fullApi: ApiFromModules<{
   "analyst/writeGuard": typeof analyst_writeGuard;
   "analyst/writeGuardBadge": typeof analyst_writeGuardBadge;
   "analyst/writes": typeof analyst_writes;
-  auth: typeof auth;
-  authProfiles: typeof authProfiles;
+  "auth": typeof auth;
+  "authProfiles": typeof authProfiles;
   "banking/accounts": typeof banking_accounts;
   "banking/balances": typeof banking_balances;
   "banking/cardStatementSettlement": typeof banking_cardStatementSettlement;
@@ -244,6 +249,7 @@ declare const fullApi: ApiFromModules<{
   "banking/enableBanking": typeof banking_enableBanking;
   "banking/enableBankingErrors": typeof banking_enableBankingErrors;
   "banking/enableBankingTransactionMapping": typeof banking_enableBankingTransactionMapping;
+  "banking/enableBankingTransport": typeof banking_enableBankingTransport;
   "banking/importTriage": typeof banking_importTriage;
   "banking/loans": typeof banking_loans;
   "banking/manualAccounts": typeof banking_manualAccounts;
@@ -283,16 +289,16 @@ declare const fullApi: ApiFromModules<{
   "banking/transferCore": typeof banking_transferCore;
   "banking/transferMutations": typeof banking_transferMutations;
   "banking/transfers": typeof banking_transfers;
-  crons: typeof crons;
-  dataExport: typeof dataExport;
-  entitlements: typeof entitlements;
+  "crons": typeof crons;
+  "dataExport": typeof dataExport;
+  "entitlements": typeof entitlements;
   "forecast/forecastCore": typeof forecast_forecastCore;
   "forecast/liabilityMath": typeof forecast_liabilityMath;
   "forecast/projection": typeof forecast_projection;
   "forecast/projectionMath": typeof forecast_projectionMath;
   "forecast/scenarios": typeof forecast_scenarios;
   "forecast/seeds": typeof forecast_seeds;
-  http: typeof http;
+  "http": typeof http;
   "lib/accountTypes": typeof lib_accountTypes;
   "lib/entitlements": typeof lib_entitlements;
   "lib/jev": typeof lib_jev;
@@ -300,39 +306,16 @@ declare const fullApi: ApiFromModules<{
   "lib/money": typeof lib_money;
   "lib/notificationMessages": typeof lib_notificationMessages;
   "lib/validators": typeof lib_validators;
-  migrations: typeof migrations;
-  notificationDelivery: typeof notificationDelivery;
-  notifications: typeof notifications;
-  plannedTransactionsTestHelpers: typeof plannedTransactionsTestHelpers;
-  subscriptions: typeof subscriptions;
-  userSettings: typeof userSettings;
+  "migrations": typeof migrations;
+  "notificationDelivery": typeof notificationDelivery;
+  "notifications": typeof notifications;
+  "plannedTransactionsTestHelpers": typeof plannedTransactionsTestHelpers;
+  "securityRuntime": typeof securityRuntime;
+  "subscriptions": typeof subscriptions;
+  "userSettings": typeof userSettings;
 }>;
-
-/**
- * A utility for referencing Convex functions in your app's public API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
-export declare const api: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "public">
->;
-
-/**
- * A utility for referencing Convex functions in your app's internal API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = internal.myModule.myFunction;
- * ```
- */
-export declare const internal: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "internal">
->;
+export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
+export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;
 
 export declare const components: {
   workOSAuthKit: import("@convex-dev/workos-authkit/_generated/component.js").ComponentApi<"workOSAuthKit">;

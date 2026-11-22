@@ -34,7 +34,6 @@ type TestHarness = ReturnType<typeof createTest>;
 async function seedAuthKitUser(t: TestHarness, userId: string) {
   const timestamp = '2026-07-15T00:00:00.000Z';
   await t.mutation(components.workOSAuthKit.lib.onWebhookEvent, {
-    apiKey: 'sk_test',
     event: {
       id: `evt_${userId}`,
       createdAt: timestamp,

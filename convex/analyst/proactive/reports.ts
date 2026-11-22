@@ -1,5 +1,3 @@
-'use node';
-
 import { makeFunctionReference } from 'convex/server';
 import { v } from 'convex/values';
 import { internalAction } from '../../_generated/server';
@@ -165,7 +163,7 @@ export const generateMonthlyReportForUser = internalAction({
       const result = await agent.generateText(
         ctx,
         { threadId, userId: job.userId },
-        { prompt: reportPrompt(job.period, job.asOfDate), experimental_telemetry: telemetryContext.telemetry },
+        { prompt: reportPrompt(job.period, job.asOfDate), telemetry: telemetryContext.telemetry },
         { contextOptions: { recentMessages: 12 }, storageOptions: { saveMessages: 'none' } },
       );
       if (!(await renewFence())) return null;

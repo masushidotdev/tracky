@@ -63,7 +63,7 @@ describe('analyst write tool money validation', () => {
       typeof setPlanAssigned.needsApproval === 'function'
         ? await setPlanAssigned.needsApproval(
             { bucketName: 'Food', amount: { amount: 100, currency: 'EUR' } },
-            { toolCallId: 'assigned', messages: [] },
+            { toolCallId: 'assigned', messages: [], context: {} },
           )
         : setPlanAssigned.needsApproval;
     const targetApproval =
@@ -74,7 +74,7 @@ describe('analyst write tool money validation', () => {
             behaviour: 'setAside',
             amount: { amount: 100, currency: 'EUR' },
             repeats: true,
-          }, { toolCallId: 'target', messages: [] })
+          }, { toolCallId: 'target', messages: [], context: {} })
         : setPlanTarget.needsApproval;
     expect(assignedApproval).toBe(true);
     expect(targetApproval).toBe(true);

@@ -1,14 +1,13 @@
-'use node';
-
-import { createSign, randomBytes } from 'node:crypto';
 import { ConvexError, v } from 'convex/values';
-import { action, internalAction } from '../_generated/server';
+import { action, env, internalAction } from '../_generated/server';
 import { internal } from '../_generated/api';
 import { requireAuthUser } from '../auth';
+import { createBankingState, createEnableBankingJwt } from './enableBankingCrypto';
 import { buildConnectionHealth } from './connectionHealth';
 import { enableBankingErrorSummary, enableBankingOperationalErrorMessage } from './enableBankingErrors';
 import { isMissingEnvError } from './providerAvailability';
 import { enableBankingSyncWindow } from './syncWindow';
+import { enableBankingRequestUrl } from './enableBankingTransport';
 import type { Id } from '../_generated/dataModel';
 import type { ActionCtx } from '../_generated/server';
 
@@ -110,54 +109,21 @@ class EnableBankingApiError extends Error {
   }
 }
 
-function base64Url(data: Buffer | string) {
-  const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
-  return buffer.toString('base64url');
-}
-
-function env(name: string) {
-  const value = process.env[name];
+function requiredEnv(name: 'ENABLE_BANKING_APP_ID' | 'ENABLE_BANKING_PRIVATE_KEY' | 'ENABLE_BANKING_REDIRECT_URL') {
+  const value = env[name];
   if (!value) {
     throw new ConvexError(`Missing Convex environment variable: ${name}`);
   }
   return value;
 }
 
-function privateKeyPem() {
-  const raw = env('ENABLE_BANKING_PRIVATE_KEY');
-  if (raw.includes('BEGIN')) {
-    return raw.replace(/\\n/g, '\n');
-  }
-  return Buffer.from(raw, 'base64').toString('utf8');
-}
-
 function enableBankingConfig() {
   return {
-    appId: env('ENABLE_BANKING_APP_ID'),
-    privateKey: privateKeyPem(),
-    apiBase: process.env.ENABLE_BANKING_API_BASE ?? 'https://api.enablebanking.com',
-    redirectUrl: env('ENABLE_BANKING_REDIRECT_URL'),
+    appId: requiredEnv('ENABLE_BANKING_APP_ID'),
+    privateKey: requiredEnv('ENABLE_BANKING_PRIVATE_KEY'),
+    apiBase: env.ENABLE_BANKING_API_BASE ?? 'https://api.enablebanking.com',
+    redirectUrl: requiredEnv('ENABLE_BANKING_REDIRECT_URL'),
   };
-}
-
-function makeJwt(appId: string, privateKey: string, ttlSeconds = 3600) {
-  const now = Math.floor(Date.now() / 1000);
-  const header = {
-    typ: 'JWT',
-    alg: 'RS256',
-    kid: appId,
-  };
-  const payload = {
-    iss: 'enablebanking.com',
-    aud: 'api.enablebanking.com',
-    iat: now,
-    exp: now + ttlSeconds,
-  };
-  const signingInput = [base64Url(JSON.stringify(header)), base64Url(JSON.stringify(payload))].join('.');
-  const signer = createSign('RSA-SHA256');
-  signer.update(signingInput);
-  signer.end();
-  return `${signingInput}.${base64Url(signer.sign(privateKey))}`;
 }
 
 export async function enableBankingRequest(
@@ -166,16 +132,18 @@ export async function enableBankingRequest(
   options: { body?: JsonObject; query?: Record<string, string> } = {},
 ) {
   const config = enableBankingConfig();
-  const url = new URL(path, config.apiBase);
+  const url = enableBankingRequestUrl(config.apiBase, path);
   for (const [key, value] of Object.entries(options.query ?? {})) {
     url.searchParams.set(key, value);
   }
 
   const response = await fetch(url, {
     method,
+    redirect: 'error',
+    signal: AbortSignal.timeout(30_000),
     headers: {
       Accept: 'application/json',
-      Authorization: `Bearer ${makeJwt(config.appId, config.privateKey)}`,
+      Authorization: `Bearer ${await createEnableBankingJwt(config.appId, config.privateKey)}`,
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -454,7 +422,7 @@ export const startConnection = action({
   handler: async (ctx, args): Promise<StartConnectionResult> => {
     const user = await requireAuthUser(ctx);
     const config = enableBankingConfig();
-    const state = randomBytes(24).toString('base64url');
+    const state = createBankingState();
     const validDays = Math.min(Math.max(args.validDays ?? 180, 1), 180);
     const validUntil = new Date(Date.now() + validDays * 24 * 60 * 60 * 1000).toISOString();
     const authRequestId: Id<'providerAuthRequests'> = await ctx.runMutation(
@@ -538,7 +506,7 @@ export const reauthorizeConnection = action({
     }
 
     const config = enableBankingConfig();
-    const state = randomBytes(24).toString('base64url');
+    const state = createBankingState();
     const validDays = Math.min(Math.max(args.validDays ?? 180, 1), 180);
     const validUntil = new Date(Date.now() + validDays * 24 * 60 * 60 * 1000).toISOString();
     const authRequestId: Id<'providerAuthRequests'> = await ctx.runMutation(

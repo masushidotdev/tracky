@@ -1,5 +1,3 @@
-'use node';
-
 import { embed, gateway } from 'ai';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from './models';
 import { formatMemoryContext } from './memoryCore';

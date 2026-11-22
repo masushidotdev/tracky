@@ -281,7 +281,6 @@ describe('banking import', () => {
 
     const t = createTest();
     const target = await seedSyncTarget(t);
-    const nowMs = Date.now();
 
     await t.mutation(internal.banking.providerMutations.markSyncFailed, {
       syncStateId: target.syncStateId,
@@ -301,8 +300,8 @@ describe('banking import', () => {
       return await ctx.db.get('accountSyncStates', target.syncStateId);
     });
 
-    expect(firstFailure?.nextSyncAfterMs).toBe(nowMs + 30 * 60 * 1000);
-    expect(secondFailure?.nextSyncAfterMs).toBe(nowMs + 60 * 60 * 1000);
+    expect(firstFailure?.nextSyncAfterMs).toBe(firstFailure!.updatedAtMs + 30 * 60 * 1000);
+    expect(secondFailure?.nextSyncAfterMs).toBe(secondFailure!.updatedAtMs + 60 * 60 * 1000);
     expect(secondFailure?.consecutiveFailures).toBe(2);
   });
 

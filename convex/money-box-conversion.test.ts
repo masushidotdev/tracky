@@ -24,7 +24,6 @@ type TestHarness = ReturnType<typeof createTest>;
 async function seedAuthKitUser(t: TestHarness, userId: string) {
   const timestamp = '2026-08-01T00:00:00.000Z';
   await t.mutation(components.workOSAuthKit.lib.onWebhookEvent, {
-    apiKey: 'sk_test',
     event: {
       id: `evt_${userId}`,
       createdAt: timestamp,
@@ -135,11 +134,10 @@ describe('convertMoneyBoxToAccount', () => {
 
     const stored = await t.run(async (ctx) => ({
       moneyBox: await ctx.db.get('moneyBoxes', moneyBoxId),
-      manualAccounts: await ctx.db
+      manualAccounts: (await ctx.db
         .query('financialAccounts')
         .withIndex('by_userId', (q) => q.eq('userId', userId))
-        .filter((q) => q.eq(q.field('provider'), 'manual'))
-        .take(10),
+        .take(10)).filter((account) => account.provider === 'manual'),
     }));
     expect(stored.moneyBox).not.toBeNull();
     expect(stored.manualAccounts).toHaveLength(0);

@@ -21,5 +21,8 @@
         "corsOrigins": ["https://${buildEnv.APP_PUBLIC_URL}"]
       }
     }
+  },
+  "node": {
+    "nodeVersion": "22"
   }
 }

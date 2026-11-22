@@ -12,6 +12,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
+import type { TransactionTableFeatures } from './table-features';
 
 import type { Column, ColumnDef } from '@tanstack/react-table';
 import type { Doc, Id } from '../../../../convex/_generated/dataModel';
@@ -242,7 +243,7 @@ function transactionMetaBadges(
   );
 }
 
-function sortButton(label: string, column: Column<TransactionRow>, align: 'left' | 'right' = 'left') {
+function sortButton(label: string, column: Column<TransactionTableFeatures, TransactionRow>, align: 'left' | 'right' = 'left') {
   const sorted = column.getIsSorted();
   const Icon = sorted === 'asc' ? ArrowUp : sorted === 'desc' ? ArrowDown : ArrowUpDown;
   return (
@@ -264,7 +265,7 @@ export function createTransactionColumns({
   translate,
   labels,
   actions,
-}: CreateTransactionColumnsArgs): Array<ColumnDef<TransactionRow>> {
+}: CreateTransactionColumnsArgs): Array<ColumnDef<TransactionTableFeatures, TransactionRow>> {
   const categoriesById = new Map(categories.map((category) => [category._id, category]));
   const tagsById = new Map(tags.map((tag) => [tag._id, tag]));
 

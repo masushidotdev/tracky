@@ -208,7 +208,7 @@ export const importManualTransactionsBatch = mutation({
     await invalidatePlanSnapshots(ctx, user.id, affectedDates);
     // UC1: schedule jev triage for the uncategorized residue, bounded per
     // batch (Q5) and per tier-day (Q2). requestRowTriage enforces the daily
-    // budget before scheduling the `use node` triage action per row.
+    // budget before scheduling the triage action per row.
     const today = new Date().toISOString().slice(0, 10);
     const settings = await ctx.db
       .query('userSettings')
