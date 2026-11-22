@@ -119,6 +119,8 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
   const [loanValues, setLoanValues] = React.useState<LoanFormValues>(() => initialLoanValues());
   const [paymentError, setPaymentError] = React.useState('');
   const [originalPrincipalError, setOriginalPrincipalError] = React.useState('');
+  const [showRequiredErrors, setShowRequiredErrors] = React.useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
   const pendingKey = isLoanType(selection) ? 'loan-account-create' : 'manual-account-create';
 
   React.useEffect(() => {
@@ -131,6 +133,7 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
     setLoanValues(initialLoanValues());
     setPaymentError('');
     setOriginalPrincipalError('');
+    setShowRequiredErrors(false);
   }, [open]);
 
   const cashAccounts = accounts?.filter((account) => isCashAccountType(account.accountType)) ?? [];
@@ -147,26 +150,41 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
           })) ?? [])
       : [];
   const manualCanSubmit = Boolean(name.trim() && /^[A-Za-z]{3}$/.test(currency.trim())) && !isPending(pendingKey);
-  const loanCanSubmit =
-    Boolean(
-      loanValues.name.trim() &&
-      loanValues.currentBalance.trim() &&
-      loanValues.annualRate.trim() &&
-      loanValues.minimumPayment.trim() &&
-      loanValues.settlementAccountId !== 'none' &&
-      loanValues.firstPaymentDate,
-    ) && !isPending(pendingKey);
+  const missingLoanFields = [
+    !loanValues.name.trim() ? { id: 'loanName', label: t('common.name') } : null,
+    !loanValues.currentBalance.trim() ? { id: 'loanCurrentBalance', label: t('loans.currentBalance') } : null,
+    !loanValues.annualRate.trim() ? { id: 'loanAnnualRate', label: t('loans.interestRatePercent') } : null,
+    !loanValues.minimumPayment.trim() ? { id: 'loanMinimumPayment', label: t('loans.minimumPaymentRequired') } : null,
+    loanValues.settlementAccountId === 'none'
+      ? { id: 'loanSettlementAccount', label: t('loans.settlementAccount') }
+      : null,
+    !loanValues.firstPaymentDate ? { id: 'loanFirstPaymentDate', label: t('loans.firstPaymentDate') } : null,
+  ].filter((field): field is { id: string; label: string } => field !== null);
+
+  function showMissingLoanField() {
+    if (missingLoanFields.length === 0) return;
+    const firstMissing = missingLoanFields[0];
+    setShowRequiredErrors(true);
+    const field = formRef.current?.querySelector<HTMLElement>(`#${firstMissing.id}`);
+    field?.focus({ preventScroll: true });
+    field?.scrollIntoView({ block: 'center' });
+  }
 
   function choose(value: AccountSelection) {
     setSelection(value);
     if (isLoanType(value)) {
       setLoanValues({ ...initialLoanValues(), loanType: value });
     }
+    setShowRequiredErrors(false);
     setStep(2);
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isLoanType(selection) && missingLoanFields.length > 0) {
+      showMissingLoanField();
+      return;
+    }
     setPaymentError('');
     setOriginalPrincipalError('');
     const saved = await run(
@@ -248,7 +266,7 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="grid max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {step === 1 ? t('accounts.manual.selectTypeTitle') : t(selectionTitleKeys[selection])}
@@ -259,7 +277,7 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
         </DialogHeader>
 
         {step === 1 ? (
-          <div className="grid max-h-[65vh] gap-5 overflow-y-auto pr-1">
+          <div className="grid min-h-0 gap-5 overflow-y-auto pr-1">
             <section className="grid gap-2">
               <div>
                 <h3 className="font-medium">{t('accounts.manual.group.cash')}</h3>
@@ -307,13 +325,14 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
             </section>
           </div>
         ) : (
-          <form id="manual-account-form" onSubmit={submit} className="max-h-[65vh] overflow-y-auto pr-1">
+          <form ref={formRef} id="manual-account-form" onSubmit={submit} className="min-h-0 overflow-y-auto pr-1">
             {isLoanType(selection) ? (
               <LoanFormFields
                 accounts={cashAccounts}
                 groups={planGroups}
                 originalPrincipalError={originalPrincipalError}
                 paymentError={paymentError}
+                showRequiredErrors={showRequiredErrors}
                 showLoanType={false}
                 values={loanValues}
                 onChange={(values) => {
@@ -352,26 +371,38 @@ export function ManualAccountDialog({ onOpenChange, open }: { open: boolean; onO
           </form>
         )}
 
-        <DialogFooter>
-          {step === 2 ? (
-            <Button type="button" variant="outline" disabled={isPending(pendingKey)} onClick={() => setStep(1)}>
-              {t('import.back')}
-            </Button>
+        <div className="grid gap-2">
+          {step === 2 && isLoanType(selection) && missingLoanFields.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm" role="status">
+              <span className="text-muted-foreground">
+                {t('loans.requiredRemaining', { count: missingLoanFields.length, field: missingLoanFields[0].label })}
+              </span>
+              <Button type="button" variant="link" size="sm" onClick={showMissingLoanField}>
+                {t('loans.goToRequiredField')}
+              </Button>
+            </div>
           ) : null}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {t('common.cancel')}
-          </Button>
-          {step === 2 ? (
-            <Button
-              type="submit"
-              form="manual-account-form"
-              disabled={isLoanType(selection) ? !loanCanSubmit : !manualCanSubmit}
-            >
-              {isPending(pendingKey) ? <Spinner data-icon="inline-start" /> : null}
-              {t('common.save')}
+          <DialogFooter>
+            {step === 2 ? (
+              <Button type="button" variant="outline" disabled={isPending(pendingKey)} onClick={() => setStep(1)}>
+                {t('import.back')}
+              </Button>
+            ) : null}
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t('common.cancel')}
             </Button>
-          ) : null}
-        </DialogFooter>
+            {step === 2 ? (
+              <Button
+                type="submit"
+                form="manual-account-form"
+                disabled={isLoanType(selection) ? isPending(pendingKey) : !manualCanSubmit}
+              >
+                {isPending(pendingKey) ? <Spinner data-icon="inline-start" /> : null}
+                {t('common.save')}
+              </Button>
+            ) : null}
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

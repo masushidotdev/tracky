@@ -2422,6 +2422,9 @@ const messages = {
     'loans.settlementAccount': 'Account debited',
     'loans.selectSettlementAccount': 'Select a cash account',
     'loans.firstPaymentDate': 'First payment date',
+    'loans.requiredField': 'Required to save this loan.',
+    'loans.requiredRemaining': 'Required fields left: {count}. Next: {field}.',
+    'loans.goToRequiredField': 'Go to field',
     'loans.maturityDateOptional': 'Payoff date (optional)',
     'loans.maturityDateHint':
       'The last instalment date from your contract. Set it and the payoff date and the curve follow the contract instead of being estimated from the rate and the instalment.',
@@ -3291,7 +3294,8 @@ const messages = {
     'settings.danger.confirm': 'Elimina tutto',
     'settings.danger.noUndo': 'L’eliminazione inizia subito dopo la conferma e non può essere annullata.',
     'settings.danger.typeEmail': 'Digita {email} per confermare',
-    'settings.danger.exportHint': 'Facoltativo: salva una copia dei dati prima dell’eliminazione. Un export richiesto deve terminare ed essere scaricato prima della conferma.',
+    'settings.danger.exportHint':
+      'Facoltativo: salva una copia dei dati prima dell’eliminazione. Un export richiesto deve terminare ed essere scaricato prima della conferma.',
     'settings.danger.prepareExport': 'Prepara export',
     'settings.danger.downloadExport': 'Scarica export',
     'settings.danger.confirmDownload': 'Ho salvato l’export',
@@ -3305,7 +3309,8 @@ const messages = {
     'settings.deleting.checking': 'Verifica dell’avanzamento…',
     'settings.deleting.closeTab': 'Puoi chiudere questa scheda. L’eliminazione continua in background.',
     'settings.deleting.keepTabOpen': 'Tieni aperta questa scheda finché l’eliminazione non inizia.',
-    'settings.deleting.storageUnavailable': 'Impossibile verificare l’eliminazione dell’account senza accesso allo spazio di archiviazione del browser.',
+    'settings.deleting.storageUnavailable':
+      'Impossibile verificare l’eliminazione dell’account senza accesso allo spazio di archiviazione del browser.',
     'settings.deleting.retryStorage': 'Riprova',
     'settings.deleting.connectionError': 'Impossibile verificare l’avanzamento ora. Continueremo a riprovare.',
     'settings.deleting.retrying': 'Si è verificato un errore temporaneo. Tracky riproverà automaticamente.',
@@ -4961,6 +4966,9 @@ const messages = {
     'loans.settlementAccount': 'Conto addebitato',
     'loans.selectSettlementAccount': 'Seleziona un conto di liquidità',
     'loans.firstPaymentDate': 'Data della prima rata',
+    'loans.requiredField': 'Obbligatorio per salvare il prestito.',
+    'loans.requiredRemaining': 'Campi obbligatori mancanti: {count}. Il prossimo è {field}.',
+    'loans.goToRequiredField': 'Vai al campo',
     'loans.maturityDateOptional': 'Data di estinzione (facoltativa)',
     'loans.maturityDateHint':
       "La data dell'ultima rata secondo il contratto. Se la indichi, estinzione e curva seguono il contratto invece di essere stimate da tasso e rata.",
