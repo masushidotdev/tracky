@@ -4,6 +4,11 @@ import { internalMutation, mutation } from '../_generated/server';
 import { requireAuthUser } from '../auth';
 import { isSpendableAccountType } from '../lib/accountTypes';
 import { FEATURES, resolveTier } from '../lib/entitlements';
+import {
+  getUserSettingsByUserId,
+  persistOnboardingMilestones,
+  shouldEmitFirstMilestone,
+} from '../lib/onboardingMilestones';
 import { currentDate, currentPeriod } from './planActivity';
 import { underfundedPriority } from './planMath';
 import { activePlanForUser, computePlanMonthState } from './planRead';
@@ -668,7 +673,12 @@ export const createPlan = mutation({
       .withIndex('by_userId_and_name', (q) => q.eq('userId', user.id).eq('name', name))
       .unique();
     if (existing) {
-      return { planId: existing._id, keptAccountIds: existing.accountIds, droppedAccounts: [] };
+      return {
+        planId: existing._id,
+        keptAccountIds: existing.accountIds,
+        droppedAccounts: [],
+        milestonesEmitted: { firstPlan: false },
+      };
     }
 
     const { eligibleAccounts, droppedAccounts } = await resolveEligiblePlanAccounts(ctx, {
@@ -685,6 +695,9 @@ export const createPlan = mutation({
       'plans',
     );
     await assertCanCreateAnotherPlan(ctx, user.id, existingPlans.length);
+    const initialSettings = await getUserSettingsByUserId(ctx, user.id);
+    const alreadyMarkedPlan = Boolean(initialSettings?.onboardingMilestones?.firstPlanAtMs);
+    const hadPriorPlan = existingPlans.length > 0;
     const categories = assertBounded(
       await ctx.db
         .query('categories')
@@ -771,10 +784,23 @@ export const createPlan = mutation({
     const activeInstallmentPlans = await loadActiveOwnedInstallmentPlans(ctx, user.id);
     await reconcileInstallmentPlanBuckets(ctx, createdPlan, activeInstallmentPlans);
 
+    const planDecision = shouldEmitFirstMilestone({
+      alreadyMarked: alreadyMarkedPlan,
+      hadPriorData: hadPriorPlan,
+    });
+    await persistOnboardingMilestones(ctx, {
+      userId: user.id,
+      nowMs: now,
+      decisions: {
+        firstPlan: planDecision,
+      },
+    });
+
     return {
       planId,
       keptAccountIds: eligibleAccounts.map((account) => account._id),
       droppedAccounts,
+      milestonesEmitted: { firstPlan: planDecision === 'emit' },
     };
   },
 });

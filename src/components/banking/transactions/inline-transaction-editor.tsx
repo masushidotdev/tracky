@@ -33,6 +33,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { accountLabel } from '@/lib/accounts';
+import { analyticsEvents, buildFirstTransactionCreatedProps, trackEvent } from '@/lib/analytics/events';
 import { formatIsoDate } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import { moneyInputValue } from '@/lib/money';
@@ -227,7 +228,7 @@ export function useInlineTransactionEditor({
             return;
           }
 
-          await createManualTransaction({
+          const result = await createManualTransaction({
             accountId: account._id,
             direction: values.direction,
             amount: { amountMinor: values.amountMinor, currency: account.currency },
@@ -237,6 +238,9 @@ export function useInlineTransactionEditor({
             note: note || undefined,
             categoryId,
           });
+          if (result.milestonesEmitted.firstTransaction) {
+            trackEvent(analyticsEvents.firstTransactionCreated, buildFirstTransactionCreatedProps('manual'));
+          }
         },
         {
           success: editingRule

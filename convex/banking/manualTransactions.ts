@@ -2,6 +2,12 @@ import { ConvexError, v } from 'convex/values';
 import { mutation } from '../_generated/server';
 import { requireAuthUser } from '../auth';
 import { absoluteMinorUnits } from '../lib/money';
+import {
+  getUserSettingsByUserId,
+  hasPriorUserTransaction,
+  persistOnboardingMilestones,
+  shouldEmitFirstMilestone,
+} from '../lib/onboardingMilestones';
 import { moneyAmountValidator } from '../lib/validators';
 import { findFirstMatchingCategoryRule } from './categoryRuleCore';
 import { reconcileImportedTransactionWithPlannedExpenses } from './planningReconciliation';
@@ -248,6 +254,9 @@ export const createManualTransaction = mutation({
   },
   handler: async (ctx, args) => {
     const user = await requireAuthUser(ctx);
+    const initialSettings = await getUserSettingsByUserId(ctx, user.id);
+    const alreadyMarkedTx = Boolean(initialSettings?.onboardingMilestones?.firstTransactionAtMs);
+    const hadPriorTx = alreadyMarkedTx ? false : await hasPriorUserTransaction(ctx, user.id);
 
     const description = args.description.trim();
     const counterpartyName = args.counterpartyName?.trim() || undefined;
@@ -287,7 +296,24 @@ export const createManualTransaction = mutation({
     await createTransferCandidateForTransaction(ctx, { userId: user.id, transactionId });
     await invalidatePlanSnapshots(ctx, user.id, [args.bookingDate]);
 
-    return transactionId;
+    const txDecision = shouldEmitFirstMilestone({
+      alreadyMarked: alreadyMarkedTx,
+      hadPriorData: hadPriorTx,
+    });
+    await persistOnboardingMilestones(ctx, {
+      userId: user.id,
+      nowMs: Date.now(),
+      decisions: {
+        firstTransaction: txDecision,
+      },
+    });
+
+    return {
+      transactionId,
+      milestonesEmitted: {
+        firstTransaction: txDecision === 'emit',
+      },
+    };
   },
 });
 

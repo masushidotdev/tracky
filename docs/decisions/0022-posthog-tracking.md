@@ -27,6 +27,8 @@ Client-only PostHog via `posthog-js`, lazy init after explicit opt-in banner:
 - The deletion survey records only the fixed reason and whether an `Other`
   comment exists in PostHog, under the existing analytics opt-in. The free text,
   email, and name remain in Convex; they are never event properties.
+- One-time onboarding milestone events (`first_*`) extend this client-only setup;
+  see `decisions/0026-onboarding-first-events.md`.
 
 ## Why
 

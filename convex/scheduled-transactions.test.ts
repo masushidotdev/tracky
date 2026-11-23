@@ -127,7 +127,9 @@ describe('a future booking date makes a manual transaction scheduled', () => {
     const t = createTest();
     const fixture = await seedFixture(t);
 
-    const scheduledId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: scheduledId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.manualAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 12_000n, currency: 'EUR' },
@@ -148,7 +150,9 @@ describe('a future booking date makes a manual transaction scheduled', () => {
     const t = createTest();
     const fixture = await seedFixture(t);
 
-    const todayId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: todayId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.manualAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 2_500n, currency: 'EUR' },
@@ -188,7 +192,7 @@ describe('a future booking date makes a manual transaction scheduled', () => {
     useFixedToday();
     const t = createTest();
     const fixture = await seedFixture(t);
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.manualAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 2_500n, currency: 'EUR' },
@@ -217,7 +221,9 @@ describe('linked accounts accept scheduled transactions only', () => {
     const t = createTest();
     const fixture = await seedFixture(t);
 
-    const scheduledId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: scheduledId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.linkedAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 45_000n, currency: 'EUR' },
@@ -244,7 +250,9 @@ describe('promoteDueScheduledTransactions', () => {
     useFixedToday();
     const t = createTest();
     const fixture = await seedFixture(t);
-    const scheduledId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: scheduledId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.manualAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 12_000n, currency: 'EUR' },
@@ -278,7 +286,9 @@ describe('promoteDueScheduledTransactions', () => {
     useFixedToday();
     const t = createTest();
     const fixture = await seedFixture(t);
-    const scheduledId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: scheduledId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.linkedAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 45_000n, currency: 'EUR' },
@@ -296,7 +306,9 @@ describe('promoteDueScheduledTransactions', () => {
 });
 
 async function seedScheduledAndBooked(t: TestHarness, fixture: Awaited<ReturnType<typeof seedFixture>>) {
-  const scheduledId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+  const { transactionId: scheduledId } = await fixture.asUser.mutation(
+    api.banking.manualTransactions.createManualTransaction,
+    {
     accountId: fixture.linkedAccountId,
     direction: 'DBIT',
     amount: { amountMinor: 45_000n, currency: 'EUR' },

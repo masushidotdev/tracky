@@ -40,7 +40,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuthedQuery } from '@/hooks/use-authed-query';
 import { usePendingAction } from '@/hooks/use-pending-action';
 import { accountLabel } from '@/lib/accounts';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
+import { analyticsEvents, buildFirstPlanCreatedProps, trackEvent } from '@/lib/analytics/events';
 import { useEntitlements } from '@/lib/entitlements';
 import { currentPeriod } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
@@ -240,6 +240,9 @@ export function PlanView() {
       'createPlan',
       async () => {
         const result = await createPlan(values);
+        if (result.milestonesEmitted.firstPlan) {
+          trackEvent(analyticsEvents.firstPlanCreated, buildFirstPlanCreatedProps());
+        }
         // A new plan is not the default one, and landing on the old plan after creating a new one
         // reads as "nothing happened".
         await setActivePlan({ planId: result.planId });

@@ -146,7 +146,13 @@ describe('CSV transaction import', () => {
       ],
     });
 
-    expect(result).toEqual({ imported: 2, skippedDuplicates: 0, failed: [], triageQueued: 1 });
+    expect(result).toEqual({
+      imported: 2,
+      skippedDuplicates: 0,
+      failed: [],
+      triageQueued: 1,
+      milestonesEmitted: { firstCsvImport: true, firstTransaction: true },
+    });
     const stored = await t.run(async (ctx) => {
       const transactions = await ctx.db
         .query('transactions')
@@ -175,7 +181,13 @@ describe('CSV transaction import', () => {
       accountId: fixture.accountId,
       rows: [row('csv|existing'), row('csv|new'), row('csv|new')],
     });
-    expect(result).toEqual({ imported: 1, skippedDuplicates: 2, failed: [], triageQueued: 0 });
+    expect(result).toEqual({
+      imported: 1,
+      skippedDuplicates: 2,
+      failed: [],
+      triageQueued: 0,
+      milestonesEmitted: { firstCsvImport: false, firstTransaction: false },
+    });
   });
 
   test('preserves unmatchable rows as uncategorized residue for jev triage', async () => {

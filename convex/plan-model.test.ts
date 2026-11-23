@@ -202,7 +202,12 @@ describe('plan model', () => {
         .take(20),
     }));
 
-    expect(repeated).toEqual({ planId, keptAccountIds: [], droppedAccounts: [] });
+    expect(repeated).toEqual({
+      planId,
+      keptAccountIds: [],
+      droppedAccounts: [],
+      milestonesEmitted: { firstPlan: false },
+    });
     expect(result.plans).toHaveLength(1);
     expect(result.plan).toMatchObject({ currency: 'EUR', isDefault: true });
     expect(result.plan).not.toHaveProperty('openingCarryMinor');
