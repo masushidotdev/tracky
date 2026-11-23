@@ -3460,7 +3460,7 @@ describe('plan month read model', () => {
     const { asUser, planId } = await createPlan(t, userId, 'Main plan', [accountId]);
     const bucketId = await bucketForCategory(t, planId, categoryId);
     await setAssigned(asUser, planId, bucketId, '2026-05', 5_000n);
-    const transactionId = await asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId,
       direction: 'DBIT',
       amount: { amountMinor: 1_000n, currency: 'EUR' },

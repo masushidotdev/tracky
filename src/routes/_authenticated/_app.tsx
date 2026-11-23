@@ -11,6 +11,7 @@ import { DeletionRouteGuard } from '@/components/settings/deletion-route-guard';
 import { ProfileBootstrap } from '@/components/auth/profile-bootstrap';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { OnboardingMilestoneFlusher } from '@/lib/analytics/onboarding-milestone-flusher';
 import { BalancePrivacyProvider } from '@/lib/balance-privacy-context';
 import { BALANCE_PRIVACY_COOKIE, parseBalancePrivacyValue, readBalancePrivacyCookie } from '@/lib/balance-privacy';
 
@@ -44,6 +45,7 @@ function AppLayout() {
         <Outlet />
       ) : (
         <ProfileBootstrap key={user?.id}>
+          <OnboardingMilestoneFlusher />
           <BalancePrivacyProvider initialHidden={balancesHidden}>
             <CommandMenuProvider>
               <SidebarProvider

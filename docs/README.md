@@ -97,3 +97,4 @@ decision and execution-plan records keep explicit status metadata.
 
 - [Security audit and response runbook, October 2026](security-audit-2026-10.md)
 - [0025 — Runtime security boundaries](decisions/0025-runtime-security-boundaries.md)
+- [0026 — Onboarding first-time PostHog milestone events](decisions/0026-onboarding-first-events.md)

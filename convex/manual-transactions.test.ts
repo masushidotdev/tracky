@@ -120,7 +120,9 @@ describe('createManualTransaction', () => {
     const t = createTest();
     const fixture = await seedFixture(t);
 
-    const purchaseId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: purchaseId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 4550n, currency: 'EUR' },
@@ -179,7 +181,7 @@ describe('createManualTransaction', () => {
       return insertedTagId;
     });
 
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 4550n, currency: 'EUR' },
@@ -202,7 +204,9 @@ describe('createManualTransaction', () => {
     const t = createTest();
     const fixture = await seedFixture(t);
 
-    const topUpId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: topUpId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 5000n, currency: 'EUR' },
@@ -258,7 +262,9 @@ describe('createManualTransaction', () => {
       });
     });
 
-    const cardLegId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: cardLegId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 5000n, currency: 'EUR' },
@@ -309,7 +315,7 @@ describe('updateManualTransaction', () => {
   test('edits reprice the balance and re-derive the classification', async () => {
     const t = createTest();
     const fixture = await seedFixture(t);
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 4550n, currency: 'EUR' },
@@ -340,7 +346,7 @@ describe('updateManualTransaction', () => {
   test('blocks edits while the transaction is transfer-matched', async () => {
     const t = createTest();
     const fixture = await seedFixture(t);
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 4550n, currency: 'EUR' },
@@ -377,7 +383,7 @@ describe('deleteManualTransaction', () => {
   test('deletes, restores the balance, and cascades unconfirmed candidates', async () => {
     const t = createTest();
     const fixture = await seedFixture(t);
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 4550n, currency: 'EUR' },
@@ -420,7 +426,7 @@ describe('deleteManualTransaction', () => {
       savedAmount: { amountMinor: 10000n, currency: 'EUR' },
       targetDate: '2026-12-31',
     });
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 3732n, currency: 'EUR' },
@@ -460,7 +466,7 @@ describe('deleteManualTransaction', () => {
   test('blocks deletion when referenced by an installment payment', async () => {
     const t = createTest();
     const fixture = await seedFixture(t);
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.cardAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 4550n, currency: 'EUR' },

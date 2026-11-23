@@ -362,7 +362,7 @@ describe('card statement installment conversion', () => {
     vi.setSystemTime(new Date('2026-08-01T12:00:00.000Z'));
     const t = createTest();
     const fixture = await convertManualStatementSettledFromChecking(t, 'card_installment_settlement_link_user');
-    const transactionId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
       accountId: fixture.checkingAccountId,
       direction: 'DBIT',
       amount: { amountMinor: 40_000n, currency: 'EUR' },
@@ -393,7 +393,7 @@ describe('card statement installment conversion', () => {
     vi.setSystemTime(new Date('2026-08-01T12:00:00.000Z'));
     const t = createTest();
     const fixture = await convertManualStatementSettledFromChecking(t, 'card_installment_settlement_candidate_user');
-    const settlementTransactionId = await fixture.asUser.mutation(
+    const { transactionId: settlementTransactionId } = await fixture.asUser.mutation(
       api.banking.manualTransactions.createManualTransaction,
       {
         accountId: fixture.checkingAccountId,

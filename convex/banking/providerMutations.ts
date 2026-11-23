@@ -5,6 +5,11 @@ import { internalMutation } from '../_generated/server';
 import { entitlementsForTier, resolveTier } from '../lib/entitlements';
 import { JEV_IMPORT } from '../lib/jevThresholds';
 import { absoluteMinorUnits, decimalStringToMinorUnits } from '../lib/money';
+import {
+  getUserSettingsByUserId,
+  persistOnboardingMilestones,
+  shouldEmitFirstMilestone,
+} from '../lib/onboardingMilestones';
 import { bankProviderValidator, transactionStatusValidator } from '../lib/validators';
 import {
   findMatchingSubscription,
@@ -745,6 +750,10 @@ export const completeEnableBankingSession = internalMutation({
       .query('financialAccounts')
       .withIndex('by_userId', (q) => q.eq('userId', request.userId))
       .take(500);
+    const hadPriorBankAccount = userAccounts.some((account) => account.provider !== 'manual');
+    const initialSettings = await getUserSettingsByUserId(ctx, request.userId);
+    const alreadyMarkedBankAccount = Boolean(initialSettings?.onboardingMilestones?.firstBankAccountAtMs);
+    let insertedBankAccounts = 0;
     const identityCandidates = userAccounts.filter((account) => account.provider === 'enableBanking');
     const existingAccountByProviderId = new Map(
       identityCandidates.map((account) => [account.providerAccountId, account]),
@@ -796,14 +805,18 @@ export const completeEnableBankingSession = internalMutation({
         (providerAccountHash ? existingAccountByProviderHash.get(providerAccountHash) : undefined) ??
         existingAccountByProviderId.get(account.uid) ??
         (maskedIdentityKey ? existingAccountByMaskedIdentity.get(maskedIdentityKey) : undefined);
-      const accountId =
-        existingAccount?._id ??
-        (await ctx.db.insert('financialAccounts', {
+      let accountId: Id<'financialAccounts'>;
+      if (existingAccount) {
+        accountId = existingAccount._id;
+      } else {
+        accountId = await ctx.db.insert('financialAccounts', {
           userId: request.userId,
           provider: 'enableBanking',
           createdAtMs: now,
           ...accountPatch,
-        }));
+        });
+        insertedBankAccounts += 1;
+      }
 
       if (existingAccount) {
         await ctx.db.patch('financialAccounts', existingAccount._id, accountPatch);
@@ -875,6 +888,21 @@ export const completeEnableBankingSession = internalMutation({
       status: 'completed',
       completedAtMs: now,
     });
+
+    if (insertedBankAccounts > 0) {
+      const bankAccountDecision = shouldEmitFirstMilestone({
+        alreadyMarked: alreadyMarkedBankAccount,
+        hadPriorData: hadPriorBankAccount,
+      });
+      await persistOnboardingMilestones(ctx, {
+        userId: request.userId,
+        nowMs: now,
+        decisions: {
+          firstBankAccount: bankAccountDecision,
+        },
+        queueClientEvents: bankAccountDecision === 'emit' ? { firstBankAccountConnected: true } : undefined,
+      });
+    }
 
     return connectionId;
   },
@@ -974,6 +1002,7 @@ export const upsertTransactions = internalMutation({
       .withIndex('by_userId_and_bookingDate', (q) => q.eq('userId', account.userId))
       .order('desc')
       .take(200);
+    const hadPriorTransaction = priorTransactions.length > 0;
     const categoryRules = await ctx.db
       .query('categoryRules')
       .withIndex('by_userId_and_priority', (q) => q.eq('userId', account.userId))
@@ -1118,6 +1147,21 @@ export const upsertTransactions = internalMutation({
         dailyBudget,
       });
       if (result.queued) triageQueued += 1;
+    }
+    if (imported > 0) {
+      const alreadyMarkedTx = Boolean(settings?.onboardingMilestones?.firstTransactionAtMs);
+      const txDecision = shouldEmitFirstMilestone({
+        alreadyMarked: alreadyMarkedTx,
+        hadPriorData: hadPriorTransaction,
+      });
+      await persistOnboardingMilestones(ctx, {
+        userId: account.userId,
+        nowMs: now,
+        decisions: {
+          firstTransaction: txDecision,
+        },
+        queueClientEvents: txDecision === 'emit' ? { firstTransactionBank: true } : undefined,
+      });
     }
     const nextSyncAfterMs = now + syncState.syncCadenceHours * 60 * 60 * 1000;
     await ctx.db.patch('accountSyncStates', syncState._id, {

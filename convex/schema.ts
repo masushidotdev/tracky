@@ -73,6 +73,20 @@ export default defineSchema({
         onboardingCompletedAtMs: v.optional(v.number()),
       }),
     ),
+    onboardingMilestones: v.optional(
+      v.object({
+        firstCsvImportAtMs: v.optional(v.number()),
+        firstPlanAtMs: v.optional(v.number()),
+        firstTransactionAtMs: v.optional(v.number()),
+        firstBankAccountAtMs: v.optional(v.number()),
+        pendingClientEvents: v.optional(
+          v.object({
+            firstBankAccountConnected: v.optional(v.boolean()),
+            firstTransactionBank: v.optional(v.boolean()),
+          }),
+        ),
+      }),
+    ),
     createdAtMs: v.number(),
     updatedAtMs: v.number(),
   }).index('by_userId', ['userId']),

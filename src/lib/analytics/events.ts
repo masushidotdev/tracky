@@ -43,6 +43,10 @@ export const analyticsEvents = {
   csvImportStarted: 'csv_import_started',
   csvImportCompleted: 'csv_import_completed',
   csvImportFailed: 'csv_import_failed',
+  firstCsvImportCompleted: 'first_csv_import_completed',
+  firstPlanCreated: 'first_plan_created',
+  firstTransactionCreated: 'first_transaction_created',
+  firstBankAccountConnected: 'first_bank_account_connected',
   creditFacilityCreated: 'credit_facility_created',
   installmentPlanCreated: 'installment_plan_created',
   loanCreated: 'loan_created',
@@ -221,9 +225,12 @@ export function initAnalytics(): void {
   initialized = true;
 }
 
+export const ANALYTICS_CONSENT_EVENT = 'tracky-analytics-consent';
+
 export function setAnalyticsConsent(accepted: boolean): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(CONSENT_KEY, accepted ? 'accepted' : 'rejected');
+  window.dispatchEvent(new Event(ANALYTICS_CONSENT_EVENT));
   if (accepted) {
     // initAnalytics may no-op when the SDK is already loaded (e.g. re-accept
     // after revocation): opt in explicitly so capture resumes.
@@ -302,4 +309,48 @@ export function lengthBucket(length: number): string {
   if (length <= 200) return '51-200';
   if (length <= 1000) return '201-1000';
   return '1000+';
+}
+
+export type FirstTransactionSource = 'csv' | 'manual' | 'bank';
+
+export type FirstCsvImportCompletedProps = {
+  row_count_bucket: string;
+  surface: 'import';
+};
+
+export type FirstPlanCreatedProps = {
+  surface: 'plan';
+};
+
+export type FirstTransactionCreatedProps = {
+  source: FirstTransactionSource;
+};
+
+export type FirstBankAccountConnectedProps = {
+  surface: 'bank-connections';
+};
+
+export function buildFirstCsvImportCompletedProps(importedCount: number): FirstCsvImportCompletedProps {
+  return {
+    row_count_bucket: countBucket(importedCount),
+    surface: 'import',
+  };
+}
+
+export function buildFirstPlanCreatedProps(): FirstPlanCreatedProps {
+  return {
+    surface: 'plan',
+  };
+}
+
+export function buildFirstTransactionCreatedProps(source: FirstTransactionSource): FirstTransactionCreatedProps {
+  return {
+    source,
+  };
+}
+
+export function buildFirstBankAccountConnectedProps(): FirstBankAccountConnectedProps {
+  return {
+    surface: 'bank-connections',
+  };
 }

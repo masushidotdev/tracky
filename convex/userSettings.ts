@@ -50,6 +50,37 @@ export const getMySettings = query({
   },
 });
 
+// Atomically claims and clears server-originated onboarding milestone flags
+// (Enable Banking callback & async bank sync) so the client emits each event
+// at most once through the consent-gated PostHog wrapper, even across tabs.
+export const claimPendingOnboardingMilestones = mutation({
+  args: {},
+  returns: v.object({
+    firstBankAccountConnected: v.boolean(),
+    firstTransactionBank: v.boolean(),
+  }),
+  handler: async (ctx) => {
+    const user = await requireAuthUser(ctx);
+    const existing = await settingsForUser(ctx, user.id);
+    const pending = existing?.onboardingMilestones?.pendingClientEvents;
+    const firstBankAccountConnected = Boolean(pending?.firstBankAccountConnected);
+    const firstTransactionBank = Boolean(pending?.firstTransactionBank);
+    if (!existing || (!firstBankAccountConnected && !firstTransactionBank)) {
+      return { firstBankAccountConnected: false, firstTransactionBank: false };
+    }
+
+    await ctx.db.patch('userSettings', existing._id, {
+      onboardingMilestones: {
+        ...existing.onboardingMilestones,
+        pendingClientEvents: undefined,
+      },
+      updatedAtMs: Date.now(),
+    });
+
+    return { firstBankAccountConnected, firstTransactionBank };
+  },
+});
+
 export const updateNotificationPreferences = mutation({
   args: {
     billReminderLeadDays: v.array(v.number()),

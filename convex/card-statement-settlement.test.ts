@@ -145,13 +145,14 @@ async function createSettlementCardLeg(
 ) {
   // The card-side CRDT leg auto-matches the imported checking DBIT (same
   // amount -> confidence 0.9 >= auto-confirm threshold).
-  return await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+  const { transactionId } = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
     accountId: fixture.cardAccountId,
     direction: 'CRDT',
     amount: { amountMinor: 203193n, currency: 'EUR' },
     bookingDate,
     description: 'Pagamento estratto conto',
   });
+  return transactionId;
 }
 
 async function ensureSettlementTransfer(
@@ -818,7 +819,9 @@ describe('card statement settlement via transfer matching', () => {
 
     // Slightly different amount (fee) so the auto-confirm path is skipped and
     // the user matches by hand instead.
-    const cardLegId = await fixture.asUser.mutation(api.banking.manualTransactions.createManualTransaction, {
+    const { transactionId: cardLegId } = await fixture.asUser.mutation(
+      api.banking.manualTransactions.createManualTransaction,
+      {
       accountId: fixture.cardAccountId,
       direction: 'CRDT',
       amount: { amountMinor: 202000n, currency: 'EUR' },

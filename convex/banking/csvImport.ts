@@ -4,6 +4,13 @@ import { mutation, query } from '../_generated/server';
 import { requireAuthUser } from '../auth';
 import { entitlementsForTier, resolveTier } from '../lib/entitlements';
 import { JEV_IMPORT } from '../lib/jevThresholds';
+import {
+  getUserSettingsByUserId,
+  hasPriorUserCsvTransaction,
+  hasPriorUserTransaction,
+  persistOnboardingMilestones,
+  shouldEmitFirstMilestone,
+} from '../lib/onboardingMilestones';
 import { moneyAmountValidator } from '../lib/validators';
 import { findFirstMatchingCategoryRule } from './categoryRuleCore';
 import {
@@ -86,6 +93,17 @@ export const importManualTransactionsBatch = mutation({
     }
 
     const account = await getOwnedManualAccount(ctx, user.id, args.accountId);
+    const initialSettings = args.rows.length > 0 ? await getUserSettingsByUserId(ctx, user.id) : null;
+    const alreadyMarkedCsv = Boolean(initialSettings?.onboardingMilestones?.firstCsvImportAtMs);
+    const alreadyMarkedTx = Boolean(initialSettings?.onboardingMilestones?.firstTransactionAtMs);
+    const hadPriorTx =
+      args.rows.length === 0 || alreadyMarkedTx ? false : await hasPriorUserTransaction(ctx, user.id);
+    const hadPriorCsv =
+      args.rows.length === 0 || alreadyMarkedCsv
+        ? false
+        : !alreadyMarkedTx && !hadPriorTx
+          ? false
+          : await hasPriorUserCsvTransaction(ctx, user.id);
     const categoryRules = await ctx.db
       .query('categoryRules')
       .withIndex('by_userId_and_priority', (q) => q.eq('userId', user.id))
@@ -225,6 +243,37 @@ export const importManualTransactionsBatch = mutation({
       });
       if (result.queued) triageQueued += 1;
     }
-    return { imported, skippedDuplicates, failed, triageQueued };
+    let firstCsvImport = false;
+    let firstTransaction = false;
+    if (imported > 0) {
+      const csvDecision = shouldEmitFirstMilestone({
+        alreadyMarked: alreadyMarkedCsv,
+        hadPriorData: hadPriorCsv,
+      });
+      const txDecision = shouldEmitFirstMilestone({
+        alreadyMarked: alreadyMarkedTx,
+        hadPriorData: hadPriorTx,
+      });
+      await persistOnboardingMilestones(ctx, {
+        userId: user.id,
+        nowMs: Date.now(),
+        decisions: {
+          firstCsvImport: csvDecision,
+          firstTransaction: txDecision,
+        },
+      });
+      firstCsvImport = csvDecision === 'emit';
+      firstTransaction = txDecision === 'emit';
+    }
+    return {
+      imported,
+      skippedDuplicates,
+      failed,
+      triageQueued,
+      milestonesEmitted: {
+        firstCsvImport,
+        firstTransaction,
+      },
+    };
   },
 });

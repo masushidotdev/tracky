@@ -17,7 +17,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
-import { analyticsEvents, countBucket, trackEvent } from '@/lib/analytics/events';
+import {
+  analyticsEvents,
+  buildFirstCsvImportCompletedProps,
+  buildFirstTransactionCreatedProps,
+  countBucket,
+  trackEvent,
+} from '@/lib/analytics/events';
 import { useI18n } from '@/lib/i18n';
 
 type ImportTransaction = ParsedCsvTransaction & {
@@ -209,12 +215,23 @@ export function CsvImportWizard() {
     });
     setStep('import');
 
+    let totalImported = 0;
+    let firstCsvImportEmitted = false;
+    let firstTransactionEmitted = false;
+
     try {
       for (const batch of batches) {
         const result = await importBatch({
           accountId: selection.accountId,
           rows: batch.map(({ transaction }) => transaction),
         });
+        totalImported += result.imported;
+        if (result.milestonesEmitted.firstCsvImport) {
+          firstCsvImportEmitted = true;
+        }
+        if (result.milestonesEmitted.firstTransaction) {
+          firstTransactionEmitted = true;
+        }
         const failures = result.failed.map((failure) => ({
           index: batch[failure.index]?.sourceIndex ?? failure.index,
           reason: failure.reason,
@@ -234,6 +251,12 @@ export function CsvImportWizard() {
       }
       setProgress((current) => (current ? { ...current, completed: true } : current));
       trackEvent(analyticsEvents.csvImportCompleted, { row_count_bucket: countBucket(eligible.length) });
+      if (firstCsvImportEmitted) {
+        trackEvent(analyticsEvents.firstCsvImportCompleted, buildFirstCsvImportCompletedProps(totalImported));
+      }
+      if (firstTransactionEmitted) {
+        trackEvent(analyticsEvents.firstTransactionCreated, buildFirstTransactionCreatedProps('csv'));
+      }
     } catch (error) {
       setProgress((current) =>
         current
@@ -244,6 +267,12 @@ export function CsvImportWizard() {
             }
           : current,
       );
+      if (firstCsvImportEmitted) {
+        trackEvent(analyticsEvents.firstCsvImportCompleted, buildFirstCsvImportCompletedProps(totalImported));
+      }
+      if (firstTransactionEmitted) {
+        trackEvent(analyticsEvents.firstTransactionCreated, buildFirstTransactionCreatedProps('csv'));
+      }
       trackEvent(analyticsEvents.csvImportFailed, { error_step: 'import', surface: 'import' });
     }
   }
