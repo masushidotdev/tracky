@@ -4,7 +4,7 @@
 
 ```bash
 npm ci
-cp .env.local.example .env.local   # fill in your own values
+cp .env.example .env.local          # fill in your own values
 npx convex dev                      # your own Convex deployment
 npm run dev
 ```

@@ -12,7 +12,7 @@ Two verification modes exist because authenticated app routes (`/app/*`) require
 1. **Public & built-Worker mode (zero real secrets required):** verifies `npm test`, `npm run lint`, `npm run security:audit`, `npm run security:convex-runtime`, `CLOUDFLARE_ENV= npm run build`, and runs the compiled Worker locally via `wrangler dev --config dist/server/wrangler.json` with temporary synthetic `dist/server/.dev.vars` (scaffolding removed in cleanup) to verify public EN/IT routes, static assets, security headers, 404 routes, and the unauthenticated `/app` redirect.
 2. **Full local stack mode (`npm run dev`, requires Convex + WorkOS secrets):** verifies authenticated end-to-end journeys (sign-in via WorkOS, `ProfileBootstrap`, manual/loan account creation, CSV import, zero-based Plan) in a real browser against `http://localhost:3000`.
 
-**Isolation rule:** never share one `dev` Convex deployment across concurrent agents. Staging shares `dev:woozy-antelope-583`; use `scripts/init-worktree.sh` for a dedicated per-worktree dev deployment before running authenticated writes, or run `wrangler dev --config dist/server/wrangler.json` on a dedicated loopback port (`4173` default, override via `TRACKY_VERIFY_PORT`) with `CLOUDFLARE_ENV=` for isolated public-Worker checks.
+**Isolation & key-safety rule:** `dev:woozy-antelope-583` is the Convex `dev` deployment (paired with the `tracky-woozy-antelope-583-dev` WorkOS environment, distinct from Staging/Production). Before any `convex` command, verify `CONVEX_DEPLOY_KEY` belongs to Tracky (`dev:woozy-antelope-583`, e.g. `export CONVEX_DEPLOY_KEY="$TRACKY_CONVEX_DEPLOY_KEY"`) and never use another project's key. Never share one `dev` Convex deployment across concurrent agents; use `scripts/init-worktree.sh` for a dedicated per-worktree dev deployment before concurrent authenticated writes, or run `wrangler dev --config dist/server/wrangler.json` on a dedicated loopback port (`4173` default, override via `TRACKY_VERIFY_PORT`) with `CLOUDFLARE_ENV=` for isolated public-Worker checks.
 
 ## Launch
 
@@ -59,6 +59,8 @@ npm run dev
 ```
 
 **Ready condition:** Convex prints functions ready and Vite prints `http://localhost:3000/`; `curl -sf http://localhost:3000/` returns HTTP `200`.
+
+Note: `convex dev` may reformat `convex/_generated/api.d.ts` and `convex/_generated/server.d.ts` on startup; restore them (`git checkout -- convex/_generated/`) if your branch does not change `convex/`.
 
 ## Doctor
 
@@ -141,7 +143,7 @@ if [ "${CREATED_DEV_VARS:-0}" = "1" ]; then
 fi
 ```
 
-Never kill processes by name (`pkill vite`, `pkill node`) and never delete `/tmp/tracky-verify-evidence/`.
+Note: `npm run dev` (`convex dev --start 'vite dev'`) spawns `vite dev` in its own child session, so killing only `-$SERVER_PID` can leave `vite dev` listening on `:3000`. Verify `:3000` is closed and terminate the specific `vite dev` child PIDs you started if needed. Never kill processes by name (`pkill vite`, `pkill node`) and never delete `/tmp/tracky-verify-evidence/`.
 
 ## Helpers
 

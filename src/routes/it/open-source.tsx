@@ -104,7 +104,7 @@ function OssIt() {
         </Reveal>
         <Reveal>
           <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Dal clone al tuo deployment</h2>
-          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>Clona il repo, installa con npm ci, copia .env.local.example in .env.local e punta l'app al tuo deployment Convex con npx convex dev. Ogni installazione ha backend proprio, ambiente WorkOS proprio e facoltativamente la propria app Enable Banking — non tocchi mai i dati altrui. Lancia npm run dev in locale, poi pubblica il frontend Worker collegandolo al tuo backend Convex per la produzione. Con le tue chiavi attivi l'intero stack — sync bancaria, analyst e funzioni Pro-gated — e puoi contribuire upstream con i tuoi miglioramenti.</p>
+          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>Clona il repo, installa con npm ci, copia .env.example in .env.local e punta l'app al tuo deployment Convex con npx convex dev. Ogni installazione ha backend proprio, ambiente WorkOS proprio e facoltativamente la propria app Enable Banking — non tocchi mai i dati altrui. Lancia npm run dev in locale, poi pubblica il frontend Worker collegandolo al tuo backend Convex per la produzione. Con le tue chiavi attivi l'intero stack — sync bancaria, analyst e funzioni Pro-gated — e puoi contribuire upstream con i tuoi miglioramenti.</p>
         </Reveal>
         <Reveal>
           <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Prova la demo, poi contribuisci</h2>
