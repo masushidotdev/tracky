@@ -100,7 +100,7 @@
     "@edge-runtime/vm": "^5.0.0",
     "@mdx-js/rollup": "^3.1.1",
     "@posthog/rollup-plugin": "^1.6.2",
-    "@shikijs/rehype": "^4.5.0",
+    "@shikijs/rehype": "^4.6.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/eslint-config": "^0.4.0",
     "@tanstack/react-devtools": "^0.10.13",
