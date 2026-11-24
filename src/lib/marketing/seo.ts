@@ -98,6 +98,31 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
   };
 }
 
+export function blogPostingJsonLd(args: {
+  headline: string;
+  description: string;
+  url: string;
+  image: string;
+  datePublished: string;
+  dateModified: string;
+  inLanguage: 'en' | 'it';
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: args.headline,
+    description: args.description,
+    url: args.url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': args.url },
+    image: args.image,
+    datePublished: args.datePublished,
+    dateModified: args.dateModified,
+    inLanguage: args.inLanguage,
+    author: { '@type': 'Organization', name: 'Tracky contributors' },
+    publisher: { '@type': 'Organization', name: 'Tracky contributors', url: SITE_ORIGIN },
+  };
+}
+
 const OG_FILES: Record<string, string> = {
   home: 'og-home.png',
   pricing: 'og-pricing.png',
@@ -114,6 +139,7 @@ const OG_FILES: Record<string, string> = {
   'guide-budget': 'og-guide-budget.png',
   'guide-cashflow': 'og-guide-cashflow.png',
   'guide-subscriptions': 'og-guide-subscriptions.png',
+  'blog-v0-1-0': 'og-open-source.png',
 };
 
 export function ogImageFor(key: string): string {

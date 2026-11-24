@@ -1,7 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
 import { marketingPages } from './pages';
-import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from './seo';
+import {
+  blogPostingJsonLd,
+  breadcrumbJsonLd,
+  buildMarketingHead,
+  faqJsonLd,
+  ogImageFor,
+  softwareAppJsonLd,
+} from './seo';
 
 describe('marketing pages registry', () => {
   test('every page has EN and IT paths, IT under /it/', () => {
@@ -25,8 +32,8 @@ describe('marketing pages registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  test('inventory covers 15 pages (30 URLs)', () => {
-    expect(marketingPages).toHaveLength(15);
+  test('inventory covers 16 pages (32 URLs)', () => {
+    expect(marketingPages).toHaveLength(16);
   });
 });
 
@@ -77,11 +84,48 @@ describe('buildMarketingHead', () => {
     expect(block.offers).toMatchObject({ price: '0', priceCurrency: 'EUR' });
   });
 
-  test('FAQ and breadcrumb helpers shape valid blocks', () => {
+  test('FAQ, breadcrumb, and BlogPosting helpers shape valid blocks', () => {
     const faq = faqJsonLd([{ question: 'Is Tracky free?', answer: 'Yes.' }]);
     expect(faq['@type']).toBe('FAQPage');
     const crumbs = breadcrumbJsonLd([{ name: 'Home', path: '/' }]);
     expect(crumbs['@type']).toBe('BreadcrumbList');
+    const post = blogPostingJsonLd({
+      headline: 'Tracky v0.1.0',
+      description: 'First public tagged release.',
+      url: 'https://www.trytracky.app/blog/tracky-v0-1-0',
+      image: ogImageFor('blog-v0-1-0'),
+      datePublished: '2026-11-24',
+      dateModified: '2026-11-24',
+      inLanguage: 'en',
+    });
+    expect(post['@type']).toBe('BlogPosting');
+    expect(post.datePublished).toBe('2026-11-24');
+    expect(post.dateModified).toBe('2026-11-24');
+    expect(post.author).toEqual({ '@type': 'Organization', name: 'Tracky contributors' });
+  });
+
+  test('blog release route resolves bilingual hreflang pair', () => {
+    const head = buildMarketingHead({
+      ...base,
+      path: '/blog/tracky-v0-1-0',
+      ogImage: ogImageFor('blog-v0-1-0'),
+    });
+    expect(head.links).toContainEqual({ rel: 'canonical', href: 'https://www.trytracky.app/blog/tracky-v0-1-0' });
+    expect(head.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'en',
+      href: 'https://www.trytracky.app/blog/tracky-v0-1-0',
+    });
+    expect(head.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'it',
+      href: 'https://www.trytracky.app/it/blog/tracky-v0-1-0',
+    });
+    expect(head.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'x-default',
+      href: 'https://www.trytracky.app/blog/tracky-v0-1-0',
+    });
   });
 
   test('OG image per-page mapping', () => {
@@ -89,6 +133,7 @@ describe('buildMarketingHead', () => {
     expect(ogImageFor('pricing')).toContain('og-pricing.png');
     expect(ogImageFor('feature-plan')).toContain('og-feature-plan.png');
     expect(ogImageFor('faq')).toContain('og-faq.png');
+    expect(ogImageFor('blog-v0-1-0')).toContain('og-open-source.png');
     expect(ogImageFor('unknown-key')).toContain('og-default.png');
   });
 });
