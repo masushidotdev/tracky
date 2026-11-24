@@ -33,7 +33,7 @@ Built on [Convex](https://convex.dev/) (database + server logic),
 
 ```bash
 npm ci
-cp .env.local.example .env.local   # then fill in your values
+cp .env.example .env.local          # then fill in your values
 npx convex dev                      # provisions your Convex deployment
 npm run dev                         # Vite + Convex in parallel
 ```

@@ -28,3 +28,5 @@
 
 - Automated login against WorkOS AuthKit cannot run without real WorkOS dev credentials (`WORKOS_CLIENT_ID`, `WORKOS_API_KEY`) and a configured `http://localhost:3000/callback` redirect URI in the WorkOS dashboard, plus a live Convex deployment (`VITE_CONVEX_URL`).
 - Synthetic `.dev.vars` only tests that the `307` redirect is constructed with the right client ID and return pathname; submitting the WorkOS hosted form with a synthetic `client_id` fails on WorkOS.
+- Automated sign-up also requires an active test email inbox (e.g., `ListEmailInboxes` enabled) or an existing `/tmp/tracky-auth-state.json`; if email inboxes are disabled, stop rather than inventing an address.
+- `http://localhost:3000/callback` is accepted by the `tracky-woozy-antelope-583-dev` AuthKit app (verified HTTP `200` `Sign in` screen with cookies via `curl -c/-b -L`), whereas bare `google-chrome --headless=new --screenshot` on `/app` can show `Server Error` or stall on WorkOS AuthKit assets; use Playwright or an interactive browser session for AuthKit sign-in.

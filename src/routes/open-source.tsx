@@ -104,7 +104,7 @@ function OssEn() {
         </Reveal>
         <Reveal>
           <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>From clone to your own deployment</h2>
-          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>Clone the repo, install with npm ci, copy .env.local.example to .env.local, and point the app at your own Convex deployment with npx convex dev. Each setup brings its own backend, its own WorkOS environment, and optionally its own Enable Banking app — you never touch anyone else's data. Run npm run dev locally, then deploy the Worker frontend against your Convex backend for production. With your own keys you switch on the full stack — bank sync, the analyst, and Pro-gated features — and you can contribute your improvements upstream.</p>
+          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>Clone the repo, install with npm ci, copy .env.example to .env.local, and point the app at your own Convex deployment with npx convex dev. Each setup brings its own backend, its own WorkOS environment, and optionally its own Enable Banking app — you never touch anyone else's data. Run npm run dev locally, then deploy the Worker frontend against your Convex backend for production. With your own keys you switch on the full stack — bank sync, the analyst, and Pro-gated features — and you can contribute your improvements upstream.</p>
         </Reveal>
         <Reveal>
           <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Try the demo, then contribute</h2>
