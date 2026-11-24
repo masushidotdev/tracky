@@ -117,6 +117,8 @@ export function MarketingSite({
             {' · '}
             <a href={locale === 'it' ? '/it/domande-frequenti' : '/faq'}>FAQ</a>
             {' · '}
+            <a href={locale === 'it' ? '/it/blog/tracky-v0-1-0' : '/blog/tracky-v0-1-0'}>v0.1.0</a>
+            {' · '}
             <a href={locale === 'it' ? '/it/open-source' : '/open-source'}>GitHub</a>
           </span>
         </footer>

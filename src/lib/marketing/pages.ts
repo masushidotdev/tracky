@@ -100,10 +100,17 @@ export const marketingPages: Array<MarketingPage> = [
     priority: 0.7,
     changefreq: 'monthly',
   },
+  {
+    key: 'blog-v0-1-0',
+    en: '/blog/tracky-v0-1-0',
+    it: '/it/blog/tracky-v0-1-0',
+    priority: 0.8,
+    changefreq: 'monthly',
+  },
 ];
 
 /** Bump when marketing copy changes; used as sitemap lastmod. */
-export const MARKETING_LASTMOD = '2026-09-21';
+export const MARKETING_LASTMOD = '2026-11-24';
 
 export function alternateFor(path: string): { en: string; it: string } | null {
   const page = marketingPages.find((entry) => entry.en === path || entry.it === path);

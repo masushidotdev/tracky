@@ -20,6 +20,7 @@ import { Route as OpenSourceRouteImport } from './routes/open-source'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as VsSpreadsheetsRouteImport } from './routes/vs-spreadsheets'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
+import { Route as BlogTrackyV010RouteImport } from './routes/blog/tracky-v0-1-0'
 import { Route as FeaturesAiAnalystRouteImport } from './routes/features/ai-analyst'
 import { Route as FeaturesBankConnectionsRouteImport } from './routes/features/bank-connections'
 import { Route as FeaturesCashFlowRouteImport } from './routes/features/cash-flow'
@@ -35,6 +36,7 @@ import { Route as ItPerCoppieEFamiglieRouteImport } from './routes/it/per-coppie
 import { Route as ItPerFreelanceEPartitaIvaRouteImport } from './routes/it/per-freelance-e-partita-iva'
 import { Route as ItPrezziRouteImport } from './routes/it/prezzi'
 import { Route as ItVsFogliDiCalcoloRouteImport } from './routes/it/vs-fogli-di-calcolo'
+import { Route as ItBlogTrackyV010RouteImport } from './routes/it/blog/tracky-v0-1-0'
 import { Route as ItFunzioniAnalystAiRouteImport } from './routes/it/funzioni/analyst-ai'
 import { Route as ItFunzioniCollegamentoBancarioRouteImport } from './routes/it/funzioni/collegamento-bancario'
 import { Route as ItFunzioniFlussoDiCassaRouteImport } from './routes/it/funzioni/flusso-di-cassa'
@@ -121,6 +123,11 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/_app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const BlogTrackyV010Route = BlogTrackyV010RouteImport.update({
+  id: '/blog/tracky-v0-1-0',
+  path: '/blog/tracky-v0-1-0',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeaturesAiAnalystRoute = FeaturesAiAnalystRouteImport.update({
   id: '/features/ai-analyst',
   path: '/features/ai-analyst',
@@ -197,6 +204,11 @@ const ItPrezziRoute = ItPrezziRouteImport.update({
 const ItVsFogliDiCalcoloRoute = ItVsFogliDiCalcoloRouteImport.update({
   id: '/it/vs-fogli-di-calcolo',
   path: '/it/vs-fogli-di-calcolo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItBlogTrackyV010Route = ItBlogTrackyV010RouteImport.update({
+  id: '/it/blog/tracky-v0-1-0',
+  path: '/it/blog/tracky-v0-1-0',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItFunzioniAnalystAiRoute = ItFunzioniAnalystAiRouteImport.update({
@@ -396,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
+  '/blog/tracky-v0-1-0': typeof BlogTrackyV010Route
   '/features/ai-analyst': typeof FeaturesAiAnalystRoute
   '/features/bank-connections': typeof FeaturesBankConnectionsRoute
   '/features/cash-flow': typeof FeaturesCashFlowRoute
@@ -411,6 +424,7 @@ export interface FileRoutesByFullPath {
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
   '/it/': typeof ItIndexRoute
+  '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
   '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
   '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
   '/it/funzioni/flusso-di-cassa': typeof ItFunzioniFlussoDiCassaRoute
@@ -454,6 +468,7 @@ export interface FileRoutesByTo {
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
+  '/blog/tracky-v0-1-0': typeof BlogTrackyV010Route
   '/features/ai-analyst': typeof FeaturesAiAnalystRoute
   '/features/bank-connections': typeof FeaturesBankConnectionsRoute
   '/features/cash-flow': typeof FeaturesCashFlowRoute
@@ -469,6 +484,7 @@ export interface FileRoutesByTo {
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
   '/it': typeof ItIndexRoute
+  '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
   '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
   '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
   '/it/funzioni/flusso-di-cassa': typeof ItFunzioniFlussoDiCassaRoute
@@ -513,6 +529,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
+  '/blog/tracky-v0-1-0': typeof BlogTrackyV010Route
   '/features/ai-analyst': typeof FeaturesAiAnalystRoute
   '/features/bank-connections': typeof FeaturesBankConnectionsRoute
   '/features/cash-flow': typeof FeaturesCashFlowRoute
@@ -528,6 +545,7 @@ export interface FileRoutesById {
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
   '/it/': typeof ItIndexRoute
+  '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
   '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
   '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
   '/it/funzioni/flusso-di-cassa': typeof ItFunzioniFlussoDiCassaRoute
@@ -573,6 +591,7 @@ export interface FileRouteTypes {
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
+    | '/blog/tracky-v0-1-0'
     | '/features/ai-analyst'
     | '/features/bank-connections'
     | '/features/cash-flow'
@@ -588,6 +607,7 @@ export interface FileRouteTypes {
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
     | '/it/'
+    | '/it/blog/tracky-v0-1-0'
     | '/it/funzioni/analyst-ai'
     | '/it/funzioni/collegamento-bancario'
     | '/it/funzioni/flusso-di-cassa'
@@ -631,6 +651,7 @@ export interface FileRouteTypes {
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
+    | '/blog/tracky-v0-1-0'
     | '/features/ai-analyst'
     | '/features/bank-connections'
     | '/features/cash-flow'
@@ -646,6 +667,7 @@ export interface FileRouteTypes {
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
     | '/it'
+    | '/it/blog/tracky-v0-1-0'
     | '/it/funzioni/analyst-ai'
     | '/it/funzioni/collegamento-bancario'
     | '/it/funzioni/flusso-di-cassa'
@@ -689,6 +711,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/vs-spreadsheets'
     | '/_authenticated/_app'
+    | '/blog/tracky-v0-1-0'
     | '/features/ai-analyst'
     | '/features/bank-connections'
     | '/features/cash-flow'
@@ -704,6 +727,7 @@ export interface FileRouteTypes {
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
     | '/it/'
+    | '/it/blog/tracky-v0-1-0'
     | '/it/funzioni/analyst-ai'
     | '/it/funzioni/collegamento-bancario'
     | '/it/funzioni/flusso-di-cassa'
@@ -749,6 +773,7 @@ export interface RootRouteChildren {
   OpenSourceRoute: typeof OpenSourceRoute
   PricingRoute: typeof PricingRoute
   VsSpreadsheetsRoute: typeof VsSpreadsheetsRoute
+  BlogTrackyV010Route: typeof BlogTrackyV010Route
   FeaturesAiAnalystRoute: typeof FeaturesAiAnalystRoute
   FeaturesBankConnectionsRoute: typeof FeaturesBankConnectionsRoute
   FeaturesCashFlowRoute: typeof FeaturesCashFlowRoute
@@ -764,6 +789,7 @@ export interface RootRouteChildren {
   ItPrezziRoute: typeof ItPrezziRoute
   ItVsFogliDiCalcoloRoute: typeof ItVsFogliDiCalcoloRoute
   ItIndexRoute: typeof ItIndexRoute
+  ItBlogTrackyV010Route: typeof ItBlogTrackyV010Route
   ItFunzioniAnalystAiRoute: typeof ItFunzioniAnalystAiRoute
   ItFunzioniCollegamentoBancarioRoute: typeof ItFunzioniCollegamentoBancarioRoute
   ItFunzioniFlussoDiCassaRoute: typeof ItFunzioniFlussoDiCassaRoute
@@ -852,6 +878,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/blog/tracky-v0-1-0': {
+      id: '/blog/tracky-v0-1-0'
+      path: '/blog/tracky-v0-1-0'
+      fullPath: '/blog/tracky-v0-1-0'
+      preLoaderRoute: typeof BlogTrackyV010RouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/features/ai-analyst': {
       id: '/features/ai-analyst'
@@ -956,6 +989,13 @@ declare module '@tanstack/react-router' {
       path: '/it/vs-fogli-di-calcolo'
       fullPath: '/it/vs-fogli-di-calcolo'
       preLoaderRoute: typeof ItVsFogliDiCalcoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/blog/tracky-v0-1-0': {
+      id: '/it/blog/tracky-v0-1-0'
+      path: '/it/blog/tracky-v0-1-0'
+      fullPath: '/it/blog/tracky-v0-1-0'
+      preLoaderRoute: typeof ItBlogTrackyV010RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/it/funzioni/analyst-ai': {
@@ -1300,6 +1340,7 @@ const rootRouteChildren: RootRouteChildren = {
   OpenSourceRoute: OpenSourceRoute,
   PricingRoute: PricingRoute,
   VsSpreadsheetsRoute: VsSpreadsheetsRoute,
+  BlogTrackyV010Route: BlogTrackyV010Route,
   FeaturesAiAnalystRoute: FeaturesAiAnalystRoute,
   FeaturesBankConnectionsRoute: FeaturesBankConnectionsRoute,
   FeaturesCashFlowRoute: FeaturesCashFlowRoute,
@@ -1315,6 +1356,7 @@ const rootRouteChildren: RootRouteChildren = {
   ItPrezziRoute: ItPrezziRoute,
   ItVsFogliDiCalcoloRoute: ItVsFogliDiCalcoloRoute,
   ItIndexRoute: ItIndexRoute,
+  ItBlogTrackyV010Route: ItBlogTrackyV010Route,
   ItFunzioniAnalystAiRoute: ItFunzioniAnalystAiRoute,
   ItFunzioniCollegamentoBancarioRoute: ItFunzioniCollegamentoBancarioRoute,
   ItFunzioniFlussoDiCassaRoute: ItFunzioniFlussoDiCassaRoute,

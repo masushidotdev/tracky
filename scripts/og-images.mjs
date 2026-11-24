@@ -38,6 +38,7 @@ const cards = {
   'og-guide-budget': ['First budget, 5 steps.', 'Tracky* — guide'],
   'og-guide-cashflow': ['Forecast cash, 5 steps.', 'Tracky* — guide'],
   'og-guide-subscriptions': ['Hunt subs, 5 steps.', 'Tracky* — guide'],
+  'og-blog-v0-1-0': ['Tracky v0.1.0 is out.', 'Tracky* — release'],
 };
 
 if (!accountId || !apiToken) {
