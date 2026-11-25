@@ -754,7 +754,7 @@ export function parseCliArgs(argv) {
     publicUrl: undefined,
     convexUrl: undefined,
     convexSiteUrl: undefined,
-    envFile: '.env',
+    outFile: '.env',
     templateFile: '.env.selfhost.example',
   };
 
@@ -799,10 +799,10 @@ export function parseCliArgs(argv) {
       args.convexSiteUrl = readValue('--convex-site-url');
     } else if (token.startsWith('--convex-site-url=')) {
       args.convexSiteUrl = token.slice('--convex-site-url='.length);
-    } else if (token === '--env-file') {
-      args.envFile = readValue('--env-file');
-    } else if (token.startsWith('--env-file=')) {
-      args.envFile = token.slice('--env-file='.length);
+    } else if (token === '--out') {
+      args.outFile = readValue('--out');
+    } else if (token.startsWith('--out=')) {
+      args.outFile = token.slice('--out='.length);
     } else if (token === '--template') {
       args.templateFile = readValue('--template');
     } else if (token.startsWith('--template=')) {
@@ -834,7 +834,7 @@ export function formatUsage() {
     '  --no-webhook              Skip webhook registration and use placeholder secret + backfill mode',
     '  --rotate-webhook          Delete and recreate an existing WorkOS webhook to obtain a new signing secret',
     '  --dry-run                 Show planned WorkOS API calls and .env updates without executing or writing',
-    '  --env-file <path>         Target env file path (default: .env)',
+    '  --out <path>              Target env file path (default: .env)',
     '  --template <path>         Template file path (default: .env.selfhost.example)',
     '  --help, -h                Show this help message',
   ].join('\n');
@@ -914,7 +914,7 @@ export async function runSelfhostSetup(options = {}) {
   }
 
   const interactive = !args.yes && isTTY && typeof prompt === 'function' && typeof promptSecret === 'function';
-  const envPath = resolve(cwd, args.envFile);
+  const envPath = resolve(cwd, args.outFile);
   const templatePath = resolve(cwd, args.templateFile);
 
   if (!existsSync(templatePath)) {
@@ -1155,9 +1155,9 @@ export async function runSelfhostSetup(options = {}) {
 
   if (merged.changed) {
     writeFileAtomic0600(envPath, merged.content);
-    log(`[env] Wrote ${args.envFile} (mode 0600).`);
+    log(`[env] Wrote ${args.outFile} (mode 0600).`);
   } else {
-    log(`[env] ${args.envFile}: unchanged.`);
+    log(`[env] ${args.outFile}: unchanged.`);
   }
 
   log('');

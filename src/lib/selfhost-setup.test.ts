@@ -1,18 +1,22 @@
 // @vitest-environment node
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   deriveUrls,
+  formatUsage,
   isPublicHttpsUrl,
   maskSecret,
   mergeEnvTemplate,
+  parseCliArgs,
   parseEnvFile,
   resolveWorkosApiBaseUrl,
   runSelfhostSetup,
 } from '../../scripts/selfhost-setup/lib.mjs';
 
+const CLI_PATH = resolve(process.cwd(), 'scripts/selfhost-setup.mjs');
 const TEMPLATE_PATH = resolve(process.cwd(), '.env.selfhost.example');
 const TEMPLATE_TEXT = readFileSync(TEMPLATE_PATH, 'utf8');
 
@@ -444,5 +448,52 @@ describe('scripts/selfhost-setup/lib.mjs', () => {
     expect(output).toContain('Dry run');
     expect(output).toContain('https://tracky.example.com/callback');
     expect(output).not.toContain(FAKE_API_KEY);
+  });
+
+  test('parses --out and --template flags and documents --out in usage', () => {
+    expect(parseCliArgs(['--out', 'custom.env', '--template', 'custom.example'])).toMatchObject({
+      outFile: 'custom.env',
+      templateFile: 'custom.example',
+    });
+    expect(parseCliArgs(['--out=other.env', '--template=other.example'])).toMatchObject({
+      outFile: 'other.env',
+      templateFile: 'other.example',
+    });
+    expect(() => parseCliArgs(['--env-file', 'x.env'])).toThrow(/Unknown argument/);
+
+    const usage = formatUsage();
+    expect(usage).toContain('--out <path>');
+    expect(usage).toContain('--template <path>');
+    expect(usage).not.toContain('--env-file');
+  });
+
+  test('spawns real CLI with --dry-run --yes --out without Node flag interception', () => {
+    const dir = makeTempDir();
+    const outPath = join(dir, 'x.env');
+
+    const res = spawnSync(
+      process.execPath,
+      [CLI_PATH, '--dry-run', '--yes', '--out', outPath],
+      {
+        cwd: dir,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          WORKOS_CLIENT_ID: FAKE_CLIENT_ID,
+          WORKOS_API_KEY: FAKE_API_KEY,
+          WORKOS_API_BASE_URL: 'http://127.0.0.1:1',
+        },
+      },
+    );
+
+    expect(res.error).toBeUndefined();
+    expect(res.status).toBe(0);
+
+    const combined = `${res.stdout}\n${res.stderr}`;
+    expect(combined).toContain('Dry run');
+    expect(combined).toContain(outPath);
+    expect(combined).not.toContain(FAKE_API_KEY);
+    expect(existsSync(outPath)).toBe(false);
+    expect(existsSync(join(dir, '.env'))).toBe(false);
   });
 });
