@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { loadMarketingAuth } from '@/lib/marketing/auth';
-
+import type { MarketingAuth } from '@/components/marketing/site';
 import { MarketingSite } from '@/components/marketing/site';
 import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
+import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
+import { loadMarketingAuth } from '@/lib/marketing/auth';
+import { SITE_ORIGIN } from '@/lib/marketing/pages';
 import {
   blogPostingJsonLd,
   breadcrumbJsonLd,
@@ -11,12 +13,27 @@ import {
   ogImageFor,
   softwareAppJsonLd,
 } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
 const RELEASE_URL = 'https://github.com/masushidotdev/tracky/releases/tag/v0.1.0';
 const REPO_URL = 'https://github.com/masushidotdev/tracky';
 const CHANGELOG_URL = 'https://github.com/masushidotdev/tracky/blob/main/CHANGELOG.md';
 const PUBLISH_DATE = '2026-11-24';
+const BLOG_IMAGE_BASE = `${SITE_ORIGIN}/blog/tracky-v0-1-0`;
+
+type HighlightFigure = {
+  src: string;
+  alt: string;
+  caption: string;
+  width: number;
+  height: number;
+};
+
+type HighlightItem = {
+  num: string;
+  title: string;
+  body: string;
+  figures?: Array<HighlightFigure>;
+};
 
 const inlineLinkStyle = {
   color: 'inherit',
@@ -24,11 +41,20 @@ const inlineLinkStyle = {
   textUnderlineOffset: 3,
 } as const;
 
-const highlights = [
+const highlights: Array<HighlightItem> = [
   {
     num: '01',
     title: 'Piano zero-based, target e bucket per le carte',
     body: 'I vecchi budget per categoria diventano un Piano zero-based completo con Da assegnare, Assegnato, Attività e Disponibile. Hai viste mirate (sottofinanziati, sforati, target rimandati, denaro disponibile, nascosti), la modalità Modifica piano con riordino via drag-and-drop o tastiera, target settimanali, mensili, annuali o personalizzati e Auto-Assegnazione con anteprima prima della conferma. Le carte di credito vivono in un gruppo dedicato Pagamenti carte: le spese coperte si spostano nel bucket di pagamento della carta invece di ridurre Da assegnare. È presente anche il selettore multi-piano (più di un piano è riservato a Pro).',
+    figures: [
+      {
+        src: `${BLOG_IMAGE_BASE}/og-feature-plan.png`,
+        alt: 'Il Plan a base zero di Tracky',
+        caption: 'Il Plan a base zero di Tracky',
+        width: 1200,
+        height: 630,
+      },
+    ],
   },
   {
     num: '02',
@@ -39,6 +65,22 @@ const highlights = [
     num: '03',
     title: 'Movimenti, import CSV nel browser, Flusso di cassa, Report e Obiettivi',
     body: 'Il registro movimenti introduce un unico filtro rapido, ordinamento su tutte le colonne fino ai 5.000 movimenti più recenti (segnalando quando il limite viene superato), barra inferiore per le azioni massive, fascia collassabile dei Movimenti programmati, inserimento inline, fino a 10 tag colorati per riga e note private. Per i conti manuali, l’import CSV avviene nel browser con mappatura guidata delle colonne, badge su duplicati ed errori, regole automatiche di categoria e re-import idempotenti. Completano il giro quotidiano Safe-to-spend per valuta, Flusso di cassa stile estratto conto con promemoria scadenze deduplicati, Report con grafici Sankey/ripartizione/andamento ed export CSV, e Obiettivi con calcolatore estinzione debiti (valanga, palla di neve o ordine pianificato). Le previsioni multi-scenario in Forecast restano nel piano Pro riservato e si leggono sempre come stime.',
+    figures: [
+      {
+        src: `${BLOG_IMAGE_BASE}/import-mapping.png`,
+        alt: 'Import CSV: mappa le colonne (dati demo)',
+        caption: 'Import CSV: mappa le colonne (dati demo)',
+        width: 1440,
+        height: 800,
+      },
+      {
+        src: `${BLOG_IMAGE_BASE}/import-preview.png`,
+        alt: "Anteprima prima dell'import; i duplicati sono segnalati (dati demo)",
+        caption: "Anteprima prima dell'import; i duplicati sono segnalati (dati demo)",
+        width: 1440,
+        height: 800,
+      },
+    ],
   },
   {
     num: '04',
@@ -109,184 +151,209 @@ export const Route = createFileRoute('/it/blog/tracky-v0-1-0')({
 });
 
 function ReleaseV010It() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <ReleaseV010ItView auth={auth} />;
+}
+
+export function ReleaseV010ItView({ auth }: { auth: MarketingAuth }) {
+  const { user, signUpUrl } = auth;
   const demoHref = user ? '/app' : signUpUrl;
 
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/blog/tracky-v0-1-0">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Rilascio</span>
-            <span className="mk-badge">v0.1.0</span>
-            <span className="mk-badge">24 nov 2026</span>
-            <span className="mk-badge">MIT</span>
-          </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            Tracky <span className="hl">v0.1.0</span>
-            <br />
-            <span className="stroke">è fuori.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            Primo rilascio pubblico taggato di Tracky, pubblicato il <b>24 novembre 2026</b> con licenza MIT. Un punto
-            fermo leggibile dal primo commit pubblico fino alla PR #64 — prova la demo gratis o eseguilo sul tuo server.
-          </p>
-        </Reveal>
-        <Reveal>
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            <MagnetCta
-              href={demoHref}
-              onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Apri la demo →' : 'Prova la demo gratis →'}
-            </MagnetCta>
-            <MagnetCta href={RELEASE_URL} variant="pill">
-              Release v0.1.0 su GitHub →
-            </MagnetCta>
-          </div>
-        </Reveal>
-      </header>
-
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>
-            Tracky è pubblico su GitHub dal 15 settembre 2026. Oggi abbiamo taggato{' '}
-            <a href={RELEASE_URL} rel="noopener" style={inlineLinkStyle}>
-              v0.1.0
-            </a>{' '}
-            come prima versione semantica: raccoglie tutto il lavoro dal primo commit pubblico (<code>654561d</code>)
-            fino alla PR #64 in un riferimento stabile che puoi leggere, fissare ed eseguire.
-          </p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>
-            Se incontri Tracky per la prima volta: è un tracker per le finanze personali con licenza MIT costruito su
-            Convex, TanStack Start e WorkOS AuthKit. Puoi provare la{' '}
-            <a href="/it/prezzi" style={inlineLinkStyle}>
-              demo ospitata gratuita
-            </a>{' '}
-            su <code>trytracky.app/it/</code> con conti manuali e import CSV nel browser, oppure clonare{' '}
-            <a href={REPO_URL} rel="noopener" style={inlineLinkStyle}>
-              masushidotdev/tracky
-            </a>{' '}
-            e gestire la tua istanza con le tue chiavi.
-          </p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>
-            Qui sotto trovi i blocchi principali arrivati nella v0.1.0. Per l’elenco completo di correzioni, dipendenze e
-            pull request puoi leggere il{' '}
-            <a href={CHANGELOG_URL} rel="noopener" style={inlineLinkStyle}>
-              CHANGELOG.md
-            </a>{' '}
-            o le{' '}
-            <a href={RELEASE_URL} rel="noopener" style={inlineLinkStyle}>
-              note di rilascio su GitHub
-            </a>
-            .
-          </p>
-        </Reveal>
-      </section>
-
-      <MarqueeBand items={['V0.1.0 TAGGATA', 'PIANO ZERO-BASED', 'MUTUI E PRESTITI', 'CSV NEL BROWSER', 'LICENZA MIT']} />
-
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginBottom: 24 }}>
-            Cosa c’è nella v0.1.0
-          </h2>
-        </Reveal>
-        {highlights.map((item) => (
-          <Reveal key={item.num}>
-            <div className="mk-card" style={{ maxWidth: 760, margin: '0 auto 16px', minWidth: 0, transform: 'none' }}>
-              <div className="e">{item.num}</div>
-              <h3>{item.title.toUpperCase()}</h3>
-              <p>{item.body}</p>
+    <MarketingSite locale="it" auth={auth} currentPath="/it/blog/tracky-v0-1-0">
+      <article>
+        <header className="mk-hero">
+          <Reveal>
+            <div className="mk-badges">
+              <span className="mk-badge solid">Rilascio</span>
+              <span className="mk-badge">v0.1.0</span>
+              <time className="mk-badge" dateTime={PUBLISH_DATE}>
+                24 nov 2026
+              </time>
+              <span className="mk-badge">MIT</span>
             </div>
           </Reveal>
-        ))}
-      </section>
-
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
-            Demo ospitata vs. self-host
-          </h2>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>
-            Entrambi girano sullo stesso codice MIT, con confini chiari su cosa è attivo dove. Nulla nella v0.1.0 è
-            dietro un checkout e le funzioni Pro restano riservate nel codice finché non esisterà una fatturazione.
-          </p>
-        </Reveal>
-        <Reveal>
-          <div className="mk-duel">
-            <div className="mk-d good">
-              <h3>DEMO OSPITATA (€0)</h3>
-              <ul>
-                <li>Piano zero-based, Flusso di cassa, Report, Obiettivi</li>
-                <li>Conti manuali: liquidità, carte, asset e prestiti</li>
-                <li>Import CSV nel browser con anteprima</li>
-                <li>Senza carta, senza prova, nessun checkout</li>
-              </ul>
-            </div>
-            <div className="mk-d" style={{ background: '#fff' }}>
-              <h3>SELF-HOST (MIT)</h3>
-              <ul>
-                <li>Il tuo deployment Convex + WorkOS AuthKit</li>
-                <li>Sync bancaria PSD2 opzionale (chiavi Enable Banking)</li>
-                <li>Analyst AI, email Resend e Bot Telegram opzionali</li>
-                <li>Codice completo + guide utente EN/IT nel repo</li>
-              </ul>
-            </div>
-          </div>
-        </Reveal>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginTop: 48 }}>
-            Avviare la tua istanza
-          </h2>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>
-            Tracky non promette un singolo comando Docker. Si avvia con Node.js (<code>&gt;=22.23.4 &lt;23</code>), npm,
-            un tuo deployment Convex e un tuo progetto WorkOS AuthKit. Clona il repository, lancia <code>npm ci</code>,
-            copia <code>.env.example</code> in <code>.env.local</code> (riferimento corretto dalla PR #64), esegui{' '}
-            <code>npx convex dev</code> e parti in locale con <code>npm run dev</code>.
-          </p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 14 }}>
-            Aggiungi le chiavi di Enable Banking, AI Gateway, Resend o Telegram solo se vuoi usare quelle integrazioni.
-            Prima di aprire il terminale puoi anche leggere la pagina sul{' '}
-            <a href="/it/funzioni/piano-zero-based" style={inlineLinkStyle}>
-              Piano zero-based
-            </a>
-            , quella sul{' '}
-            <a href="/it/funzioni/collegamento-bancario" style={inlineLinkStyle}>
-              collegamento bancario
-            </a>{' '}
-            oppure la{' '}
-            <a href="/it/open-source" style={inlineLinkStyle}>
-              pagina open source
-            </a>
-            .
-          </p>
-        </Reveal>
-      </section>
-
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
-            Domande e risposte.
-          </h2>
-        </Reveal>
-        {faq.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
+          <Reveal>
+            <h1>
+              Tracky <span className="hl">v0.1.0</span>
+              <br />
+              <span className="stroke">è fuori.</span>
+            </h1>
           </Reveal>
-        ))}
-      </section>
+          <Reveal>
+            <p className="mk-dek">
+              Primo rilascio pubblico taggato di Tracky, pubblicato il <b>24 novembre 2026</b> con licenza MIT. Un punto
+              fermo leggibile dal primo commit pubblico fino alla PR #64 — prova la demo gratis o eseguilo sul tuo server.
+            </p>
+          </Reveal>
+          <Reveal>
+            <aside aria-label="Collegamenti del rilascio" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <MagnetCta
+                href={demoHref}
+                onClick={() =>
+                  user
+                    ? undefined
+                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
+                }
+              >
+                {user ? 'Apri la demo →' : 'Prova la demo gratis →'}
+              </MagnetCta>
+              <MagnetCta href={RELEASE_URL} variant="pill">
+                Release v0.1.0 su GitHub →
+              </MagnetCta>
+            </aside>
+          </Reveal>
+        </header>
+
+        <section className="mk-section" style={{ paddingTop: 0 }}>
+          <Reveal>
+            <p className="mk-sub" style={{ maxWidth: 720 }}>
+              Tracky è pubblico su GitHub dal 15 settembre 2026. Oggi abbiamo taggato{' '}
+              <a href={RELEASE_URL} rel="noopener" style={inlineLinkStyle}>
+                v0.1.0
+              </a>{' '}
+              come prima versione semantica: raccoglie tutto il lavoro dal primo commit pubblico (<code>654561d</code>)
+              fino alla PR #64 in un riferimento stabile che puoi leggere, fissare ed eseguire.
+            </p>
+            <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>
+              Se incontri Tracky per la prima volta: è un tracker per le finanze personali con licenza MIT costruito su
+              Convex, TanStack Start e WorkOS AuthKit. Puoi provare la{' '}
+              <a href={`${SITE_ORIGIN}/it/prezzi`} style={inlineLinkStyle}>
+                demo ospitata gratuita
+              </a>{' '}
+              su <code>trytracky.app/it/</code> con conti manuali e import CSV nel browser, oppure clonare{' '}
+              <a href={REPO_URL} rel="noopener" style={inlineLinkStyle}>
+                masushidotdev/tracky
+              </a>{' '}
+              e gestire la tua istanza con le tue chiavi.
+            </p>
+            <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>
+              Qui sotto trovi i blocchi principali arrivati nella v0.1.0. Per l’elenco completo di correzioni, dipendenze e
+              pull request puoi leggere il{' '}
+              <a href={CHANGELOG_URL} rel="noopener" style={inlineLinkStyle}>
+                CHANGELOG.md
+              </a>{' '}
+              o le{' '}
+              <a href={RELEASE_URL} rel="noopener" style={inlineLinkStyle}>
+                note di rilascio su GitHub
+              </a>
+              .
+            </p>
+          </Reveal>
+        </section>
+
+        <MarqueeBand items={['V0.1.0 TAGGATA', 'PIANO ZERO-BASED', 'MUTUI E PRESTITI', 'CSV NEL BROWSER', 'LICENZA MIT']} />
+
+        <section className="mk-section" style={{ paddingTop: 0 }}>
+          <Reveal>
+            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginBottom: 24 }}>
+              Cosa c’è nella v0.1.0
+            </h2>
+          </Reveal>
+          {highlights.map((item) => (
+            <div key={item.num}>
+              <Reveal>
+                <div className="mk-card" style={{ maxWidth: 760, margin: '0 auto 16px', minWidth: 0, transform: 'none' }}>
+                  <div className="e">{item.num}</div>
+                  <h3>{item.title.toUpperCase()}</h3>
+                  <p>{item.body}</p>
+                </div>
+              </Reveal>
+              {item.figures?.map((figure) => (
+                <Reveal key={figure.src}>
+                  <figure className="mk-shot" style={{ maxWidth: 760, margin: '20px auto 24px' }}>
+                    <img
+                      src={figure.src}
+                      alt={figure.alt}
+                      width={figure.width}
+                      height={figure.height}
+                      loading="lazy"
+                    />
+                    <figcaption>{figure.caption}</figcaption>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          ))}
+        </section>
+
+        <section className="mk-section" style={{ paddingTop: 0 }}>
+          <Reveal>
+            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
+              Demo ospitata vs. self-host
+            </h2>
+            <p className="mk-sub" style={{ maxWidth: 720 }}>
+              Entrambi girano sullo stesso codice MIT, con confini chiari su cosa è attivo dove. Nulla nella v0.1.0 è
+              dietro un checkout e le funzioni Pro restano riservate nel codice finché non esisterà una fatturazione.
+            </p>
+          </Reveal>
+          <Reveal>
+            <div className="mk-duel">
+              <div className="mk-d good">
+                <h3>DEMO OSPITATA (€0)</h3>
+                <ul>
+                  <li>Piano zero-based, Flusso di cassa, Report, Obiettivi</li>
+                  <li>Conti manuali: liquidità, carte, asset e prestiti</li>
+                  <li>Import CSV nel browser con anteprima</li>
+                  <li>Senza carta, senza prova, nessun checkout</li>
+                </ul>
+              </div>
+              <div className="mk-d" style={{ background: '#fff' }}>
+                <h3>SELF-HOST (MIT)</h3>
+                <ul>
+                  <li>Il tuo deployment Convex + WorkOS AuthKit</li>
+                  <li>Sync bancaria PSD2 opzionale (chiavi Enable Banking)</li>
+                  <li>Analyst AI, email Resend e Bot Telegram opzionali</li>
+                  <li>Codice completo + guide utente EN/IT nel repo</li>
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal>
+            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginTop: 48 }}>
+              Avviare la tua istanza
+            </h2>
+            <p className="mk-sub" style={{ maxWidth: 720 }}>
+              Tracky non promette un singolo comando Docker. Si avvia con Node.js (<code>&gt;=22.23.4 &lt;23</code>), npm,
+              un tuo deployment Convex e un tuo progetto WorkOS AuthKit. Clona il repository, lancia <code>npm ci</code>,
+              copia <code>.env.example</code> in <code>.env.local</code> (riferimento corretto dalla PR #64), esegui{' '}
+              <code>npx convex dev</code> e parti in locale con <code>npm run dev</code>.
+            </p>
+            <p className="mk-sub" style={{ maxWidth: 720, marginTop: 14 }}>
+              Aggiungi le chiavi di Enable Banking, AI Gateway, Resend o Telegram solo se vuoi usare quelle integrazioni.
+              Prima di aprire il terminale puoi anche leggere la pagina sul{' '}
+              <a href={`${SITE_ORIGIN}/it/funzioni/piano-zero-based`} style={inlineLinkStyle}>
+                Piano zero-based
+              </a>
+              , quella sul{' '}
+              <a href={`${SITE_ORIGIN}/it/funzioni/collegamento-bancario`} style={inlineLinkStyle}>
+                collegamento bancario
+              </a>{' '}
+              oppure la{' '}
+              <a href={`${SITE_ORIGIN}/it/open-source`} style={inlineLinkStyle}>
+                pagina open source
+              </a>
+              .
+            </p>
+          </Reveal>
+        </section>
+
+        <section className="mk-section" style={{ paddingTop: 0 }}>
+          <Reveal>
+            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
+              Domande e risposte.
+            </h2>
+          </Reveal>
+          {faq.map((entry) => (
+            <Reveal key={entry.q}>
+              <details>
+                <summary>{entry.q}</summary>
+                <p style={{ marginTop: 8 }}>{entry.a}</p>
+              </details>
+            </Reveal>
+          ))}
+        </section>
+      </article>
 
       <section className="mk-section" style={{ paddingTop: 0 }}>
         <Reveal>

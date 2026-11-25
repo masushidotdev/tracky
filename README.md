@@ -24,7 +24,7 @@ Built on [Convex](https://convex.dev/) (database + server logic),
 
 ## Prerequisites
 
-- Node.js 20+ and npm (npm only — `package-lock.json` is the single lockfile).
+- Node.js >=22.23.4 <23 (pinned in `.nvmrc`) and npm (npm only — `package-lock.json` is the single lockfile).
 - A [Convex](https://convex.dev/) account.
 - A [WorkOS](https://workos.com/) account (AuthKit).
 - Optional: Enable Banking app, Resend key, Telegram bot, AI Gateway key.
