@@ -17,22 +17,15 @@ const TEMPLATE_PLACEHOLDERS = new Map([
 ]);
 
 /**
- * Mask a secret for terminal output. Never prints the full secret.
- * @param {string | undefined | null} value
- * @returns {string}
+ * Format a constant label describing where WORKOS_API_KEY was loaded from.
+ * Never derives any output from the key value itself.
+ * @param {'env' | 'file' | 'prompt'} origin
+ * @returns {'(from env)' | '(from .env)' | '(provided)'}
  */
-export function maskSecret(value) {
-  if (!value || typeof value !== 'string') return '(unset)';
-  const trimmed = value.trim();
-  if (!trimmed) return '(unset)';
-  if (trimmed.length >= 16) {
-    const underscoreIdx = trimmed.indexOf('_');
-    if (underscoreIdx > 0 && underscoreIdx <= 6) {
-      const prefix = trimmed.slice(0, underscoreIdx + 1);
-      return `${prefix}…${trimmed.slice(-4)}`;
-    }
-  }
-  return '(set)';
+function formatOriginLabel(origin) {
+  if (origin === 'env') return '(from env)';
+  if (origin === 'file') return '(from .env)';
+  return '(provided)';
 }
 
 /**
@@ -126,41 +119,37 @@ export function formatEnvValue(value) {
 }
 
 /**
- * Validate WorkOS Client ID format loosely without echoing it.
+ * Validate WorkOS Client ID format without echoing it.
+ * Throws a constant error message if missing or malformed.
  * @param {string} value
- * @returns {{ ok: true, value: string } | { ok: false, error: string }}
+ * @returns {string}
  */
 export function validateClientId(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (!trimmed) {
-    return { ok: false, error: 'WORKOS_CLIENT_ID is required.' };
+    throw new Error('WORKOS_CLIENT_ID is required.');
   }
   if (/[\s\r\n]/.test(trimmed) || !trimmed.startsWith('client_') || trimmed.length <= 'client_'.length) {
-    return {
-      ok: false,
-      error: 'WORKOS_CLIENT_ID must start with "client_" and contain no whitespace.',
-    };
+    throw new Error('WORKOS_CLIENT_ID must start with "client_" and contain no whitespace.');
   }
-  return { ok: true, value: trimmed };
+  return trimmed;
 }
 
 /**
- * Validate WorkOS API Key format loosely without echoing the key.
+ * Validate WorkOS API Key format without echoing or deriving error text from it.
+ * Throws a constant error message if missing or malformed.
  * @param {string} value
- * @returns {{ ok: true, value: string } | { ok: false, error: string }}
+ * @returns {string}
  */
 export function validateApiKey(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (!trimmed) {
-    return { ok: false, error: 'WORKOS_API_KEY is required.' };
+    throw new Error('WORKOS_API_KEY is required.');
   }
   if (/[\s\r\n]/.test(trimmed) || !trimmed.startsWith('sk_') || trimmed.length <= 'sk_'.length) {
-    return {
-      ok: false,
-      error: 'WORKOS_API_KEY must start with "sk_" and contain no whitespace.',
-    };
+    throw new Error('WORKOS_API_KEY must start with "sk_" and contain no whitespace.');
   }
-  return { ok: true, value: trimmed };
+  return trimmed;
 }
 
 /**
@@ -321,14 +310,87 @@ export function resolveWorkosApiBaseUrl(override) {
 }
 
 /**
- * Wrapper around fetch that redacts known secrets from thrown network errors.
+ * Extract a short network error code (e.g. ECONNREFUSED) from an Error or its cause.
+ * Never falls back to error.message, which may embed request URLs or headers.
+ * @param {unknown} error
+ * @returns {string | null}
+ */
+function extractNetworkErrorCode(error) {
+  if (!error || typeof error !== 'object') return null;
+  const directCode = /** @type {{ code?: unknown }} */ (error).code;
+  if (typeof directCode === 'string' && /^[A-Za-z0-9_.-]{1,64}$/.test(directCode)) {
+    return directCode;
+  }
+  const cause = /** @type {{ cause?: unknown }} */ (error).cause;
+  if (cause && typeof cause === 'object') {
+    const causeCode = /** @type {{ code?: unknown }} */ (cause).code;
+    if (typeof causeCode === 'string' && /^[A-Za-z0-9_.-]{1,64}$/.test(causeCode)) {
+      return causeCode;
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse a WorkOS JSON error response into only its structured `code` and `message` fields.
+ * Never returns raw response bodies (e.g. HTML proxy pages) or request data.
+ * @param {Response} response
+ * @returns {Promise<{ code: string | null, message: string | null }>}
+ */
+async function parseWorkosErrorBody(response) {
+  let text = '';
+  try {
+    text = await response.text();
+  } catch {
+    return { code: null, message: null };
+  }
+  if (!text) return { code: null, message: null };
+  try {
+    const data = JSON.parse(text);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return { code: null, message: null };
+    }
+    const code = typeof data.code === 'string' && data.code.trim() ? data.code.trim() : null;
+    const message = typeof data.message === 'string' && data.message.trim() ? data.message.trim() : null;
+    return { code, message };
+  } catch {
+    return { code: null, message: null };
+  }
+}
+
+/**
+ * Build a WorkOS HTTP error message from status code plus parsed response JSON `code`/`message` only.
+ * Applies secret redaction as defence in depth.
+ * @param {string} action
+ * @param {number} status
+ * @param {{ code: string | null, message: string | null }} parsed
+ * @param {Iterable<string | undefined | null>} secrets
+ * @returns {string}
+ */
+function formatWorkosHttpError(action, status, parsed, secrets) {
+  const parts = [];
+  if (parsed.code) parts.push(redactSecrets(parsed.code, secrets));
+  if (parsed.message) parts.push(redactSecrets(parsed.message, secrets));
+  if (parts.length === 0) {
+    return `Failed to ${action} (${status}).`;
+  }
+  return `Failed to ${action} (${status}): ${parts.join(' - ')}`;
+}
+
+/**
+ * Wrapper around fetch that reports network failures with a constant message plus error/cause code only.
  */
 async function safeFetch(fetchImpl, url, init, secrets) {
   try {
     return await fetchImpl(url, init);
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    throw new Error(`WorkOS API request failed: ${redactSecrets(msg, secrets)}`);
+    const code = extractNetworkErrorCode(error);
+    const safeCode = code ? redactSecrets(code, secrets) : null;
+    throw new Error(
+      safeCode
+        ? `WorkOS API network request failed (${safeCode}).`
+        : 'WorkOS API network request failed.',
+    );
   }
 }
 
@@ -351,13 +413,15 @@ export async function configureWorkosRedirectUri({ fetchImpl, apiBaseUrl, apiKey
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
-    if (response.status === 422 && errorText.includes('already exists')) {
+    const errBody = await parseWorkosErrorBody(response);
+    if (
+      response.status === 422 &&
+      ((errBody.message?.toLowerCase().includes('already exists') ?? false) ||
+        (errBody.code?.toLowerCase().includes('already_exists') ?? false))
+    ) {
       return { status: 'unchanged' };
     }
-    throw new Error(
-      `Failed to configure WorkOS redirect URI (${response.status}): ${redactSecrets(errorText, secrets)}`,
-    );
+    throw new Error(formatWorkosHttpError('configure WorkOS redirect URI', response.status, errBody, secrets));
   }
   return { status: 'created' };
 }
@@ -381,13 +445,11 @@ export async function configureWorkosHomepageUrl({ fetchImpl, apiBaseUrl, apiKey
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
+    const errBody = await parseWorkosErrorBody(response);
     if (response.status === 422) {
       return { status: 'unchanged' };
     }
-    throw new Error(
-      `Failed to update WorkOS app homepage URL (${response.status}): ${redactSecrets(errorText, secrets)}`,
-    );
+    throw new Error(formatWorkosHttpError('update WorkOS app homepage URL', response.status, errBody, secrets));
   }
   return { status: 'created' };
 }
@@ -411,16 +473,16 @@ export async function configureWorkosCorsOrigin({ fetchImpl, apiBaseUrl, apiKey,
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
+    const errBody = await parseWorkosErrorBody(response);
     if (
       response.status === 409 &&
-      (errorText.includes('duplicate_cors_origin') || errorText.includes('already exists'))
+      (errBody.code === 'duplicate_cors_origin' ||
+        (errBody.code?.toLowerCase().includes('duplicate') ?? false) ||
+        (errBody.message?.toLowerCase().includes('already exists') ?? false))
     ) {
       return { status: 'unchanged' };
     }
-    throw new Error(
-      `Failed to configure WorkOS CORS origin (${response.status}): ${redactSecrets(errorText, secrets)}`,
-    );
+    throw new Error(formatWorkosHttpError('configure WorkOS CORS origin', response.status, errBody, secrets));
   }
   return { status: 'created' };
 }
@@ -449,10 +511,8 @@ async function listMatchingWebhookEndpoints({ fetchImpl, apiBaseUrl, apiKey, end
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Failed to list WorkOS webhook endpoints (${response.status}): ${redactSecrets(errorText, secrets)}`,
-      );
+      const errBody = await parseWorkosErrorBody(response);
+      throw new Error(formatWorkosHttpError('list WorkOS webhook endpoints', response.status, errBody, secrets));
     }
 
     const body = await response.json();
@@ -488,10 +548,8 @@ async function deleteWebhookEndpoint({ fetchImpl, apiBaseUrl, apiKey, id, secret
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Failed to delete WorkOS webhook endpoint (${response.status}): ${redactSecrets(errorText, secrets)}`,
-    );
+    const errBody = await parseWorkosErrorBody(response);
+    throw new Error(formatWorkosHttpError('delete WorkOS webhook endpoint', response.status, errBody, secrets));
   }
 }
 
@@ -556,12 +614,13 @@ export async function configureWorkosWebhook({
     };
   }
 
-  const errorText = await response.text();
+  const errBody = await parseWorkosErrorBody(response);
   const isDuplicate =
     response.status === 409 &&
-    (errorText.includes('duplicate_endpoint') ||
-      errorText.includes('already exists') ||
-      errorText.toLowerCase().includes('duplicate'));
+    (errBody.code === 'duplicate_endpoint' ||
+      (errBody.code?.toLowerCase().includes('duplicate') ?? false) ||
+      (errBody.message?.toLowerCase().includes('already exists') ?? false) ||
+      (errBody.message?.toLowerCase().includes('duplicate') ?? false));
 
   if (isDuplicate) {
     if (!isPlaceholderValue('WORKOS_WEBHOOK_SECRET', existingWebhookSecret)) {
@@ -578,9 +637,7 @@ export async function configureWorkosWebhook({
     );
   }
 
-  throw new Error(
-    `Failed to create WorkOS webhook endpoint (${response.status}): ${redactSecrets(errorText, secrets)}`,
-  );
+  throw new Error(formatWorkosHttpError('create WorkOS webhook endpoint', response.status, errBody, secrets));
 }
 
 /**
@@ -934,27 +991,23 @@ export async function runSelfhostSetup(options = {}) {
   if (!clientId && interactive) {
     clientId = (await prompt('WorkOS Client ID (client_...)')).trim();
   }
-  const clientIdCheck = validateClientId(clientId);
-  if (!clientIdCheck.ok) {
-    throw new Error(clientIdCheck.error);
-  }
-  clientId = clientIdCheck.value;
+  clientId = validateClientId(clientId);
 
   // Resolve WORKOS_API_KEY
-  let apiKey = !isPlaceholderValue('WORKOS_API_KEY', env.WORKOS_API_KEY)
-    ? env.WORKOS_API_KEY.trim()
-    : !isPlaceholderValue('WORKOS_API_KEY', existingEnv.values.get('WORKOS_API_KEY'))
-      ? existingEnv.values.get('WORKOS_API_KEY').trim()
-      : '';
-
-  if (!apiKey && interactive) {
+  let apiKey = '';
+  /** @type {'env' | 'file' | 'prompt'} */
+  let workosOrigin = 'prompt';
+  if (!isPlaceholderValue('WORKOS_API_KEY', env.WORKOS_API_KEY)) {
+    apiKey = env.WORKOS_API_KEY.trim();
+    workosOrigin = 'env';
+  } else if (!isPlaceholderValue('WORKOS_API_KEY', existingEnv.values.get('WORKOS_API_KEY'))) {
+    apiKey = existingEnv.values.get('WORKOS_API_KEY').trim();
+    workosOrigin = 'file';
+  } else if (interactive) {
     apiKey = (await promptSecret('WorkOS API Key (sk_..., input hidden)')).trim();
+    workosOrigin = 'prompt';
   }
-  const apiKeyCheck = validateApiKey(apiKey);
-  if (!apiKeyCheck.ok) {
-    throw new Error(apiKeyCheck.error);
-  }
-  apiKey = apiKeyCheck.value;
+  apiKey = validateApiKey(apiKey);
 
   // Resolve URLs
   const defaultPublicUrl = inferExistingPublicUrl(existingEnv.values) || DEFAULT_PUBLIC_URL;
@@ -1028,7 +1081,7 @@ export async function runSelfhostSetup(options = {}) {
   if (args.dryRun) {
     log('[selfhost-setup] Dry run — no WorkOS API calls will be made and no files will be written.');
     log(`  WorkOS Client ID:   ${clientId}`);
-    log(`  WorkOS API Key:     ${maskSecret(apiKey)}`);
+    log(`  WorkOS API Key:     ${formatOriginLabel(workosOrigin)}`);
     log(`  Redirect URI:       POST ${apiBaseUrl}/user_management/redirect_uris -> ${urls.redirectUri}`);
     log(`  App Homepage URL:   PUT  ${apiBaseUrl}/user_management/app_homepage_url -> ${urls.homepageUrl}`);
     log(`  CORS Origin:        POST ${apiBaseUrl}/user_management/cors_origins -> ${urls.corsOrigin}`);
@@ -1163,7 +1216,7 @@ export async function runSelfhostSetup(options = {}) {
   log('');
   log('Summary:');
   log(`  WORKOS_CLIENT_ID:       ${clientId}`);
-  log(`  WORKOS_API_KEY:         ${maskSecret(apiKey)}`);
+  log(`  WORKOS_API_KEY:         ${formatOriginLabel(workosOrigin)}`);
   log(`  WORKOS_COOKIE_PASSWORD: ${hasCookiePassword ? '(preserved)' : '(generated)'}`);
   log(`  INSTANCE_SECRET:        ${hasInstanceSecret ? '(preserved)' : '(generated)'}`);
   log(
@@ -1171,7 +1224,9 @@ export async function runSelfhostSetup(options = {}) {
       enableWebhook
         ? webhookStatus === 'unchanged'
           ? '(preserved)'
-          : `(${webhookStatus})`
+          : webhookStatus === 'rotated'
+            ? '(rotated)'
+            : '(created)'
         : hasWebhookSecret
           ? '(preserved)'
           : '(placeholder generated)'

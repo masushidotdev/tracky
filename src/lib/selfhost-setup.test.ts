@@ -8,12 +8,12 @@ import {
   deriveUrls,
   formatUsage,
   isPublicHttpsUrl,
-  maskSecret,
   mergeEnvTemplate,
   parseCliArgs,
   parseEnvFile,
   resolveWorkosApiBaseUrl,
   runSelfhostSetup,
+  validateApiKey,
 } from '../../scripts/selfhost-setup/lib.mjs';
 
 const CLI_PATH = resolve(process.cwd(), 'scripts/selfhost-setup.mjs');
@@ -22,7 +22,8 @@ const TEMPLATE_TEXT = readFileSync(TEMPLATE_PATH, 'utf8');
 
 // Construct fake secrets at runtime so static secret scanners never mistake test fixtures for real keys.
 const FAKE_CLIENT_ID = 'client_acme_01HZXTEST';
-const FAKE_API_KEY = ['sk', 'test', 'AcmeFixtureKey9876543210'].join('_');
+const FAKE_API_KEY = ['sk', 'test', 'AcmeFixtureKey987654Q9X7'].join('_');
+const FAKE_API_KEY_LAST4 = FAKE_API_KEY.slice(-4);
 const FAKE_WEBHOOK_SECRET = ['whsec', 'AcmeFixtureWebhook98765432'].join('_');
 const FAKE_WEBHOOK_SECRET_ROTATED = ['whsec', 'AcmeRotatedWebhook11223344'].join('_');
 const FAKE_INSTANCE_SECRET = 'a'.repeat(64);
@@ -215,8 +216,12 @@ describe('scripts/selfhost-setup/lib.mjs', () => {
 
     const output1 = logs1.join('\n');
     expect(output1).toContain('docker compose --profile tools run --rm convex-backfill');
-    expect(output1).toContain(maskSecret(FAKE_API_KEY));
+    expect(output1).toContain('WORKOS_API_KEY:         (from env)');
+    expect(output1).toContain('WORKOS_COOKIE_PASSWORD: (generated)');
+    expect(output1).toContain('INSTANCE_SECRET:        (generated)');
+    expect(output1).toContain('WORKOS_WEBHOOK_SECRET:  (placeholder generated)');
     expect(output1).not.toContain(FAKE_API_KEY);
+    expect(output1).not.toContain(FAKE_API_KEY_LAST4);
     expect(output1).not.toContain(FAKE_INSTANCE_SECRET);
     expect(output1).not.toContain(FAKE_COOKIE_PASSWORD);
     expect(output1).not.toContain(FAKE_WEBHOOK_SECRET);
@@ -244,35 +249,37 @@ describe('scripts/selfhost-setup/lib.mjs', () => {
       webhook: 'skipped',
     });
     expect(readFileSync(envPath, 'utf8')).toBe(envContent1);
-    expect(logs2.join('\n')).toContain('unchanged');
+    const output2 = logs2.join('\n');
+    expect(output2).toContain('unchanged');
+    expect(output2).toContain('WORKOS_API_KEY:         (from .env)');
+    expect(output2).toContain('WORKOS_COOKIE_PASSWORD: (preserved)');
+    expect(output2).toContain('INSTANCE_SECRET:        (preserved)');
+    expect(output2).toContain('WORKOS_WEBHOOK_SECRET:  (preserved)');
+    expect(output2).not.toContain(FAKE_API_KEY);
+    expect(output2).not.toContain(FAKE_API_KEY_LAST4);
+    expect(output2).not.toContain(FAKE_INSTANCE_SECRET);
+    expect(output2).not.toContain(FAKE_COOKIE_PASSWORD);
+    expect(output2).not.toContain(FAKE_WEBHOOK_SECRET);
   });
 
-  test('fails with redacted error message when WorkOS returns an unexpected error', async () => {
+  test('fails with redacted structured JSON error and ignores extra fields / non-JSON bodies', async () => {
     const dir = makeTempDir();
+    const extraSecretMarker = 'EXTRA_RAW_RESPONSE_LEAK_Z9P2';
     const fetchMock = vi.fn(() => {
       return Promise.resolve(
         new Response(
-          JSON.stringify({ message: `Unauthorized for key ${FAKE_API_KEY} Bearer ${FAKE_API_KEY}` }),
+          JSON.stringify({
+            code: 'unauthorized',
+            message: `Unauthorized for key ${FAKE_API_KEY} Bearer ${FAKE_API_KEY}`,
+            request_headers: { authorization: extraSecretMarker },
+          }),
           { status: 401 },
         ),
       );
     }) as unknown as typeof fetch;
 
     const logs: Array<string> = [];
-    await expect(
-      runSelfhostSetup({
-        argv: ['--yes'],
-        cwd: dir,
-        env: {
-          WORKOS_CLIENT_ID: FAKE_CLIENT_ID,
-          WORKOS_API_KEY: FAKE_API_KEY,
-        },
-        fetchImpl: fetchMock,
-        log: (msg) => logs.push(msg),
-        warn: () => {},
-      }),
-    ).rejects.toThrow(/401/);
-
+    let caughtMessage = '';
     try {
       await runSelfhostSetup({
         argv: ['--yes'],
@@ -286,11 +293,124 @@ describe('scripts/selfhost-setup/lib.mjs', () => {
         warn: () => {},
       });
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      expect(msg).not.toContain(FAKE_API_KEY);
-      expect(msg).toContain('[REDACTED]');
+      caughtMessage = error instanceof Error ? error.message : String(error);
     }
+
+    expect(caughtMessage).toContain('(401)');
+    expect(caughtMessage).toContain('unauthorized');
+    expect(caughtMessage).toContain('[REDACTED]');
+    expect(caughtMessage).not.toContain(FAKE_API_KEY);
+    expect(caughtMessage).not.toContain(FAKE_API_KEY_LAST4);
+    expect(caughtMessage).not.toContain(extraSecretMarker);
     expect(logs.join('\n')).not.toContain(FAKE_API_KEY);
+    expect(logs.join('\n')).not.toContain(FAKE_API_KEY_LAST4);
+
+    // Non-JSON HTML error page must only report HTTP status, not raw body text
+    const htmlBodyFetch = vi.fn(() => {
+      return Promise.resolve(
+        new Response(`<html><body>Proxy error ${extraSecretMarker}</body></html>`, { status: 502 }),
+      );
+    }) as unknown as typeof fetch;
+
+    let htmlErrorMessage = '';
+    try {
+      await runSelfhostSetup({
+        argv: ['--yes'],
+        cwd: dir,
+        env: {
+          WORKOS_CLIENT_ID: FAKE_CLIENT_ID,
+          WORKOS_API_KEY: FAKE_API_KEY,
+        },
+        fetchImpl: htmlBodyFetch,
+        log: () => {},
+        warn: () => {},
+      });
+    } catch (error) {
+      htmlErrorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(htmlErrorMessage).toBe('Failed to configure WorkOS redirect URI (502).');
+    expect(htmlErrorMessage).not.toContain(extraSecretMarker);
+  });
+
+  test('reports network fetch failures using only constant text and error/cause code', async () => {
+    const dir = makeTempDir();
+    const fetchWithCauseCode = vi.fn(() => {
+      const cause = Object.assign(new Error(`connect failed for ${FAKE_API_KEY}`), { code: 'ECONNREFUSED' });
+      const err = new Error(`fetch failed: Authorization: Bearer ${FAKE_API_KEY}`, { cause });
+      return Promise.reject(err);
+    }) as unknown as typeof fetch;
+
+    let msgWithCode = '';
+    try {
+      await runSelfhostSetup({
+        argv: ['--yes'],
+        cwd: dir,
+        env: { WORKOS_CLIENT_ID: FAKE_CLIENT_ID, WORKOS_API_KEY: FAKE_API_KEY },
+        fetchImpl: fetchWithCauseCode,
+        log: () => {},
+        warn: () => {},
+      });
+    } catch (error) {
+      msgWithCode = error instanceof Error ? error.message : String(error);
+    }
+    expect(msgWithCode).toBe('WorkOS API network request failed (ECONNREFUSED).');
+    expect(msgWithCode).not.toContain(FAKE_API_KEY);
+    expect(msgWithCode).not.toContain(FAKE_API_KEY_LAST4);
+
+    const fetchWithoutCode = vi.fn(() => {
+      return Promise.reject(new Error(`socket hang up https://api.workos.com?key=${FAKE_API_KEY}`));
+    }) as unknown as typeof fetch;
+
+    let msgWithoutCode = '';
+    try {
+      await runSelfhostSetup({
+        argv: ['--yes'],
+        cwd: dir,
+        env: { WORKOS_CLIENT_ID: FAKE_CLIENT_ID, WORKOS_API_KEY: FAKE_API_KEY },
+        fetchImpl: fetchWithoutCode,
+        log: () => {},
+        warn: () => {},
+      });
+    } catch (error) {
+      msgWithoutCode = error instanceof Error ? error.message : String(error);
+    }
+    expect(msgWithoutCode).toBe('WorkOS API network request failed.');
+    expect(msgWithoutCode).not.toContain(FAKE_API_KEY);
+    expect(msgWithoutCode).not.toContain(FAKE_API_KEY_LAST4);
+  });
+
+  test('validates WORKOS_API_KEY with constant error messages and prints (provided) for interactive prompt', async () => {
+    expect(() => validateApiKey('')).toThrow('WORKOS_API_KEY is required.');
+    const malformed = 'bad_secret_value_Z8K4';
+    let malformedMsg = '';
+    try {
+      validateApiKey(malformed);
+    } catch (error) {
+      malformedMsg = error instanceof Error ? error.message : String(error);
+    }
+    expect(malformedMsg).toBe('WORKOS_API_KEY must start with "sk_" and contain no whitespace.');
+    expect(malformedMsg).not.toContain(malformed);
+    expect(malformedMsg).not.toContain('Z8K4');
+
+    const dir = makeTempDir();
+    const fetchMock = vi.fn(() => Promise.resolve(jsonResponse(201, { id: 'ok' }))) as unknown as typeof fetch;
+    const logs: Array<string> = [];
+    await runSelfhostSetup({
+      argv: ['--dry-run'],
+      cwd: dir,
+      env: {},
+      isTTY: true,
+      fetchImpl: fetchMock,
+      prompt: (_question, defaultValue) => Promise.resolve(defaultValue ?? FAKE_CLIENT_ID),
+      promptSecret: () => Promise.resolve(FAKE_API_KEY),
+      log: (msg) => logs.push(msg),
+      warn: () => {},
+    });
+
+    const output = logs.join('\n');
+    expect(output).toContain('WorkOS API Key:     (provided)');
+    expect(output).not.toContain(FAKE_API_KEY);
+    expect(output).not.toContain(FAKE_API_KEY_LAST4);
   });
 
   test('webhook paths: creates webhook, preserves secret on 409, blocks 409 without secret, and rotates with --rotate-webhook', async () => {
@@ -446,8 +566,10 @@ describe('scripts/selfhost-setup/lib.mjs', () => {
 
     const output = logs.join('\n');
     expect(output).toContain('Dry run');
+    expect(output).toContain('WorkOS API Key:     (from env)');
     expect(output).toContain('https://tracky.example.com/callback');
     expect(output).not.toContain(FAKE_API_KEY);
+    expect(output).not.toContain(FAKE_API_KEY_LAST4);
   });
 
   test('parses --out and --template flags and documents --out in usage', () => {
@@ -491,8 +613,10 @@ describe('scripts/selfhost-setup/lib.mjs', () => {
 
     const combined = `${res.stdout}\n${res.stderr}`;
     expect(combined).toContain('Dry run');
+    expect(combined).toContain('WorkOS API Key:     (from env)');
     expect(combined).toContain(outPath);
     expect(combined).not.toContain(FAKE_API_KEY);
+    expect(combined).not.toContain(FAKE_API_KEY_LAST4);
     expect(existsSync(outPath)).toBe(false);
     expect(existsSync(join(dir, '.env'))).toBe(false);
   });
