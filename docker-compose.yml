@@ -58,6 +58,7 @@ services:
     restart: "no"
 
   convex-deploy:
+    image: tracky-deployer:local
     build:
       context: .
       dockerfile: Dockerfile
@@ -120,6 +121,27 @@ services:
       convex-deploy:
         condition: service_completed_successfully
     restart: unless-stopped
+
+  convex-backfill:
+    image: tracky-deployer:local
+    profiles:
+      - tools
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deployer
+    command: ["backfill"]
+    network_mode: "service:backend"
+    environment:
+      CONVEX_SELF_HOSTED_URL: http://127.0.0.1:3210
+    volumes:
+      - convex-admin:/run/convex-admin:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      convex-key:
+        condition: service_completed_successfully
+    restart: "no"
 
   dashboard:
     image: ghcr.io/convex/convex-dashboard@sha256:2cb0f7e51597ea41d08147649f9f65cb2676aa96ce1f2fce1531116a408e1c98

@@ -24,7 +24,7 @@ Genera i segreti casuali prima del primo avvio:
 ```bash
 openssl rand -hex 32          # -> INSTANCE_SECRET
 openssl rand -base64 32       # -> WORKOS_COOKIE_PASSWORD (almeno 32 caratteri)
-echo "whsec_$(openssl rand -hex 16)" # -> segnaposto WORKOS_WEBHOOK_SECRET per uso solo locale
+echo "whsec_$(openssl rand -hex 16)" # -> segnaposto WORKOS_WEBHOOK_SECRET per uso locale/LAN (richiede backfill; vedi sotto)
 ```
 
 Per avviare anche la dashboard Convex opzionale su [http://localhost:6791](http://localhost:6791):
@@ -42,6 +42,7 @@ docker compose --profile dashboard up -d
 | `backend` | `ghcr.io/convex/convex-backend` (pinnata per digest) | API Convex self-hosted (`3210`), HTTP actions (`3211`) e database SQLite + storage locale nel volume `convex-data`. Espone anche la porta `3000` per `app`. |
 | `convex-key` | `ghcr.io/convex/convex-backend` (one-shot) | Deriva la admin key da `INSTANCE_NAME` e `INSTANCE_SECRET` nel volume privato `convex-admin` (`0600`, uid `1000`). |
 | `convex-deploy` | `Dockerfile` (`target: deployer`, one-shot) | Sincronizza le variabili d'ambiente Convex consentite e pubblica schema, componenti e funzioni (`convex deploy --yes --skip-workos-check --typecheck=disable`). |
+| `convex-backfill` | `Dockerfile` (`target: deployer`, profilo `tools`, one-shot) | Utility amministrativa che esegue `auth:backfillUsers` per importare gli utenti WorkOS quando i webhook in ingresso non sono disponibili. |
 | `app` | `Dockerfile` (`target: runtime`) | Worker Cloudflare TanStack Start eseguito localmente su `workerd` tramite il runtime locale di Wrangler dietro un edge proxy Node integrato sulla porta `3000` (`network_mode: "service:backend"`). Gira come utente non-root `node` (uid `1000`). |
 | `dashboard` | `ghcr.io/convex/convex-dashboard` (pinnata per digest, profilo `dashboard`) | Dashboard web Convex opzionale (`6791`). |
 
@@ -51,12 +52,23 @@ docker compose --profile dashboard up -d
   1. Crea un progetto/ambiente su [dashboard.workos.com](https://dashboard.workos.com/).
   2. In **Redirects**, aggiungi `http://localhost:3000/callback` (oppure `https://<tuo-dominio>/callback` in produzione).
   3. Copia `WORKOS_CLIENT_ID` e `WORKOS_API_KEY` nel file `.env`.
-  4. Imposta `WORKOS_WEBHOOK_SECRET`: `@convex-dev/workos-authkit` richiede questa variabile durante il push delle funzioni Convex. Dietro un reverse proxy HTTPS pubblico, crea un webhook WorkOS verso `https://<tuo-convex-site>/workos/webhook` (eventi `user.created`, `user.updated`, `user.deleted`) e incolla il signing secret. In ambiente locale solo HTTP (dove WorkOS non può raggiungere il tuo host), un valore casuale `whsec_...` permette il deploy del backend e il primo accesso sincronizza comunque il profilo utente.
+  4. Configura `WORKOS_WEBHOOK_SECRET` e il provisioning utenti come descritto in [Provisioning utenti](#provisioning-utenti) qui sotto.
 - **Integrazioni opzionali** (tutte disattivate finché le rispettive variabili non sono valorizzate in `.env` e sincronizzate su Convex):
   - **Enable Banking:** app ID, chiave privata PEM e URL di callback HTTPS del tuo account Enable Banking (`ENABLE_BANKING_*`).
   - **Analyst AI:** imposta `VITE_ANALYST_ENABLED=true` (richiede il rebuild di `app`) più `AI_GATEWAY_API_KEY` / `OPENROUTER_API_KEY` (e opzionalmente `LANGFUSE_*`).
   - **Report email (Resend):** `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_WEBHOOK_SECRET`.
   - **Bot Telegram:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_WEBHOOK_URL`.
+
+### Provisioning utenti
+
+Tracky crea il profilo utente e apre l'app solo quando il record esiste nella tabella AuthKit di Convex — un JWT WorkOS valido da solo lascia il login in attesa di retry. Questa tabella viene popolata in uno di due modi:
+
+- **Installazioni esposte su Internet (consigliato):** esponi `CONVEX_SITE_ORIGIN` (porta `3211`) in HTTPS, crea un webhook WorkOS verso `https://<tuo-convex-site>/workos/webhook` con gli eventi `user.created`, `user.updated` e `user.deleted`, e incolla il signing secret in `WORKOS_WEBHOOK_SECRET` nel file `.env`.
+- **Installazioni locali / LAN (dove WorkOS non può raggiungere il tuo host):** imposta un valore segnaposto `whsec_...` in `WORKOS_WEBHOOK_SECRET` così `convex-deploy` va a buon fine, e dopo la registrazione di ogni nuovo utente esegui una volta il comando di backfill:
+  ```bash
+  docker compose --profile tools run --rm convex-backfill
+  ```
+  Il comando esegue `auth:backfillUsers`, che legge gli utenti dalle API di WorkOS tramite `WORKOS_API_KEY` e li importa in Convex. Senza il webhook, in questa modalità gli eventi `user.updated` e `user.deleted` non vengono sincronizzati automaticamente.
 
 ## Note di configurazione
 
