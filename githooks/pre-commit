@@ -10,7 +10,7 @@ set -u
 blocked=()
 while IFS= read -r -d '' file; do
   case "$file" in
-    *.env.local.example | .env.local.example | *.env.example | .env.example) ;;
+    *.env.local.example | .env.local.example | *.env.example | .env.example | */.env.*.example | .env.*.example) ;;
     .env | .env.* | */.env | */.env.* | *.pem | *.key | *.p12 | *.pfx)
       blocked+=("$file")
       ;;

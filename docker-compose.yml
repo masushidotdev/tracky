@@ -1,0 +1,163 @@
+services:
+  backend:
+    image: ghcr.io/convex/convex-backend@sha256:d4e012c68640830310139632481f8d1c1915bdf66de5c3a594a99799eab51679
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    ports:
+      - "${APP_PORT:-3000}:3000"
+      - "${CONVEX_PORT:-3210}:3210"
+      - "${CONVEX_SITE_PORT:-3211}:3211"
+    environment:
+      INSTANCE_NAME: "${INSTANCE_NAME:-tracky}"
+      INSTANCE_SECRET: "${INSTANCE_SECRET:?Set INSTANCE_SECRET in .env (generate with openssl rand -hex 32)}"
+      CONVEX_CLOUD_ORIGIN: "${CONVEX_CLOUD_ORIGIN:-http://127.0.0.1:3210}"
+      CONVEX_SITE_ORIGIN: "${CONVEX_SITE_ORIGIN:-http://127.0.0.1:3211}"
+      DISABLE_BEACON: "true"
+      REDACT_LOGS_TO_CLIENT: ${REDACT_LOGS_TO_CLIENT:-true}
+      DO_NOT_REQUIRE_SSL: ${DO_NOT_REQUIRE_SSL:-true}
+      POSTGRES_URL: ${POSTGRES_URL:-}
+      MYSQL_URL: ${MYSQL_URL:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      AWS_S3_FORCE_PATH_STYLE: ${AWS_S3_FORCE_PATH_STYLE:-}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_STORAGE_EXPORTS_BUCKET: ${S3_STORAGE_EXPORTS_BUCKET:-}
+      S3_STORAGE_SNAPSHOT_IMPORTS_BUCKET: ${S3_STORAGE_SNAPSHOT_IMPORTS_BUCKET:-}
+      S3_STORAGE_MODULES_BUCKET: ${S3_STORAGE_MODULES_BUCKET:-}
+      S3_STORAGE_FILES_BUCKET: ${S3_STORAGE_FILES_BUCKET:-}
+      S3_STORAGE_SEARCH_BUCKET: ${S3_STORAGE_SEARCH_BUCKET:-}
+    volumes:
+      - convex-data:/convex/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3210/version"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  convex-key:
+    image: ghcr.io/convex/convex-backend@sha256:d4e012c68640830310139632481f8d1c1915bdf66de5c3a594a99799eab51679
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        set -eu;
+        /convex/generate_key "$$INSTANCE_NAME" "$$INSTANCE_SECRET" | tail -n 1 > /run/convex-admin/admin_key;
+        chown 1000:1000 /run/convex-admin/admin_key;
+        chmod 0600 /run/convex-admin/admin_key
+    environment:
+      INSTANCE_NAME: "${INSTANCE_NAME:-tracky}"
+      INSTANCE_SECRET: "${INSTANCE_SECRET:?Set INSTANCE_SECRET in .env (generate with openssl rand -hex 32)}"
+    volumes:
+      - convex-admin:/run/convex-admin
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: "no"
+
+  convex-deploy:
+    image: tracky-deployer:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deployer
+    network_mode: "service:backend"
+    environment:
+      CONVEX_SELF_HOSTED_URL: http://127.0.0.1:3210
+      WORKOS_CLIENT_ID: "${WORKOS_CLIENT_ID:?Set WORKOS_CLIENT_ID in .env}"
+      WORKOS_API_KEY: "${WORKOS_API_KEY:?Set WORKOS_API_KEY in .env}"
+      WORKOS_WEBHOOK_SECRET: "${WORKOS_WEBHOOK_SECRET:?Set WORKOS_WEBHOOK_SECRET in .env}"
+      ENABLE_BANKING_APP_ID: ${ENABLE_BANKING_APP_ID:-}
+      ENABLE_BANKING_API_BASE: ${ENABLE_BANKING_API_BASE:-}
+      ENABLE_BANKING_PRIVATE_KEY: ${ENABLE_BANKING_PRIVATE_KEY:-}
+      ENABLE_BANKING_REDIRECT_URL: ${ENABLE_BANKING_REDIRECT_URL:-}
+      ENABLE_BANKING_RETURN_URL: ${ENABLE_BANKING_RETURN_URL:-}
+      AI_GATEWAY_API_KEY: ${AI_GATEWAY_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-}
+      RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
+      LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+    volumes:
+      - convex-admin:/run/convex-admin:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      convex-key:
+        condition: service_completed_successfully
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        VITE_CONVEX_URL: ${VITE_CONVEX_URL:-http://127.0.0.1:3210}
+        VITE_ANALYST_ENABLED: ${VITE_ANALYST_ENABLED:-false}
+        APP_PUBLIC_URL: ${APP_PUBLIC_URL:-localhost:3000}
+    # Share backend's network namespace so VITE_CONVEX_URL (default http://127.0.0.1:3210)
+    # resolves identically from both the browser and SSR inside the app container.
+    # Port 3000 is published on the backend service above.
+    network_mode: "service:backend"
+    environment:
+      WORKOS_CLIENT_ID: "${WORKOS_CLIENT_ID:?Set WORKOS_CLIENT_ID in .env}"
+      WORKOS_API_KEY: "${WORKOS_API_KEY:?Set WORKOS_API_KEY in .env}"
+      WORKOS_COOKIE_PASSWORD: "${WORKOS_COOKIE_PASSWORD:?Set WORKOS_COOKIE_PASSWORD in .env (min 32 chars)}"
+      WORKOS_REDIRECT_URI: "${WORKOS_REDIRECT_URI:-http://localhost:3000/callback}"
+      WORKOS_COOKIE_NAME: ${WORKOS_COOKIE_NAME:-}
+      WORKOS_COOKIE_DOMAIN: ${WORKOS_COOKIE_DOMAIN:-}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-localhost:3000}
+    depends_on:
+      backend:
+        condition: service_healthy
+      convex-deploy:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  convex-backfill:
+    image: tracky-deployer:local
+    profiles:
+      - tools
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deployer
+    command: ["backfill"]
+    network_mode: "service:backend"
+    environment:
+      CONVEX_SELF_HOSTED_URL: http://127.0.0.1:3210
+    volumes:
+      - convex-admin:/run/convex-admin:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      convex-key:
+        condition: service_completed_successfully
+    restart: "no"
+
+  dashboard:
+    image: ghcr.io/convex/convex-dashboard@sha256:2cb0f7e51597ea41d08147649f9f65cb2676aa96ce1f2fce1531116a408e1c98
+    profiles:
+      - dashboard
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    ports:
+      - "${DASHBOARD_PORT:-6791}:6791"
+    environment:
+      NEXT_PUBLIC_DEPLOYMENT_URL: ${NEXT_PUBLIC_DEPLOYMENT_URL:-http://127.0.0.1:3210}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  convex-data:
+  convex-admin:
