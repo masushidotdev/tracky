@@ -89,6 +89,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
+    CLOUDFLARE_CF_FETCH_ENABLED=false \
     WRANGLER_SEND_METRICS=false \
     WRANGLER_SEND_ERROR_REPORTS=false \
     WRANGLER_HIDE_BANNER=true \
@@ -102,6 +103,8 @@ ENV NODE_ENV=production \
 COPY --from=runtime-deps /runtime-deps/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY docker/entrypoint.sh ./docker/entrypoint.sh
+COPY docker/edge.mjs ./docker/edge.mjs
+COPY docker/edge-path.mjs ./docker/edge-path.mjs
 
 RUN chmod 0755 /app/docker/entrypoint.sh && \
     mkdir -p /tmp/wrangler-state /app/dist/server/.wrangler && \

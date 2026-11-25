@@ -1,8 +1,12 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
 ENV_FILE="/tmp/tracky-runtime.dev.vars"
 STATE_DIR="/tmp/wrangler-state"
+UPSTREAM_HOST="127.0.0.1"
+UPSTREAM_PORT="8787"
+EDGE_HOST="0.0.0.0"
+EDGE_PORT="3000"
 
 # Validate required runtime secrets and materialize an allowlisted .dev.vars
 # file with mode 0600 so secrets are never baked into the image or passed via argv.
@@ -51,12 +55,101 @@ NODE
 
 mkdir -p "$STATE_DIR"
 
-exec /app/node_modules/.bin/wrangler dev \
+wrangler_pid=""
+proxy_pid=""
+shutting_down=0
+
+forward_signal() {
+  local sig="$1"
+  shutting_down=1
+  if [ -n "$proxy_pid" ]; then
+    kill "-$sig" "$proxy_pid" 2>/dev/null || true
+  fi
+  if [ -n "$wrangler_pid" ]; then
+    kill "-$sig" "$wrangler_pid" 2>/dev/null || true
+  fi
+}
+
+trap 'forward_signal TERM' TERM
+trap 'forward_signal INT' INT
+
+is_pid_alive() {
+  local pid="$1"
+  if ! kill -0 "$pid" 2>/dev/null; then
+    return 1
+  fi
+  if [ -r "/proc/${pid}/stat" ]; then
+    local state
+    state=$(awk '{print $3}' "/proc/${pid}/stat" 2>/dev/null || true)
+    if [ "$state" = "Z" ]; then
+      return 1
+    fi
+  fi
+  return 0
+}
+
+/app/node_modules/.bin/wrangler dev \
   --config /app/dist/server/wrangler.json \
   --env-file "$ENV_FILE" \
-  --ip 0.0.0.0 \
-  --port 3000 \
+  --ip "$UPSTREAM_HOST" \
+  --port "$UPSTREAM_PORT" \
   --local \
   --live-reload=false \
   --show-interactive-dev-session=false \
-  --persist-to "$STATE_DIR"
+  --persist-to "$STATE_DIR" &
+wrangler_pid=$!
+
+# Wait for Wrangler's loopback listener before exposing port 3000.
+ready=0
+for _ in $(seq 1 240); do
+  if [ "$shutting_down" -eq 1 ]; then
+    wait "$wrangler_pid" 2>/dev/null || true
+    exit 0
+  fi
+
+  if ! is_pid_alive "$wrangler_pid"; then
+    wait "$wrangler_pid" 2>/dev/null || true
+    echo "[tracky] wrangler exited before becoming ready." >&2
+    exit 1
+  fi
+
+  if node -e "const net = require('node:net'); const s = net.connect(${UPSTREAM_PORT}, '${UPSTREAM_HOST}', () => { s.end(); process.exit(0); }); s.setTimeout(500, () => { s.destroy(); process.exit(1); }); s.on('error', () => process.exit(1));" 2>/dev/null; then
+    ready=1
+    break
+  fi
+
+  sleep 0.25 &
+  wait $! 2>/dev/null || true
+done
+
+if [ "$ready" -ne 1 ]; then
+  echo "[tracky] Timed out waiting for wrangler on ${UPSTREAM_HOST}:${UPSTREAM_PORT}." >&2
+  kill -TERM "$wrangler_pid" 2>/dev/null || true
+  wait "$wrangler_pid" 2>/dev/null || true
+  exit 1
+fi
+
+EDGE_HOST="$EDGE_HOST" \
+EDGE_PORT="$EDGE_PORT" \
+UPSTREAM_HOST="$UPSTREAM_HOST" \
+UPSTREAM_PORT="$UPSTREAM_PORT" \
+node /app/docker/edge.mjs &
+proxy_pid=$!
+
+set +e
+wait -n "$wrangler_pid" "$proxy_pid"
+exit_status=$?
+set -e
+
+if [ "$shutting_down" -eq 1 ]; then
+  wait "$proxy_pid" 2>/dev/null || true
+  wait "$wrangler_pid" 2>/dev/null || true
+  exit 0
+fi
+
+echo "[tracky] Runtime process exited unexpectedly (status ${exit_status}); terminating container." >&2
+kill -TERM "$proxy_pid" 2>/dev/null || true
+kill -TERM "$wrangler_pid" 2>/dev/null || true
+wait "$proxy_pid" 2>/dev/null || true
+wait "$wrangler_pid" 2>/dev/null || true
+exit 1

@@ -42,7 +42,7 @@ docker compose --profile dashboard up -d
 | `backend` | `ghcr.io/convex/convex-backend` (pinnata per digest) | API Convex self-hosted (`3210`), HTTP actions (`3211`) e database SQLite + storage locale nel volume `convex-data`. Espone anche la porta `3000` per `app`. |
 | `convex-key` | `ghcr.io/convex/convex-backend` (one-shot) | Deriva la admin key da `INSTANCE_NAME` e `INSTANCE_SECRET` nel volume privato `convex-admin` (`0600`, uid `1000`). |
 | `convex-deploy` | `Dockerfile` (`target: deployer`, one-shot) | Sincronizza le variabili d'ambiente Convex consentite e pubblica schema, componenti e funzioni (`convex deploy --yes --skip-workos-check --typecheck=disable`). |
-| `app` | `Dockerfile` (`target: runtime`) | Worker Cloudflare TanStack Start eseguito localmente su `workerd` tramite il runtime locale di Wrangler (`network_mode: "service:backend"`). Gira come utente non-root `node` (uid `1000`). |
+| `app` | `Dockerfile` (`target: runtime`) | Worker Cloudflare TanStack Start eseguito localmente su `workerd` tramite il runtime locale di Wrangler dietro un edge proxy Node integrato sulla porta `3000` (`network_mode: "service:backend"`). Gira come utente non-root `node` (uid `1000`). |
 | `dashboard` | `ghcr.io/convex/convex-dashboard` (pinnata per digest, profilo `dashboard`) | Dashboard web Convex opzionale (`6791`). |
 
 ### Servizi esterni
@@ -128,14 +128,18 @@ docker compose up -d
 
 Conserva una copia protetta del file `.env` (in particolare `INSTANCE_SECRET`, `INSTANCE_NAME` e `WORKOS_COOKIE_PASSWORD`) insieme ai backup.
 
+## Note di sicurezza
+
+Il container `app` esegue il Cloudflare Worker su `workerd` tramite il runtime locale di Wrangler in ascolto solo su loopback (`127.0.0.1:8787`), protetto da un edge proxy Node integrato sulla porta `3000` che blocca gli endpoint locali di sviluppo `/cdn-cgi/*`. Le porte `3210` e `3211` espongono le API client e le HTTP actions di Convex; le operazioni amministrative richiedono la admin key derivata da `INSTANCE_SECRET`, quindi conserva `INSTANCE_SECRET` (e la admin key generata) in modo rigorosamente riservato. In caso di esposizione su Internet, pubblica tutti gli endpoint dietro un reverse proxy con terminazione TLS e non esporre mai pubblicamente la porta della dashboard Convex (`6791`).
+
 ## Limiti e assenza di telemetria
 
-- **Runtime:** Tracky compila come Cloudflare Worker (non esiste un target server Node). L'immagine self-host `app` esegue il Worker localmente su `workerd` tramite il runtime locale pinnato `wrangler dev --local`. È adatta al self-hosting personale o familiare su nodo singolo, non allo scaling orizzontale multi-replica.
+- **Runtime:** Tracky compila come Cloudflare Worker (non esiste un target server Node). L'immagine self-host `app` esegue il Worker localmente su `workerd` tramite il runtime locale pinnato `wrangler dev --local` dietro un edge proxy leggero integrato (`docker/edge.mjs`). È adatta al self-hosting personale o familiare su nodo singolo, non allo scaling orizzontale multi-replica.
 - **Storage:** SQLite + storage locale nel volume `convex-data` (nodo singolo). Il backend Convex supporta comunque Postgres (`POSTGRES_URL`), MySQL (`MYSQL_URL`) e bucket S3 tramite le variabili opzionali documentate in `.env.selfhost.example`.
 - **Nessuna telemetria:**
   - PostHog è disattivato in modo forzato a build time (`CLOUDFLARE_ENV=selfhost`, `VITE_POSTHOG_ENABLED=false`, nessun host/chiave di raccolta in `dist/client` o `dist/server/wrangler.json`).
   - Il beacon del backend Convex è disabilitato (`DISABLE_BEACON=true`).
-  - Telemetria, segnalazioni errori, controlli aggiornamenti del banner e Local Explorer di Wrangler sono disattivati (`WRANGLER_SEND_METRICS=false`, `WRANGLER_SEND_ERROR_REPORTS=false`, `WRANGLER_HIDE_BANNER=true`, `X_LOCAL_EXPLORER=false`, `DO_NOT_TRACK=1`).
+  - Telemetria, segnalazioni errori, controlli aggiornamenti del banner, Local Explorer di Wrangler e il fetch iniziale di `workers.cloudflare.com/cf.json` da parte di Miniflare sono disattivati (`WRANGLER_SEND_METRICS=false`, `WRANGLER_SEND_ERROR_REPORTS=false`, `WRANGLER_HIDE_BANNER=true`, `X_LOCAL_EXPLORER=false`, `CLOUDFLARE_CF_FETCH_ENABLED=false`, `DO_NOT_TRACK=1`).
 - **Dashboard Convex:** se avvii `--profile dashboard`, ottieni la admin key per accedere con:
   ```bash
   docker compose exec backend ./generate_admin_key.sh

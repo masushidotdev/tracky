@@ -42,7 +42,7 @@ docker compose --profile dashboard up -d
 | `backend` | `ghcr.io/convex/convex-backend` (pinned by digest) | Self-hosted Convex API (`3210`), HTTP actions (`3211`), and SQLite + local blob storage in the `convex-data` volume. Also publishes port `3000` for `app`. |
 | `convex-key` | `ghcr.io/convex/convex-backend` (one-shot) | Derives the instance admin key from `INSTANCE_NAME` and `INSTANCE_SECRET` into the private `convex-admin` volume (`0600`, uid `1000`). |
 | `convex-deploy` | `Dockerfile` (`target: deployer`, one-shot) | Syncs allowlisted Convex backend environment variables and pushes Tracky's schema, components, and functions (`convex deploy --yes --skip-workos-check --typecheck=disable`). |
-| `app` | `Dockerfile` (`target: runtime`) | Built TanStack Start Cloudflare Worker served locally on `workerd` via Wrangler's local runtime (`network_mode: "service:backend"`). Runs as non-root `node` (uid `1000`). |
+| `app` | `Dockerfile` (`target: runtime`) | Built TanStack Start Cloudflare Worker served locally on `workerd` via Wrangler's local runtime behind a built-in Node edge proxy on port `3000` (`network_mode: "service:backend"`). Runs as non-root `node` (uid `1000`). |
 | `dashboard` | `ghcr.io/convex/convex-dashboard` (pinned by digest, profile `dashboard`) | Optional Convex web dashboard (`6791`). |
 
 ### External services
@@ -128,14 +128,18 @@ docker compose up -d
 
 Keep a secure copy of `.env` (especially `INSTANCE_SECRET`, `INSTANCE_NAME`, and `WORKOS_COOKIE_PASSWORD`) alongside your backups.
 
+## Security notes
+
+The `app` container runs the built Cloudflare Worker on `workerd` via Wrangler's local runtime bound to loopback (`127.0.0.1:8787`), fronted by a built-in Node edge proxy on port `3000` that blocks `/cdn-cgi/*` local tooling endpoints. Ports `3210` and `3211` expose the Convex client API and HTTP actions; administrative operations require the admin key derived from `INSTANCE_SECRET`, so keep `INSTANCE_SECRET` (and the generated admin key) strictly secret. For internet-facing deployments, put all exposed endpoints behind a TLS-terminating reverse proxy and never publish the optional Convex dashboard port (`6791`) publicly.
+
 ## Limitations and telemetry
 
-- **Runtime:** Tracky builds as a Cloudflare Worker (there is no Node HTTP server target). The self-host `app` image executes the built Worker locally on `workerd` via the pinned `wrangler dev --local` runtime. It is well suited for personal/household single-node self-hosting, not multi-replica horizontal scaling.
+- **Runtime:** Tracky builds as a Cloudflare Worker (there is no Node HTTP server target). The self-host `app` image executes the built Worker locally on `workerd` via the pinned `wrangler dev --local` runtime behind a lightweight built-in edge proxy (`docker/edge.mjs`). It is well suited for personal/household single-node self-hosting, not multi-replica horizontal scaling.
 - **Storage:** SQLite + local storage inside `convex-data` by default (single node). Upstream Convex backend also supports external Postgres (`POSTGRES_URL`), MySQL (`MYSQL_URL`), and S3 storage buckets via the optional variables listed in `.env.selfhost.example`.
 - **No telemetry:**
   - PostHog analytics is hard-disabled at build time (`CLOUDFLARE_ENV=selfhost`, `VITE_POSTHOG_ENABLED=false`, no capture key/host embedded in `dist/client` or `dist/server/wrangler.json`).
   - Convex backend beacon is disabled (`DISABLE_BEACON=true`).
-  - Wrangler telemetry, error reports, banner update checks, and local explorer UI are disabled (`WRANGLER_SEND_METRICS=false`, `WRANGLER_SEND_ERROR_REPORTS=false`, `WRANGLER_HIDE_BANNER=true`, `X_LOCAL_EXPLORER=false`, `DO_NOT_TRACK=1`).
+  - Wrangler telemetry, error reports, banner update checks, local explorer UI, and Miniflare's startup `workers.cloudflare.com/cf.json` fetch are disabled (`WRANGLER_SEND_METRICS=false`, `WRANGLER_SEND_ERROR_REPORTS=false`, `WRANGLER_HIDE_BANNER=true`, `X_LOCAL_EXPLORER=false`, `CLOUDFLARE_CF_FETCH_ENABLED=false`, `DO_NOT_TRACK=1`).
 - **Convex dashboard:** When running `--profile dashboard`, retrieve the admin key to sign in via:
   ```bash
   docker compose exec backend ./generate_admin_key.sh
