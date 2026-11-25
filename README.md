@@ -25,29 +25,39 @@ Built on [Convex](https://convex.dev/) (database + server logic),
 ## Prerequisites
 
 - Node.js >=22.23.4 <23 (pinned in `.nvmrc`) and npm (npm only — `package-lock.json` is the single lockfile).
-- A [Convex](https://convex.dev/) account.
-- A [WorkOS](https://workos.com/) account (AuthKit).
+- A [Convex](https://convex.dev/) account (for Convex Cloud dev; not needed for Docker self-hosting).
+- Optional for Convex Cloud dev (required for Docker self-hosting or bring-your-own auth): a [WorkOS](https://workos.com/) account (AuthKit).
 - Optional: Enable Banking app, Resend key, Telegram bot, AI Gateway key.
 
 ## Quickstart
 
 ```bash
 npm ci
-cp .env.example .env.local          # then fill in your values
-npx convex dev                      # provisions your Convex deployment
-npm run dev                         # Vite + Convex in parallel
+npx convex dev                      # provisions Convex + WorkOS AuthKit dev env in .env.local
+npm run dev                         # generates WORKOS_COOKIE_PASSWORD if missing, then starts Vite + Convex
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-WorkOS setup: add `http://localhost:3000/callback` as a redirect URI, generate
-a 32+ char cookie password, and set `WORKOS_CLIENT_ID` / `WORKOS_API_KEY` both
-in `.env.local` and in Convex:
+**How WorkOS onboarding works in dev:** `convex.json` declares `authKit.dev`, so
+`npx convex dev` automatically provisions a dev WorkOS AuthKit environment on a
+Convex-managed team (or reuses `WORKOS_CLIENT_ID` / `WORKOS_API_KEY` if you
+already set them), configures the `http://localhost:3000` redirect URI,
+homepage, and CORS origin, and writes `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, and
+`WORKOS_REDIRECT_URI` to `.env.local`. When you run `npm run dev`, the `predev`
+hook (`scripts/dev-auth-env.mjs`) appends a random 48-character
+`WORKOS_COOKIE_PASSWORD` to `.env.local` if neither `.env.local` nor `.dev.vars`
+defines one.
 
-```bash
-npx convex env set WORKOS_CLIENT_ID <your_client_id>
-npx convex env set WORKOS_API_KEY <your_api_key>
-```
+> **Note on `.dev.vars`:** Local SSR runs on `workerd` via `@cloudflare/vite-plugin`, which loads server secrets from `.env.local` only when `.dev.vars` does not exist. If you keep a `.dev.vars` file, copy the `WORKOS_*` keys into it (or delete `.dev.vars` to use `.env.local`); `npm run dev` warns if any `WORKOS_*` keys diverge.
+
+**Bring your own WorkOS environment (manual fallback):** if you prefer your own
+WorkOS project instead of the Convex-managed one, put `WORKOS_CLIENT_ID` and
+`WORKOS_API_KEY` in `.env.local` (or set them in Convex with
+`npx convex env set WORKOS_CLIENT_ID ...` and
+`npx convex env set WORKOS_API_KEY ...`) before running `npx convex dev`. Convex
+will reuse your environment and still configure the `http://localhost:3000`
+redirect URI, homepage, and CORS origin.
 
 Enable Banking (per user, own app and keys):
 
@@ -74,12 +84,15 @@ Run Tracky locally or on a single-node VPS backed by a self-hosted Convex
 backend (no telemetry; WorkOS AuthKit stays external):
 
 ```bash
-cp .env.selfhost.example .env       # fill WorkOS keys + random secrets
+node scripts/selfhost-setup.mjs     # or `npm run selfhost:setup` (Node 22 only, no `npm ci` needed)
 docker compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000). See the full guide in
-[docs/self-hosting.md](docs/self-hosting.md) (English) or
+The setup script configures your WorkOS redirect URI, homepage, CORS origin
+(and optional user-sync webhook on public HTTPS installs), generates missing
+secrets, and writes `.env` (`0600`). Open [http://localhost:3000](http://localhost:3000).
+See the full guide — including manual `.env` configuration and reverse proxy
+setup — in [docs/self-hosting.md](docs/self-hosting.md) (English) or
 [docs/self-hosting.it.md](docs/self-hosting.it.md) (Italiano).
 
 ## Security: secrets handling
@@ -100,6 +113,7 @@ Open [http://localhost:3000](http://localhost:3000). See the full guide in
 | `npm test` | `vitest run` (full suite) |
 | `npm run lint` | `tsc` + ESLint, zero warnings |
 | `npm run deploy` | Convex deploy + Cloudflare Worker deploy |
+| `npm run selfhost:setup` | Interactive/CLI WorkOS + `.env` setup for Docker self-hosting |
 | `npm run diagnostics:enable-banking` | Local Enable Banking payload capture (gitignored `diagnostics/`) |
 
 ## Project layout
