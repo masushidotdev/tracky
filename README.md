@@ -68,6 +68,20 @@ npx convex env set TELEGRAM_WEBHOOK_URL https://<your-deployment>.convex.site/te
 npx convex run analyst/telegramActions:registerTelegramWebhook
 ```
 
+## Self-host with Docker
+
+Run Tracky locally or on a single-node VPS backed by a self-hosted Convex
+backend (no telemetry; WorkOS AuthKit stays external):
+
+```bash
+cp .env.selfhost.example .env       # fill WorkOS keys + random secrets
+docker compose up -d
+```
+
+Open [http://localhost:3000](http://localhost:3000). See the full guide in
+[docs/self-hosting.md](docs/self-hosting.md) (English) or
+[docs/self-hosting.it.md](docs/self-hosting.it.md) (Italiano).
+
 ## Security: secrets handling
 
 - Never commit `.env.local` or key material. Production secrets belong in
@@ -101,6 +115,7 @@ npx convex run analyst/telegramActions:registerTelegramWebhook
 
 - [docs/architecture.md](docs/architecture.md) — domain boundaries and data flow.
 - [docs/deployment.md](docs/deployment.md) — Cloudflare Worker + Convex deploy.
+- [docs/self-hosting.md](docs/self-hosting.md) ([Italiano](docs/self-hosting.it.md)) — Docker Compose self-hosting with self-hosted Convex.
 - [docs/decisions/](docs/decisions/) — architecture decision records.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup and PR process.
 - [SECURITY.md](SECURITY.md) — reporting, key handling, bank-sync disclaimer.

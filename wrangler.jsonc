@@ -49,6 +49,17 @@
       "workers_dev": true,
       "observability": { "enabled": true },
       "vars": { "APP_ENV": "staging" }
+    },
+    "selfhost": {
+      "name": "tracky-selfhost",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": { "enabled": false },
+      "vars": {
+        "ENVIRONMENT": "selfhost",
+        "APP_PUBLIC_URL": "localhost:3000"
+      }
     }
   }
 }

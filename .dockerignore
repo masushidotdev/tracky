@@ -1,0 +1,52 @@
+# Dependencies & build outputs
+node_modules
+dist
+dist-ssr
+build
+coverage
+.wrangler
+.content-collections
+.tanstack
+*.tsbuildinfo
+
+# Version control & local editor/agent state
+.git
+.gitignore
+.github
+.agents
+.claude
+.codex
+.cursor
+.vscode
+
+# Secrets, env files, certificates, and diagnostics
+.env
+.env.*
+!.env.example
+!.env.selfhost.example
+.dev.vars
+.dev.vars.*
+secrets
+diagnostics
+experiments
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Documentation & misc non-build files
+docs
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+AGENTS.md
+CLAUDE.md
+posthog-error-tracking-report.md
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

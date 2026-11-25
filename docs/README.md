@@ -8,6 +8,8 @@ resume from source-controlled context instead of chat history.
 
 - `architecture.md` - domain boundaries, backend/frontend responsibilities, and provider isolation.
 - `deployment.md` - staging and production deploys, wrangler environments, secrets, custom domain, and the shared-backend caveat.
+- `self-hosting.md` - self-hosting Tracky with Docker Compose and self-hosted Convex (English).
+- `self-hosting.it.md` - self-hosting di Tracky con Docker Compose e Convex self-hosted (Italiano).
 - `enable-banking-transaction-shapes.md` - sanitized live-payload audit and transaction counterparty mapping precedence.
 - `decisions/0001-mvp-assumptions.md` - current MVP assumptions made after the grill-me questions.
 - `decisions/0002-credit-facilities.md` - credit facilities, loan amortisation, settlement accounts, and contractual payoff rules.

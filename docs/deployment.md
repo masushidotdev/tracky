@@ -1,6 +1,7 @@
 # Deployment
 
 Tracky deploys as a Cloudflare Worker frontend backed by a Convex deployment.
+For self-hosting with Docker Compose and a self-hosted Convex backend, see [self-hosting.md](self-hosting.md) ([Italiano](self-hosting.it.md)).
 Two environments exist: staging (gated) and production (public). Production is deployed automatically by Cloudflare Workers Builds after a push or merge to GitHub `main`; staging is not part of this release path. See
 `decisions/0018-deploy-environments.md` for why.
 
