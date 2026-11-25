@@ -139,7 +139,7 @@ const OG_FILES: Record<string, string> = {
   'guide-budget': 'og-guide-budget.png',
   'guide-cashflow': 'og-guide-cashflow.png',
   'guide-subscriptions': 'og-guide-subscriptions.png',
-  'blog-v0-1-0': 'og-open-source.png',
+  'blog-v0-1-0': 'og-blog-v0-1-0.png',
 };
 
 export function ogImageFor(key: string): string {

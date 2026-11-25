@@ -1,3 +1,6 @@
+// @vitest-environment node
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { marketingPages } from './pages';
@@ -128,12 +131,50 @@ describe('buildMarketingHead', () => {
     });
   });
 
+  test('blog release routes (EN and IT) use dedicated og-blog-v0-1-0.png and file exists', () => {
+    const blogOgImage = ogImageFor('blog-v0-1-0');
+    expect(blogOgImage).toBe('https://www.trytracky.app/og/og-blog-v0-1-0.png');
+    expect(blogOgImage).not.toContain('og-open-source.png');
+    expect(existsSync(join(process.cwd(), 'public', 'og', 'og-blog-v0-1-0.png'))).toBe(true);
+
+    for (const variant of [
+      { locale: 'en' as const, path: '/blog/tracky-v0-1-0' },
+      { locale: 'it' as const, path: '/it/blog/tracky-v0-1-0' },
+    ]) {
+      const url = `https://www.trytracky.app${variant.path}`;
+      const head = buildMarketingHead({
+        ...base,
+        locale: variant.locale,
+        path: variant.path,
+        ogImage: blogOgImage,
+        jsonLd: [
+          blogPostingJsonLd({
+            headline: 'Tracky v0.1.0',
+            description: 'First public tagged release.',
+            url,
+            image: blogOgImage,
+            datePublished: '2026-11-24',
+            dateModified: '2026-11-24',
+            inLanguage: variant.locale,
+          }),
+        ],
+      });
+      expect(head.meta).toContainEqual({ property: 'og:image', content: blogOgImage });
+      expect(head.meta).toContainEqual({ name: 'twitter:image', content: blogOgImage });
+      expect(JSON.parse(head.scripts[0].children)).toMatchObject({
+        '@type': 'BlogPosting',
+        image: blogOgImage,
+      });
+    }
+  });
+
   test('OG image per-page mapping', () => {
     expect(ogImageFor('home')).toContain('og-home.png');
     expect(ogImageFor('pricing')).toContain('og-pricing.png');
     expect(ogImageFor('feature-plan')).toContain('og-feature-plan.png');
     expect(ogImageFor('faq')).toContain('og-faq.png');
-    expect(ogImageFor('blog-v0-1-0')).toContain('og-open-source.png');
+    expect(ogImageFor('blog-v0-1-0')).toContain('og-blog-v0-1-0.png');
+    expect(ogImageFor('blog-v0-1-0')).not.toContain('og-open-source.png');
     expect(ogImageFor('unknown-key')).toContain('og-default.png');
   });
 });
