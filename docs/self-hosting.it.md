@@ -6,26 +6,39 @@ Avvia Tracky sul tuo server o PC con Docker Compose: l'app TanStack Start colleg
 
 ## Avvio rapido
 
-Prerequisiti: Docker 24+ con Docker Compose v2 e un account gratuito [WorkOS](https://workos.com/) (AuthKit).
+Prerequisiti: Docker 24+ con Docker Compose v2, Node.js 22 (per lo script di configurazione — nessuna dipendenza npm, quindi `npm ci` non è necessario) e un account gratuito [WorkOS](https://workos.com/) (AuthKit).
 
 ```bash
 git clone https://github.com/masushidotdev/tracky.git
 cd tracky
-cp .env.selfhost.example .env
-# Modifica .env: imposta INSTANCE_SECRET, WORKOS_CLIENT_ID, WORKOS_API_KEY,
-# WORKOS_WEBHOOK_SECRET e WORKOS_COOKIE_PASSWORD
+node scripts/selfhost-setup.mjs     # oppure `npm run selfhost:setup`
 docker compose up -d
 ```
 
 Apri [http://localhost:3000](http://localhost:3000).
 
-Genera i segreti casuali prima del primo avvio:
+Lo script chiede il Client ID (`client_...`) e l'API key (`sk_...`, con input nascosto) di WorkOS, configura automaticamente Redirect URI, App Homepage URL e CORS origin tramite le API di WorkOS, genera i segreti casuali mancanti (`INSTANCE_SECRET`, `WORKOS_COOKIE_PASSWORD` e un `WORKOS_WEBHOOK_SECRET` segnaposto per installazioni locali/LAN) e scrive `.env` in modo atomico con permessi `0600`. Eseguirlo di nuovo è idempotente e preserva i segreti esistenti e le variabili personalizzate.
+
+Opzioni utili:
+
+- `--dry-run` — mostra le chiamate alle API WorkOS e le modifiche previste a `.env` senza eseguire richieste di rete né scrivere file.
+- `--yes` — modalità non interattiva (legge `WORKOS_CLIENT_ID` e `WORKOS_API_KEY` dalle variabili d'ambiente o da un `.env` esistente).
+- `--public-url`, `--convex-url`, `--convex-site-url` — imposta i domini HTTPS pubblici quando Tracky gira dietro un reverse proxy.
+- `--webhook` / `--no-webhook` — gestisce la registrazione automatica del webhook WorkOS per la sincronizzazione utenti (proposta solo se `--convex-site-url` è un URL pubblico `https://`); `--rotate-webhook` elimina e ricrea esplicitamente un webhook già esistente se `.env` non contiene più il signing secret.
+
+<details>
+<summary>Configurazione manuale (senza eseguire lo script)</summary>
 
 ```bash
+cp .env.selfhost.example .env
 openssl rand -hex 32          # -> INSTANCE_SECRET
 openssl rand -base64 32       # -> WORKOS_COOKIE_PASSWORD (almeno 32 caratteri)
 echo "whsec_$(openssl rand -hex 16)" # -> segnaposto WORKOS_WEBHOOK_SECRET per uso locale/LAN (richiede backfill; vedi sotto)
 ```
+
+Compila `.env` con `WORKOS_CLIENT_ID`, `WORKOS_API_KEY` e i segreti generati, aggiungi `http://localhost:3000/callback` nella sezione **Redirects** su [dashboard.workos.com](https://dashboard.workos.com/), quindi avvia con `docker compose up -d`.
+
+</details>
 
 Per avviare anche la dashboard Convex opzionale su [http://localhost:6791](http://localhost:6791):
 
@@ -49,10 +62,8 @@ docker compose --profile dashboard up -d
 ### Servizi esterni
 
 - **WorkOS AuthKit (obbligatorio):** Tracky verifica i JWT RS256 di WorkOS tramite `https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` (`convex/auth.config.ts`) e usa `@workos/authkit-tanstack-react-start` per login e cookie di sessione. WorkOS rimane un servizio SaaS esterno (con piano developer gratuito):
-  1. Crea un progetto/ambiente su [dashboard.workos.com](https://dashboard.workos.com/).
-  2. In **Redirects**, aggiungi `http://localhost:3000/callback` (oppure `https://<tuo-dominio>/callback` in produzione).
-  3. Copia `WORKOS_CLIENT_ID` e `WORKOS_API_KEY` nel file `.env`.
-  4. Configura `WORKOS_WEBHOOK_SECRET` e il provisioning utenti come descritto in [Provisioning utenti](#provisioning-utenti) qui sotto.
+  1. Crea un progetto/ambiente su [dashboard.workos.com](https://dashboard.workos.com/) e recupera `WORKOS_CLIENT_ID` e `WORKOS_API_KEY`.
+  2. Esegui `node scripts/selfhost-setup.mjs` (che configura automaticamente Redirect URI, App Homepage URL, CORS origin e, sulle installazioni HTTPS pubbliche, il webhook di sincronizzazione utenti), oppure configura manualmente Redirects e `.env` come indicato in [Avvio rapido](#avvio-rapido) e [Provisioning utenti](#provisioning-utenti) qui sotto.
 - **Integrazioni opzionali** (tutte disattivate finché le rispettive variabili non sono valorizzate in `.env` e sincronizzate su Convex):
   - **Enable Banking:** app ID, chiave privata PEM e URL di callback HTTPS del tuo account Enable Banking (`ENABLE_BANKING_*`).
   - **Analyst AI:** imposta `VITE_ANALYST_ENABLED=true` (richiede il rebuild di `app`) più `AI_GATEWAY_API_KEY` / `OPENROUTER_API_KEY` (e opzionalmente `LANGFUSE_*`).
@@ -84,7 +95,14 @@ Per esporre Tracky su un dominio pubblico (es. `https://tracky.example.com`, `ht
    - `tracky.example.com` -> `127.0.0.1:3000`
    - `convex.example.com` -> `127.0.0.1:3210` (con supporto WebSocket / header `Upgrade`)
    - `convex-site.example.com` -> `127.0.0.1:3211` (necessario per i webhook in ingresso: WorkOS, Enable Banking, Resend, Telegram)
-2. Aggiorna `.env`:
+2. Esegui lo script di configurazione indicando i tuoi URL pubblici (preserva i segreti esistenti, imposta `DO_NOT_REQUIRE_SSL=false`, configura redirect/CORS/homepage su WorkOS e registra il webhook su `https://convex-site.example.com/workos/webhook`):
+   ```bash
+   node scripts/selfhost-setup.mjs \
+     --public-url https://tracky.example.com \
+     --convex-url https://convex.example.com \
+     --convex-site-url https://convex-site.example.com
+   ```
+   Oppure aggiorna manualmente `.env` e la dashboard WorkOS:
    ```env
    APP_PUBLIC_URL=tracky.example.com
    WORKOS_REDIRECT_URI=https://tracky.example.com/callback
@@ -94,8 +112,8 @@ Per esporre Tracky su un dominio pubblico (es. `https://tracky.example.com`, `ht
    NEXT_PUBLIC_DEPLOYMENT_URL=https://convex.example.com
    DO_NOT_REQUIRE_SSL=false
    ```
-3. Aggiungi `https://tracky.example.com/callback` tra i Redirect URI di WorkOS (e registra `https://convex-site.example.com/workos/webhook` per `WORKOS_WEBHOOK_SECRET`).
-4. Ricostruisci e riavvia per incorporare il nuovo `VITE_CONVEX_URL` nel bundle client:
+   aggiungendo `https://tracky.example.com/callback` tra i Redirect URI di WorkOS e registrando `https://convex-site.example.com/workos/webhook` per `WORKOS_WEBHOOK_SECRET`.
+3. Ricostruisci e riavvia per incorporare il nuovo `VITE_CONVEX_URL` nel bundle client:
    ```bash
    docker compose up -d --build
    ```

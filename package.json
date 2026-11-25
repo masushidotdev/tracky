@@ -29,7 +29,8 @@
     "preinstall": "node scripts/check-node-version.mjs",
     "security:audit": "npm audit --audit-level=moderate",
     "prebuild": "node scripts/check-node-version.mjs && npm run security:convex-runtime",
-    "predev": "node scripts/check-node-version.mjs && npm run security:convex-runtime",
+    "predev": "node scripts/check-node-version.mjs && npm run security:convex-runtime && node scripts/dev-auth-env.mjs",
+    "selfhost:setup": "node scripts/selfhost-setup.mjs",
     "predeploy": "node scripts/check-node-version.mjs && npm run security:convex-runtime",
     "predeploy:prod": "node scripts/check-node-version.mjs && npm run security:convex-runtime",
     "security:convex-runtime": "node scripts/check-convex-runtime.mjs"
