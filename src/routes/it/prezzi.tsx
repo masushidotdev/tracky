@@ -1,48 +1,120 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { MarketingAuth } from '@/components/marketing/site';
+import type { ComparisonRow, FaqItem } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  AuthCta,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  CodePlate,
+  ComparisonTable,
+  FaqSection,
+  FinalCta,
+  GITHUB_REPO_URL,
+  PricingCards,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const seoIntro: Array<string> = [
-  "Se cerchi app budget gratis prezzi chiari, eccoli: oggi Tracky costa €0. Usi la demo ospitata oppure la versione self-hosted con licenza MIT, e non inserisci mai i dati della carta perché non esiste alcun checkout. Parti in pochi minuti con conti manuali e import CSV, e vedi subito dove vanno i tuoi soldi.",
-  "Il piano gratuito copre tutto il ciclo quotidiano: piano zero-based, flusso di cassa con promemoria delle bollette, report, salvadanai virtuali e suggerimenti che segnalano i probabili rinnovi senza spacciarli per certezze. Email e Telegram restano spenti finché non li attivi tu, e le proiezioni di lungo periodo sono sempre stime. Lavori solo sui dati che inserisci o importi, e puoi esportarli in JSON su richiesta.",
-  "Apri Impostazioni quando vuoi per vedere piano attivo e limite giornaliero dell'Analyst, e chi fa self-hosting usa lo stesso codice da GitHub con licenza MIT. Se il piano gratuito non ti basterà più, leggerai qui per primo le novità su Pro, con condizioni chiare e senza trucchi.",
+export const pricingItFaq: Array<FaqItem> = [
+  {
+    q: 'Come funzionano oggi i prezzi di Tracky?',
+    a: 'Oggi Tracky costa €0 sia per la demo ospitata sia per il self-hosting con licenza MIT. Non inserisci mai i dati di una carta perché non esiste alcun checkout sul sito né nell’app. Conti manuali, import CSV nel browser, Piano zero-based, Flusso di cassa, Report e money box virtuali sono tutti inclusi nel piano Gratis.',
+  },
+  {
+    q: 'Posso acquistare Pro oggi oppure esiste una prova a pagamento?',
+    a: 'No. Pro esiste nel codice come livello riservato, non come prodotto in vendita: non c’è prezzo, non c’è timer di prova e non esiste pagina di checkout. Se e quando verrà lanciato, Pro è pensato per portare il limite giornaliero dell’Analyst AI da 20 a 100 messaggi e sbloccare più Piani e scenari Forecast / FIRE di lungo periodo (sempre presentati come stime). Tutto ciò che è Gratis resta Gratis.',
+  },
+  {
+    q: 'Il piano Gratis include sync bancario PSD2, Analyst AI e notifiche?',
+    a: 'Il collegamento bancario (Enable Banking) e l’Analyst AI dipendono da credenziali configurate sull’istanza, quindi restano disattivati sulla demo ospitata, che funziona con conti manuali e import CSV. I promemoria in-app delle bollette e i suggerimenti sulle sottoscrizioni funzionano subito anche nella demo. Su un’istanza self-hosted puoi collegare la tua app e chiavi Enable Banking (la sincronizzazione automatica viene valutata ogni sei ore), chiave AI gateway, chiave Resend per email e collegamento Telegram verificato.',
+  },
+  {
+    q: 'Quanto costa fare self-hosting e quali account esterni servono?',
+    a: 'Tracky è open source con licenza MIT e gratuito da eseguire sul tuo computer o su un VPS singolo usando Docker 24+ (Compose v2) e Node.js 22 per lo script di setup. Serve un account gratuito WorkOS AuthKit per l’autenticazione; le integrazioni opzionali (Enable Banking, AI gateway, Resend, Telegram) usano i tuoi account provider e restano spente finché non le configuri.',
+  },
+  {
+    q: 'Cosa succede ai miei dati se resto su Gratis o decido di andarmene?',
+    a: 'I tuoi dati restano tuoi. Puoi esportare i Report aggregati in CSV per valuta o richiedere un export JSON completo dalle Impostazioni (con impostazioni e testo delle memorie inclusi, embedding esclusi). Se confermi Elimina account nelle Impostazioni, la cancellazione irreversibile inizia subito; prima puoi scaricare l’export. Alcuni log presso fornitori esterni seguono tempi di conservazione separati descritti nella documentazione privacy.',
+  },
 ];
 
-const seoBlocks: Array<{ h: string; paras: Array<string> }> = [
-  { h: "App budget gratis prezzi: cosa ottieni con €0", paras: [
-    "Il tuo piano gratuito ti dà tutto il ciclo quotidiano, senza parti bloccate. Costruisci un piano zero-based, segui il flusso di cassa con i promemoria delle bollette e leggi report che mostrano dove finiscono davvero i tuoi soldi. Aggiungi conti manuali, importi lo storico con il CSV, accantoni salvadanai virtuali e ricevi suggerimenti che segnalano i probabili rinnovi senza spacciarli per certezze.",
-    "I conti collegati dipendono dal provider bancario di ogni istanza, quindi chi fa self-hosting configura il proprio, mentre la demo ospitata usa solo i dati che inserisci o importi. I promemoria in-app funzionano subito, mentre email e Telegram restano spenti finché non li attivi tu (Telegram richiede anche un collegamento verificato). L'export JSON resta disponibile su richiesta: niente carta, niente scadenza di prova, nessuna pagina di checkout, quindi €0 significa €0 mentre gestisci i soldi a modo tuo.",
-  ] },
-  { h: "Pro in arrivo, senza checkout", paras: [
-    "Pro esiste come piano riservato, e oggi non è in vendita. Quando arriverà, dovrebbe alzare il tuo limite giornaliero dell'Analyst da 20 a 100 messaggi e sbloccare le proiezioni FIRE di lungo periodo, che resteranno sempre stime e mai promesse. Tutto ciò che è gratis resta esattamente dov'è.",
-    "Non c'è un prezzo, non c'è una prova, non c'è una pagina di checkout: nessuno può addebitarti nulla, né per errore né di proposito. Vedrai qui lo stesso badge onesto finché non cambierà qualcosa: gratis ora, Pro in arrivo, niente da comprare.",
-  ] },
-];
-
-const seoFaq: Array<{ q: string; a: string }> = [
-  { q: "App budget gratis prezzi: come funziona Tracky?", a: "Paghi €0 e non aggiungi mai una carta, perché non esiste alcun checkout né nella pagina né nell'app. Usi la demo ospitata oppure il codice MIT in self-hosting, con conti manuali, import CSV, piani, flusso di cassa, report e salvadanai virtuali. Impostazioni mostra il tuo piano e gli export restano disponibili su richiesta: i tuoi dati restano sempre tuoi." },
-  { q: "Posso comprare Pro oggi?", a: "No, ed è onestà deliberata, non un trucco. Pro esiste come piano riservato con etichetta «in arrivo», ma non ha prezzo, prova o checkout: nessuna pagina può prendere i tuoi soldi. Se arriverà, Pro dovrebbe aggiungere 100 messaggi Analyst al giorno e proiezioni FIRE di lungo periodo, sempre come stime. Fino ad allora il badge resta uguale: gratis ora." },
-  { q: "Il piano gratuito include banche collegate e notifiche?", a: "I conti collegati dipendono dal provider di ogni istanza, quindi la demo ospitata usa conti manuali e import CSV, senza sync promessa. Promemoria delle bollette e suggerimenti sulle sottoscrizioni funzionano in-app, mentre email e Telegram restano spenti finché non li attivi. Le proiezioni di lungo periodo sono sempre stime, mai garanzie, e niente qui è consulenza finanziaria." },
-  { q: "Che fine fanno i miei dati se resto gratis per sempre?", a: "Restano tuoi, esportabili in JSON su richiesta, con testo delle memorie e impostazioni inclusi ed embedding esclusi. Se confermi Elimina account in Impostazioni, la cancellazione irreversibile inizia subito; prima puoi scaricare un export facoltativo. Alcuni dati presso i fornitori seguono tempi di conservazione separati descritti nella guida privacy. Chi fa self-hosting conserva lo stesso codice MIT e i dati sulle proprie macchine. Gratis significa gratis, senza prove che ti trasformano in cliente pagante." },
+const comparisonRows: Array<ComparisonRow> = [
+  {
+    capability: 'Conti manuali (correnti, risparmio, carte, prestiti, investimenti, asset)',
+    demo: { text: 'Incluso', tone: 'yes' },
+    selfHost: { text: 'Incluso', tone: 'yes' },
+  },
+  {
+    capability: 'Import CSV nel browser (mappatura, validazione, salto duplicati)',
+    demo: { text: 'Incluso', tone: 'yes' },
+    selfHost: { text: 'Incluso', tone: 'yes' },
+  },
+  {
+    capability: 'Piano zero-based, target, Assegnazione automatica e bucket carte',
+    demo: { text: 'Incluso', tone: 'yes' },
+    selfHost: { text: 'Incluso', tone: 'yes' },
+  },
+  {
+    capability: 'Dashboard Disponibile dopo le spese, Flusso di cassa e promemoria in-app',
+    demo: { text: 'Incluso', tone: 'yes' },
+    selfHost: { text: 'Incluso', tone: 'yes' },
+  },
+  {
+    capability: 'Report (Sankey, categorie, trend, export CSV), Obiettivi e money box virtuali',
+    demo: { text: 'Incluso', tone: 'yes' },
+    selfHost: { text: 'Incluso', tone: 'yes' },
+  },
+  {
+    capability: 'Export JSON completo e cancellazione account immediata in Impostazioni',
+    demo: { text: 'Incluso', tone: 'yes' },
+    selfHost: { text: 'Incluso', tone: 'yes' },
+  },
+  {
+    capability: 'Sync bancario PSD2 via Enable Banking (valutato ogni sei ore)',
+    demo: { text: 'Disattivato sulla demo', tone: 'no' },
+    selfHost: { text: 'Opzionale — tua app ID e chiave PEM', tone: 'opt' },
+  },
+  {
+    capability: 'Analyst AI con scritture approvate (piano Gratis: 20 messaggi/giorno)',
+    demo: { text: 'Disattivato sulla demo', tone: 'no' },
+    selfHost: { text: 'Opzionale — tua chiave AI gateway', tone: 'opt' },
+  },
+  {
+    capability: 'Report email (Resend) e bot Telegram bidirezionale',
+    demo: { text: 'Disattivato sulla demo', tone: 'no' },
+    selfHost: { text: 'Opzionale — tue chiavi / collegamento verificato', tone: 'opt' },
+  },
+  {
+    capability: 'Telemetria e analytics di prodotto',
+    demo: { text: 'PostHog EU opt-in (spento fino ad Accetta)', tone: 'opt' },
+    selfHost: { text: 'Disattivata a tempo di build', tone: 'yes' },
+  },
+  {
+    capability: 'Autenticazione (WorkOS AuthKit)',
+    demo: { text: 'Gestita su trytracky.app', tone: 'yes' },
+    selfHost: { text: 'Account WorkOS esterno (piano dev gratuito)', tone: 'opt' },
+  },
 ];
 
 export const Route = createFileRoute('/it/prezzi')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Prezzi — Gratis per sempre, Pro in arrivo · Tracky',
+      title: 'Prezzi — €0 oggi, open source MIT · Tracky',
       description:
-        'Tracky costa €0: demo ospitata gratis, self-host MIT, senza carta. Il piano Pro esiste nel codice ma non è acquistabile.',
+        'Tracky costa €0 oggi: demo ospitata e self-host Docker con licenza MIT, senza carta e senza checkout. Il piano Pro è riservato e non è in vendita.',
       locale: 'it',
       path: '/it/prezzi',
       ogImage: ogImageFor('pricing'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/it/prezzi', inLanguage: ['it', 'en'] }),
-        faqJsonLd(seoFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(pricingItFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/it/' },
           { name: 'Prezzi', path: '/it/prezzi' },
@@ -53,116 +125,292 @@ export const Route = createFileRoute('/it/prezzi')({
 });
 
 function PricingIt() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
-  const cta = user ? '/app' : signUpUrl;
+  const auth = Route.useLoaderData();
+  return <PricingItView auth={auth} />;
+}
+
+export function PricingItView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/prezzi">
-      <header className="mk-hero">
-        <Reveal>
-          <h1>
-            Gratis <span className="hl">per sempre.</span>
-            <br />
-            <span className="stroke">Pro: poi.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            Oggi Tracky costa <b>€0</b>: demo ospitata più self-host MIT. Un piano Pro è previsto nel codice per limiti
-            analyst, scenari e piani multipli — ma <b>non esiste fatturazione</b> e nulla è in vendita.
-          </p>
-        </Reveal>
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">€0 oggi</span>
-            <span className="mk-badge">Senza carta</span>
-            <span className="mk-badge">Nessun checkout</span>
-          </div>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {seoIntro.map((para, i) => (
-          <Reveal key={i}>
-            <p className="mk-sub" style={{ maxWidth: 720 }}>{para}</p>
-          </Reveal>
-        ))}
-      </section>
-      <MarqueeBand items={['DEMO GRATIS', 'SELF-HOST MIT', 'SENZA CARTA', 'NESSUN CHECKOUT', 'PRO SOLO SE RICHIESTO']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-duel">
-            <div className="mk-d good">
-              <h3>🟢 GRATIS — OGGI</h3>
-              <ul>
-                <li>Demo ospitata, funzioni core complete</li>
-                <li>Piano zero-based, cassa, report</li>
-                <li>Conti manuali + import CSV</li>
-                <li>Self-host da GitHub, MIT</li>
-              </ul>
-              <p style={{ marginTop: 18 }}>
-                <MagnetCta href={cta} variant="pill" onClick={() =>
-                  user
-                    ? undefined
-                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }>
-                {user ? 'Apri la demo →' : 'Inizia gratis →'}
-                </MagnetCta>
-              </p>
-            </div>
-            <div className="mk-d bad" style={{ background: '#fff' }}>
-              <h3>🔜 PRO — IN ARRIVO</h3>
-              <ul>
-                <li>Più messaggi analyst al giorno</li>
-                <li>Scenari, piani multipli</li>
-                <li>Solo se gli utenti lo chiedono</li>
-                <li>Nessun prezzo — non esiste checkout</li>
-              </ul>
+    <AtelierSite locale="it" auth={auth} currentPath="/it/prezzi">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb ariaLabel="Percorso di navigazione" items={[{ label: 'Home', href: '/it/' }, { label: 'Prezzi' }]} />
+
+            <ChipRow>
+              <Chip tone="marigold">€0 oggi</Chip>
+              <Chip>Senza carta</Chip>
+              <Chip>Nessun checkout</Chip>
+              <Chip tone="cobalt">Open source MIT</Chip>
+            </ChipRow>
+
+            <h1 className="mka-hero-headline">
+              €0 oggi — demo ospitata e self-host MIT, <span className="mka-accent-ink">senza checkout.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Usa la demo ospitata su trytracky.app oppure esegui lo stesso codice con licenza MIT sul tuo host Docker.
+              Nel codice è riservato un livello Pro per limiti più alti dell’Analyst AI, più Piani e scenari Forecast di
+              lungo periodo, ma la fatturazione non esiste e oggi nulla è in vendita.
+            </p>
+
+            <div className="mka-hero-actions">
+              <AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="primary-lg" />
+              <a className="mka-btn-secondary" href="/it/blog/self-hosting-tracky-docker">
+                Self-host con Docker →
+              </a>
             </div>
           </div>
-        </Reveal>
-        <Reveal>
-          <figure className="mk-shot" style={{ marginTop: 24 }}>
-            <img src="/shots/import-summary.png" alt="Riepilogo import Tracky: 33 movimenti importati nel conto demo" width={1440} height={800} loading="lazy" />
-            <figcaption>Cosa compri con €0: un registro vero in minuti. Screenshot dalla demo live.</figcaption>
-          </figure>
-        </Reveal>
+        </div>
       </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {seoBlocks.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            {block.paras.map((para, i) => (
-              <p key={i} className="mk-sub" style={{ maxWidth: 700 }}>{para}</p>
-            ))}
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {seoFaq.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">€0. Senza asterischi nascosti.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · repo MIT · senza carta</p>
-            <MagnetCta href={cta} onClick={() =>
-                  user
-                    ? undefined
-                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-                }
+
+      {/* 2. FREE VS PRO CARDS */}
+      <Section id="plans" tone="parchment">
+        <SectionHead
+          kicker="Piani"
+          title="Gratis copre tutto il ciclo quotidiano di budget; Pro è riservato e non è in vendita."
+          subtitle="Apri Impostazioni nell’app quando vuoi per vedere piano attivo e soglia giornaliera dell’Analyst. In Tracky non esistono moduli di pagamento né timer di prova."
+        />
+
+        <PricingCards
+          free={{
+            tag: 'Gratis — Disponibile oggi',
+            figure: '€0',
+            description: 'Tutto il necessario per budget zero-based, flusso di cassa, import CSV e report.',
+            bullets: [
+              'Piano zero-based con Assegnato, Attività, Disponibile, target, Assegnazione automatica e bucket carte',
+              'Dashboard Disponibile dopo le spese, Flusso di cassa datato e promemoria bollette in-app',
+              'Conti manuali correnti, risparmio, carte, prestiti, investimenti e asset + import CSV nel browser',
+              'Report (Sankey, categorie, trend, export CSV), Obiettivi e money box virtuali',
+              'Suggerimenti sulle sottoscrizioni da confermare, simulatore debiti ed export JSON completo',
+              'Codice MIT completo su GitHub (include 20 messaggi/giorno di Analyst AI quando attivato in self-host)',
+            ],
+            cta: (
+              <>
+                <AuthCta auth={auth} locale="it" ctaLocation="marketing" />
+                <a className="mka-text-link" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+                  Esplora il repo MIT ↗
+                </a>
+              </>
+            ),
+          }}
+          pro={{
+            tag: 'Pro — Riservato, non in vendita',
+            figure: 'Nessun prezzo · Nessuna prova',
+            description: 'Predisposto nel codice per rendere chiari i limiti avanzati; oggi nessuno può pagare.',
+            bullets: [
+              'Alza il limite giornaliero dell’Analyst AI da 20 a 100 messaggi al giorno',
+              'Sblocca più Piani all’interno dello stesso spazio di lavoro',
+              'Aggiunge scenari Forecast e proiezioni FIRE di lungo periodo (stime nominali, mai consulenza)',
+              'Nessun prezzo, nessuna prova a scadenza, nessun checkout: le funzioni Gratis restano intatte',
+            ],
+          }}
+        />
+      </Section>
+
+      {/* 3. HOSTED DEMO VS SELF-HOST TABLE */}
+      <Section id="comparison">
+        <SectionHead
+          kicker="Demo ospitata vs self-host"
+          title="Cosa è incluso in ciascun ambiente."
+          subtitle="Entrambi eseguono lo stesso codice MIT. La differenza riguarda solo la presenza o meno delle credenziali per integrazioni esterne."
+        />
+
+        <ComparisonTable
+          caption="Confronto delle funzionalità tra la demo ospitata di Tracky e l’installazione self-hosted con Docker"
+          headers={['Funzionalità', 'Demo ospitata (€0)', 'Self-hosted Docker (MIT)']}
+          rows={comparisonRows}
+        />
+      </Section>
+
+      {/* 4. WHAT YOU NEED TO SELF-HOST */}
+      <Section id="self-host" tone="parchment">
+        <SectionHead
+          kicker="Requisiti per il self-hosting"
+          title="Cosa serve per eseguire Tracky sul tuo server."
+          subtitle="Pensato per una macchina personale o un VPS singolo con volume SQLite Convex locale e zero telemetria di prodotto."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Indispensabile per partire</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Docker 24+ con Docker Compose v2</strong>
+                  <span>
+                    Esegue in locale nei container il backend Convex self-hosted (SQLite + volume dati) e l’app TanStack
+                    Start.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Node.js 22 (per lo script di setup)</strong>
+                  <span>
+                    Esegue <code>node scripts/selfhost-setup.mjs</code> senza dipendenze npm per configurare WorkOS e
+                    scrivere un file <code>.env</code> locale con permessi <code>0600</code>.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Account gratuito WorkOS AuthKit</strong>
+                  <span>
+                    L’autenticazione resta esterna tramite WorkOS AuthKit (piano gratuito per sviluppatori disponibile)
+                    anche su un’installazione Docker locale.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <CodePlate
+              ariaLabel="Comandi di configurazione self-host"
+              lines={[
+                { text: '# Setup interattivo (WorkOS + .env locale)', comment: true },
+                { text: 'node scripts/selfhost-setup.mjs' },
+                { text: 'docker compose up -d' },
+              ]}
+            />
+
+            <div className="mka-trust-actions">
+              <a className="mka-text-link" href="/it/blog/self-hosting-tracky-docker">
+                Leggi la guida self-host Docker →
+              </a>
+              <a
+                className="mka-text-link"
+                href={`${GITHUB_REPO_URL}/blob/main/docs/self-hosting.it.md`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {user ? 'Apri la demo →' : 'Inizia gratis →'}
-              </MagnetCta>
+                Leggi docs/self-hosting.it.md ↗
+              </a>
+            </div>
           </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Integrazioni opzionali (con le tue chiavi)</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  PSD2
+                </span>
+                <div>
+                  <strong>App Enable Banking e chiave PEM</strong>
+                  <span>
+                    Abilita connessioni bancarie PSD2 in sola lettura con sincronizzazione automatica valutata ogni sei
+                    ore e consenso revocabile in qualsiasi momento.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  AI
+                </span>
+                <div>
+                  <strong>Chiave AI gateway (AI Gateway / OpenRouter)</strong>
+                  <span>
+                    Attiva l’Analyst AI con scritture approvate quando compili l’app con{' '}
+                    <code>VITE_ANALYST_ENABLED=true</code>.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  MSG
+                </span>
+                <div>
+                  <strong>Chiave Resend e token bot Telegram</strong>
+                  <span>
+                    Abilita i riepiloghi email via Resend e le notifiche Telegram bidirezionali dopo aver verificato il
+                    collegamento della chat.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <div className="mka-disclosure-box">
+              <strong>Nessuna dipendenza nascosta:</strong> ogni integrazione opzionale resta disattivata finché non
+              imposti le relative variabili d’ambiente, e le build Docker disattivano PostHog, beacon Convex e
+              telemetria Wrangler a tempo di build.
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* 5. PLAIN TERMS & DATA OWNERSHIP */}
+      <Section id="terms">
+        <SectionHead
+          kicker="Condizioni chiare"
+          title="Perché €0 non nasconde asterischi — e come resti padrone dei tuoi dati."
+          subtitle="Un software di budget guadagna fiducia quando modello economico e via d’uscita sono trasparenti quanto le formule."
+        />
+
+        <div className="mka-editorial-grid">
+          <article className="mka-editorial-card">
+            <h3>Cosa include €0 ogni mese</h3>
+            <p>
+              Il piano Gratis copre l’intero ciclo quotidiano di budget senza parti bloccate da una prova a scadenza:
+              bucket del Piano zero-based, Flusso di cassa con impegni datati e promemoria in-app, Report con export CSV
+              per valuta, money box virtuali e suggerimenti che segnalano i probabili rinnovi senza spacciarli per
+              certezze.
+            </p>
+            <p>
+              Nella demo ospitata lavori sui dati inseriti a mano o importati via CSV nel browser; in self-hosting puoi
+              aggiungere le tue chiavi provider. Le proiezioni restano sempre stime costruite sui dati registrati, mai
+              consulenza finanziaria.
+            </p>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Piano Pro riservato e uscita pulita</h3>
+            <p>
+              Pro compare nel codice e nelle Impostazioni per rendere trasparenti i limiti d’uso, non perché oggi ci sia
+              qualcosa da acquistare. Non esiste un prezzo, né un modulo di pagamento né una prova che si converte da
+              sola: se Pro arriverà, aggiungerà limiti Analyst più alti, piani multipli e scenari Forecast lasciando
+              intatto il piano Gratis.
+            </p>
+            <p>
+              Quando vuoi una copia dei tuoi dati, richiedi un export JSON nelle Impostazioni (impostazioni e testo
+              delle memorie inclusi, embedding esclusi) oppure esporta i Report in CSV. Confermare Elimina account avvia
+              la cancellazione immediata e irreversibile.
+            </p>
+          </article>
+        </div>
+      </Section>
+
+      {/* 6. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="parchment"
+        kicker="FAQ sui prezzi"
+        title="Domande su costi, piano Pro e self-hosting."
+        subtitle="Risposte dirette allineate al codice v0.1.0 rilasciato — senza asterischi né promesse non verificabili."
+        moreLink={{ href: '/it/domande-frequenti', label: 'Leggi tutte le FAQ →' }}
+        items={pricingItFaq}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="€0 oggi. Senza carta, senza timer di prova, senza checkout."
+        meta="Demo ospitata gratuita · Self-host MIT con Docker · Rilascio pubblico v0.1.0"
+        primaryCta={<AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="marigold" />}
+        secondaryCta={
+          <a className="mka-btn-outline-light" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+            Esplora il repo MIT ↗
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }
