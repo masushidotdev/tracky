@@ -4,7 +4,7 @@ import workOSAuthKitTest from '@convex-dev/workos-authkit/test';
 import { convexTest } from 'convex-test';
 import { describe, expect, test, vi } from 'vitest';
 import { api, components, internal } from './_generated/api';
-import { shouldEmitFirstMilestone } from './lib/onboardingMilestones';
+import { shouldEmitFirstMilestone, shouldEmitSignupMilestone } from './lib/onboardingMilestones';
 import schema from './schema';
 
 process.env.WORKOS_CLIENT_ID ??= 'client_test';
@@ -76,6 +76,312 @@ describe('shouldEmitFirstMilestone', () => {
   test('skips when already marked regardless of current data presence', () => {
     expect(shouldEmitFirstMilestone({ alreadyMarked: true, hadPriorData: false })).toBe('skip');
     expect(shouldEmitFirstMilestone({ alreadyMarked: true, hadPriorData: true })).toBe('skip');
+  });
+});
+
+describe('shouldEmitSignupMilestone', () => {
+  test('emits only when not marked and there are no prior accounts, transactions, plans, or milestones', () => {
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: false,
+        hasFinancialAccounts: false,
+        hasTransactions: false,
+        hasPlans: false,
+        hasPriorMilestones: false,
+      }),
+    ).toBe('emit');
+  });
+
+  test('backfills silently whenever any prior financial data or prior milestone exists', () => {
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: false,
+        hasFinancialAccounts: true,
+        hasTransactions: false,
+        hasPlans: false,
+      }),
+    ).toBe('backfill');
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: false,
+        hasFinancialAccounts: false,
+        hasTransactions: true,
+        hasPlans: false,
+      }),
+    ).toBe('backfill');
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: false,
+        hasFinancialAccounts: false,
+        hasTransactions: false,
+        hasPlans: true,
+      }),
+    ).toBe('backfill');
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: false,
+        hasFinancialAccounts: false,
+        hasTransactions: false,
+        hasPlans: false,
+        hasPriorMilestones: true,
+      }),
+    ).toBe('backfill');
+  });
+
+  test('skips when signupAtMs is already marked regardless of data presence', () => {
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: true,
+        hasFinancialAccounts: false,
+        hasTransactions: false,
+        hasPlans: false,
+      }),
+    ).toBe('skip');
+    expect(
+      shouldEmitSignupMilestone({
+        alreadyMarked: true,
+        hasFinancialAccounts: true,
+        hasTransactions: true,
+        hasPlans: true,
+        hasPriorMilestones: true,
+      }),
+    ).toBe('skip');
+  });
+});
+
+describe('signup_completed (claimSignupMilestone)', () => {
+  test('emits once for a new user without settings or data, then skips on subsequent calls', async () => {
+    const t = createTest();
+    const userId = 'user_signup_new';
+    await seedAuthUser(t, userId);
+    const asUser = t.withIdentity({ subject: userId });
+
+    const first = await asUser.mutation(api.userSettings.claimSignupMilestone, {});
+    expect(first).toEqual({ emit: true });
+
+    const settingsAfterFirst = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', userId))
+        .unique(),
+    );
+    expect(settingsAfterFirst).not.toBeNull();
+    expect(settingsAfterFirst?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+    expect(settingsAfterFirst?.createdAtMs).toEqual(expect.any(Number));
+    expect(settingsAfterFirst?.updatedAtMs).toEqual(expect.any(Number));
+
+    const firstSignupAtMs = settingsAfterFirst?.onboardingMilestones?.signupAtMs;
+    const second = await asUser.mutation(api.userSettings.claimSignupMilestone, {});
+    expect(second).toEqual({ emit: false });
+
+    const settingsAfterSecond = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', userId))
+        .unique(),
+    );
+    expect(settingsAfterSecond?.onboardingMilestones?.signupAtMs).toBe(firstSignupAtMs);
+  });
+
+  test('backfills silently without emitting for existing users with prior accounts, transactions, or plans', async () => {
+    const t = createTest();
+
+    // 1. Existing user with a financial account (no userSettings row yet).
+    const accountUserId = 'user_signup_legacy_account';
+    await seedAuthUser(t, accountUserId);
+    const asAccountUser = t.withIdentity({ subject: accountUserId });
+    await asAccountUser.mutation(api.banking.manualAccounts.createManualAccount, {
+      name: 'Existing wallet',
+      accountType: 'CACC',
+      currency: 'EUR',
+    });
+
+    expect(await asAccountUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+    const accountUserSettings = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', accountUserId))
+        .unique(),
+    );
+    expect(accountUserSettings?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+
+    // 2. Existing user with a plan (seeded pre-rollout, no userSettings row).
+    const planUserId = 'user_signup_legacy_plan';
+    await seedAuthUser(t, planUserId);
+    const asPlanUser = t.withIdentity({ subject: planUserId });
+    await t.run(async (ctx) => {
+      const now = Date.UTC(2026, 4, 1);
+      await ctx.db.insert('plans', {
+        userId: planUserId,
+        name: 'Pre-rollout plan',
+        currency: 'EUR',
+        startPeriod: '2026-05',
+        startDate: '2026-05-01',
+        accountIds: [],
+        isDefault: true,
+        sortOrder: 1000,
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+    });
+
+    expect(await asPlanUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+    const planUserSettings = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', planUserId))
+        .unique(),
+    );
+    expect(planUserSettings?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+
+    // 3. Existing user with a transaction (seeded pre-rollout, no userSettings row).
+    const txUserId = 'user_signup_legacy_tx';
+    await seedAuthUser(t, txUserId);
+    const asTxUser = t.withIdentity({ subject: txUserId });
+    await t.run(async (ctx) => {
+      const now = Date.UTC(2026, 4, 1);
+      const connId = await ctx.db.insert('providerConnections', {
+        userId: txUserId,
+        provider: 'manual',
+        status: 'active',
+        displayName: 'Manual',
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+      const accId = await ctx.db.insert('financialAccounts', {
+        userId: txUserId,
+        providerConnectionId: connId,
+        provider: 'manual',
+        name: 'Legacy cash',
+        currency: 'EUR',
+        status: 'active',
+        syncEnabled: false,
+        createdAtMs: now,
+        updatedAtMs: now,
+      });
+      await ctx.db.insert('transactions', {
+        userId: txUserId,
+        accountId: accId,
+        providerConnectionId: connId,
+        provider: 'manual',
+        dedupeKey: 'manual|legacy-signup',
+        status: 'BOOK',
+        direction: 'DBIT',
+        amount: { amountMinor: 500n, currency: 'EUR' },
+        bookingDate: '2026-05-01',
+        description: 'Legacy coffee',
+        classificationKind: 'expense',
+        classificationSource: 'user',
+        importedAtMs: now,
+        updatedAtMs: now,
+      });
+    });
+
+    expect(await asTxUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+    const txUserSettings = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', txUserId))
+        .unique(),
+    );
+    expect(txUserSettings?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+  });
+
+  test('treats an existing userSettings row without data or prior milestones as new once, preserving settings fields', async () => {
+    const t = createTest();
+    const userId = 'user_signup_settings_only';
+    await seedAuthUser(t, userId);
+    const asUser = t.withIdentity({ subject: userId });
+
+    // User saves notification preferences before accepting analytics consent.
+    await asUser.mutation(api.userSettings.updateNotificationPreferences, {
+      billReminderLeadDays: [1, 5],
+      emailEnabled: true,
+      telegramEnabled: false,
+    });
+
+    expect(await asUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: true });
+    expect(await asUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+
+    const settings = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', userId))
+        .unique(),
+    );
+    expect(settings?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+    expect(settings?.notifications).toEqual({
+      billReminderLeadDays: [1, 5],
+      emailEnabled: true,
+      telegramEnabled: false,
+    });
+
+    // A settings row that already records another onboarding milestone (e.g., user deleted their first plan)
+    // is backfilled silently rather than emitting a late signup.
+    const priorMilestoneUserId = 'user_signup_prior_milestone';
+    await seedAuthUser(t, priorMilestoneUserId);
+    const asPriorMilestoneUser = t.withIdentity({ subject: priorMilestoneUserId });
+    const priorNow = Date.UTC(2026, 5, 1);
+    await t.run(async (ctx) => {
+      await ctx.db.insert('userSettings', {
+        userId: priorMilestoneUserId,
+        onboardingMilestones: { firstPlanAtMs: priorNow },
+        createdAtMs: priorNow,
+        updatedAtMs: priorNow,
+      });
+    });
+
+    expect(await asPriorMilestoneUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+    const backfilled = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', priorMilestoneUserId))
+        .unique(),
+    );
+    expect(backfilled?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+    expect(backfilled?.onboardingMilestones?.firstPlanAtMs).toBe(priorNow);
+  });
+
+  test('isolates signup milestone claims between users and requires authentication', async () => {
+    const t = createTest();
+    const userA = 'user_signup_a';
+    const userB = 'user_signup_b';
+    await seedAuthUser(t, userA);
+    await seedAuthUser(t, userB);
+
+    const asA = t.withIdentity({ subject: userA });
+    const asB = t.withIdentity({ subject: userB });
+
+    // Unauthenticated callers are rejected.
+    await expect(t.mutation(api.userSettings.claimSignupMilestone, {})).rejects.toThrow('Unauthorized');
+
+    // User A creates data and claims signup (backfill); User B remains unaffected and emits once.
+    await asA.mutation(api.banking.manualAccounts.createManualAccount, {
+      name: 'A account',
+      accountType: 'CACC',
+      currency: 'EUR',
+    });
+    expect(await asA.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+
+    expect(await asB.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: true });
+    expect(await asB.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: false });
+
+    // Claiming for B never modifies A's settings.
+    const settingsA = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', userA))
+        .unique(),
+    );
+    const settingsB = await t.run(async (ctx) =>
+      ctx.db
+        .query('userSettings')
+        .withIndex('by_userId', (q) => q.eq('userId', userB))
+        .unique(),
+    );
+    expect(settingsA?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+    expect(settingsB?.onboardingMilestones?.signupAtMs).toEqual(expect.any(Number));
+    expect(settingsA?._id).not.toBe(settingsB?._id);
   });
 });
 
@@ -622,6 +928,7 @@ describe('first_bank_account_connected and first_transaction_created (bank)', ()
     await seedAuthUser(t, userId);
     const asUser = t.withIdentity({ subject: userId });
 
+    expect(await asUser.mutation(api.userSettings.claimSignupMilestone, {})).toEqual({ emit: true });
     await asUser.mutation(api.banking.plan.createPlan, {
       name: 'Wiped plan',
       currency: 'EUR',

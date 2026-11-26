@@ -7,6 +7,7 @@ import {
   analyticsEvents,
   buildFirstBankAccountConnectedProps,
   buildFirstTransactionCreatedProps,
+  buildSignupCompletedProps,
   getAnalyticsConfigSnapshot,
   isAnalyticsReady,
   readConsent,
@@ -15,9 +16,9 @@ import {
 import { useAuthedQuery } from '@/hooks/use-authed-query';
 
 /**
- * Delivers server-originated one-time onboarding milestones (Enable Banking
- * callback & async bank transaction sync) through the client-only,
- * consent-gated PostHog wrapper.
+ * Delivers one-time onboarding milestones (`signup_completed` plus
+ * server-originated Enable Banking callback & async bank transaction sync
+ * milestones) through the client-only, consent-gated PostHog wrapper.
  *
  * Self-hosted installs without PostHog config remain silent: no settings
  * query, no timer, and no claim mutation.
@@ -27,53 +28,100 @@ export function OnboardingMilestoneFlusher() {
   const analyticsConfigured = Boolean(config.enabled && config.key && config.apiHost);
   const settings = useAuthedQuery(api.userSettings.getMySettings, analyticsConfigured ? {} : 'skip');
   const claimPending = useMutation(api.userSettings.claimPendingOnboardingMilestones);
-  const claimingRef = React.useRef(false);
+  const claimSignup = useMutation(api.userSettings.claimSignupMilestone);
+  const claimingPendingRef = React.useRef(false);
+  const signupAttemptedRef = React.useRef(false);
 
   const pending = settings?.onboardingMilestones?.pendingClientEvents;
   const hasPending = Boolean(pending?.firstBankAccountConnected || pending?.firstTransactionBank);
+  const needsSignupClaim =
+    settings !== undefined &&
+    settings.onboardingMilestones?.signupAtMs === undefined &&
+    !signupAttemptedRef.current;
 
   React.useEffect(() => {
-    if (!hasPending || !analyticsConfigured) return;
-    if (readConsent() === 'rejected') return;
+    if (!analyticsConfigured) return;
+    if (!hasPending && !needsSignupClaim) return;
+
+    let intervalId: number | undefined;
+
+    function stopTimer() {
+      if (intervalId !== undefined) {
+        window.clearInterval(intervalId);
+        intervalId = undefined;
+      }
+    }
 
     function tryFlush(): boolean {
-      if (readConsent() === 'rejected') return true;
-      if (claimingRef.current || !isAnalyticsReady()) return false;
-      claimingRef.current = true;
-      void claimPending({})
-        .then((claimed) => {
-          if (claimed.firstBankAccountConnected) {
-            trackEvent(analyticsEvents.firstBankAccountConnected, buildFirstBankAccountConnectedProps());
-          }
-          if (claimed.firstTransactionBank) {
-            trackEvent(analyticsEvents.firstTransactionCreated, buildFirstTransactionCreatedProps('bank'));
-          }
-        })
-        .catch(() => {
-          // Non-fatal: analytics must never disrupt the app.
-        })
-        .finally(() => {
-          claimingRef.current = false;
-        });
+      if (readConsent() === 'rejected') {
+        stopTimer();
+        return true;
+      }
+      if (!isAnalyticsReady()) return false;
+
+      if (needsSignupClaim && !signupAttemptedRef.current) {
+        signupAttemptedRef.current = true;
+        void claimSignup({})
+          .then((result) => {
+            if (result.emit) {
+              trackEvent(analyticsEvents.signupCompleted, buildSignupCompletedProps());
+            }
+          })
+          .catch(() => {
+            // Non-fatal: analytics must never disrupt the app.
+          });
+      }
+
+      if (hasPending && !claimingPendingRef.current) {
+        claimingPendingRef.current = true;
+        void claimPending({})
+          .then((claimed) => {
+            if (claimed.firstBankAccountConnected) {
+              trackEvent(analyticsEvents.firstBankAccountConnected, buildFirstBankAccountConnectedProps());
+            }
+            if (claimed.firstTransactionBank) {
+              trackEvent(analyticsEvents.firstTransactionCreated, buildFirstTransactionCreatedProps('bank'));
+            }
+          })
+          .catch(() => {
+            // Non-fatal: analytics must never disrupt the app.
+          })
+          .finally(() => {
+            claimingPendingRef.current = false;
+          });
+      }
+
+      stopTimer();
       return true;
     }
 
-    if (tryFlush()) return;
+    function ensureTimerIfAccepted() {
+      if (intervalId !== undefined) return;
+      if (readConsent() !== 'accepted') return;
+      intervalId = window.setInterval(() => {
+        if (tryFlush()) stopTimer();
+      }, 1000);
+    }
 
-    const id = window.setInterval(() => {
-      if (tryFlush()) window.clearInterval(id);
-    }, 1000);
+    if (readConsent() !== 'rejected' && tryFlush()) {
+      return;
+    }
+
+    ensureTimerIfAccepted();
+
     const onConsent = () => {
-      if (tryFlush()) window.clearInterval(id);
+      if (!tryFlush()) {
+        ensureTimerIfAccepted();
+      }
     };
     window.addEventListener(ANALYTICS_CONSENT_EVENT, onConsent);
     window.addEventListener('storage', onConsent);
     return () => {
-      window.clearInterval(id);
+      stopTimer();
       window.removeEventListener(ANALYTICS_CONSENT_EVENT, onConsent);
       window.removeEventListener('storage', onConsent);
     };
-  }, [analyticsConfigured, claimPending, hasPending]);
+  }, [analyticsConfigured, claimPending, claimSignup, hasPending, needsSignupClaim]);
 
   return null;
 }

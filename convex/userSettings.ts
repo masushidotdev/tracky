@@ -3,6 +3,14 @@ import { paginationOptsValidator } from 'convex/server';
 import { internal } from './_generated/api';
 import { internalMutation, internalQuery, mutation, query } from './_generated/server';
 import { requireAuthUser } from './auth';
+import {
+  hasPriorOnboardingMilestones,
+  hasPriorUserFinancialAccount,
+  hasPriorUserPlan,
+  hasPriorUserTransaction,
+  persistOnboardingMilestones,
+  shouldEmitSignupMilestone,
+} from './lib/onboardingMilestones';
 import type { Doc } from './_generated/dataModel';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 
@@ -78,6 +86,47 @@ export const claimPendingOnboardingMilestones = mutation({
     });
 
     return { firstBankAccountConnected, firstTransactionBank };
+  },
+});
+
+// Atomically claims the one-time `signup_completed` onboarding milestone for a
+// new account, or silently backfills `signupAtMs` for pre-existing accounts
+// that already have financial data or earlier onboarding milestones.
+export const claimSignupMilestone = mutation({
+  args: {},
+  returns: v.object({ emit: v.boolean() }),
+  handler: async (ctx) => {
+    const user = await requireAuthUser(ctx);
+    const existing = await settingsForUser(ctx, user.id);
+    const alreadyMarked = existing?.onboardingMilestones?.signupAtMs !== undefined;
+    if (alreadyMarked) {
+      return { emit: false };
+    }
+
+    const hasPriorMilestones = hasPriorOnboardingMilestones(existing?.onboardingMilestones);
+    const [hasFinancialAccounts, hasTransactions, hasPlans] = hasPriorMilestones
+      ? [false, false, false]
+      : await Promise.all([
+          hasPriorUserFinancialAccount(ctx, user.id),
+          hasPriorUserTransaction(ctx, user.id),
+          hasPriorUserPlan(ctx, user.id),
+        ]);
+
+    const decision = shouldEmitSignupMilestone({
+      alreadyMarked,
+      hasFinancialAccounts,
+      hasTransactions,
+      hasPlans,
+      hasPriorMilestones,
+    });
+
+    await persistOnboardingMilestones(ctx, {
+      userId: user.id,
+      nowMs: Date.now(),
+      decisions: { signup: decision },
+    });
+
+    return { emit: decision === 'emit' };
   },
 });
 

@@ -4,9 +4,12 @@ Status: accepted
 
 ## Decision
 
-Add four idempotent, client-only first-time onboarding milestone events on top of
+Add five idempotent, client-only first-time onboarding milestone events on top of
 the existing recurring analytics events (decision 0022):
 
+- `signup_completed` (`{ surface: 'app_bootstrap' }`) — emitted once when a newly
+  created account first bootstraps `/app` with analytics ready (see **Signup
+  milestone** below).
 - `first_csv_import_completed` (`{ row_count_bucket, surface: 'import' }`) — emitted
   once on the first CSV import batch that actually inserts rows (`imported > 0` in
   `csvImport.importManualTransactionsBatch`; all-duplicate or all-invalid batches
@@ -63,10 +66,43 @@ Each milestone is governed by the pure decision rule
    created an item) -> `'emit'` (persist the timestamp atomically in the same Convex
    mutation and signal the client to emit once).
 
-Timestamps (`firstCsvImportAtMs`, `firstPlanAtMs`, `firstTransactionAtMs`,
-`firstBankAccountAtMs`) live on `userSettings.onboardingMilestones`, so they are
-per-user, cross-device, survive deleting and recreating records, and are erased
-automatically when `accountDeletion.eraseProfile` deletes `userSettings`.
+Timestamps (`signupAtMs`, `firstCsvImportAtMs`, `firstPlanAtMs`,
+`firstTransactionAtMs`, `firstBankAccountAtMs`) live on
+`userSettings.onboardingMilestones`, so they are per-user, cross-device, survive
+deleting and recreating records, and are erased automatically when
+`accountDeletion.eraseProfile` deletes `userSettings`.
+
+### Signup milestone
+
+`signup_completed` (`{ surface: 'app_bootstrap' }`) closes the top of the
+`signup -> first import -> first budget` funnel (`login_completed` fires on every
+login, so it cannot represent one-time account creation):
+
+- `userSettings.claimSignupMilestone` is an authenticated, idempotent, atomic
+  mutation governed by `shouldEmitSignupMilestone` (delegating to
+  `shouldEmitFirstMilestone`) in `convex/lib/onboardingMilestones.ts`.
+- If `userSettings.onboardingMilestones.signupAtMs` is already set, it returns
+  `{ emit: false }` without writing.
+- Otherwise it performs bounded indexed `.first()` checks across
+  `financialAccounts`, `transactions`, and `plans`, and checks whether any earlier
+  onboarding milestone timestamp (`firstCsvImportAtMs`, `firstPlanAtMs`,
+  `firstTransactionAtMs`, `firstBankAccountAtMs`) is already set.
+- **Existing `userSettings` row without data:** a user who has a `userSettings`
+  row (for example, after saving notification preferences before accepting
+  analytics consent) with no `signupAtMs`, no other onboarding milestones, and no
+  financial data (`financialAccounts`, `transactions`, `plans`) is still treated
+  as new and emits once; `signupAtMs` is patched onto the existing row without
+  disturbing other settings fields. Any user with prior financial data or prior
+  onboarding milestones gets `signupAtMs` backfilled silently (`{ emit: false }`).
+- `OnboardingMilestoneFlusher` calls `claimSignupMilestone` at most once per
+  session and only when `isAnalyticsReady()` is true (PostHog configured and
+  consent accepted) and `settings.onboardingMilestones?.signupAtMs` is unset.
+  Self-hosted installs without PostHog config skip the query, timers, and
+  mutation; rejected consent never calls the mutation or polls.
+- **Known limitation:** pre-existing accounts that have a settings-less,
+  data-less state (or a bare `userSettings` row with no financial data and no
+  prior milestones) and log in for the first time after deploy are counted as
+  signups, so PostHog funnel dashboards should start from the deploy date.
 
 ## Why
 
@@ -92,7 +128,8 @@ preserving the client-only PostHog boundary.
 
 ## Verification
 
-- `npm test` (unit tests for `shouldEmitFirstMilestone`, property-builder privacy
-  checks, and `convex-test` integration tests for all four milestones and backfill
-  paths).
+- `npm test` (unit tests for `shouldEmitFirstMilestone` and
+  `shouldEmitSignupMilestone`, property-builder privacy checks, flusher
+  consent/self-host behavior tests, and `convex-test` integration tests for all
+  five milestones and backfill paths).
 - `npm run lint`, `npm run security:convex-runtime`, `npm run security:audit`.
