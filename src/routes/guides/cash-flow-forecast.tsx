@@ -71,7 +71,7 @@ export const Route = createFileRoute('/guides/cash-flow-forecast')({
     buildMarketingHead({
       title: 'How to forecast personal cash flow in 5 steps · Tracky',
       description:
-        'A practical five-step guide to personal cash-flow forecasting: real cash balances, dated commitments, active subscriptions, first negative date, and early action.',
+        'Five-step personal cash-flow forecast guide: real cash balances, dated bills, active subscriptions, first negative date, and early action.',
       locale: 'en',
       path: '/guides/cash-flow-forecast',
       ogImage: ogImageFor('guide-cashflow'),

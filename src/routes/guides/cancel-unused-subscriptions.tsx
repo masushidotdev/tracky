@@ -165,8 +165,8 @@ export function GuideSubscriptionsEnView({ auth }: { auth: MarketingAuth }) {
                 company, payment processor, or app-store alias.
               </li>
               <li>
-                <strong>Quarterly and annual intervals fade from memory:</strong> a renewal that hits once every 90 or
-                365 days is easy to overlook until the debit clears.
+                <strong>Quarterly and annual intervals fade from memory:</strong> a renewal that hits once every three
+                months or once a year is easy to overlook until the debit clears.
               </li>
               <li>
                 <strong>Household duplicates pile up quietly:</strong> two people paying separately for the same

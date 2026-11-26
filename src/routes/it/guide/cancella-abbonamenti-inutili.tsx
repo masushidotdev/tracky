@@ -165,8 +165,8 @@ export function GuideSubscriptionsItView({ auth }: { auth: MarketingAuth }) {
                 la società madre, un intermediario di pagamento o lo store del telefono.
               </li>
               <li>
-                <strong>Le cadenze trimestrali e annuali escono dalla memoria:</strong> un rinnovo ogni 90 o 365 giorni
-                passa facilmente inosservato finché non arriva in estratto.
+                <strong>Le cadenze trimestrali e annuali escono dalla memoria:</strong> un rinnovo ogni tre mesi o una
+                volta all’anno passa facilmente inosservato finché non arriva in estratto.
               </li>
               <li>
                 <strong>I doppioni in famiglia si accumulano in silenzio:</strong> due persone che pagano separatamente

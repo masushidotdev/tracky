@@ -41,7 +41,7 @@ describe('Tracky v0.1.0 blog routes markup', () => {
     expect(articleMatches).toHaveLength(1);
     const articleHtml = articleMatches[0] ?? '';
 
-    expect(articleHtml).toContain('<time class="mk-badge" dateTime="2026-11-24">');
+    expect(articleHtml).toContain('<time class="mka-stamp" dateTime="2026-11-24">');
 
     const figureMatches = articleHtml.match(/<figure\b[^>]*>[\s\S]*?<\/figure>/g) ?? [];
     expect(figureMatches).toHaveLength(3);
@@ -64,8 +64,8 @@ describe('Tracky v0.1.0 blog routes markup', () => {
     }
 
     // The repeated final CTA panel sits outside <article>.
-    expect(articleHtml).not.toContain('mk-final');
-    expect(html).toContain('mk-final');
+    expect(articleHtml).not.toContain('mka-poster-cta');
+    expect(html).toContain('mka-poster-cta');
   });
 
   test('all three in-article PNG assets exist in public/blog/tracky-v0-1-0', () => {
