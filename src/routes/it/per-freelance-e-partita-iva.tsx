@@ -1,153 +1,303 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { MarketingAuth } from '@/components/marketing/site';
+import type { ComparisonRow, FaqItem, StepItem } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  AuthCta,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  ComparisonTable,
+  FaqSection,
+  FinalCta,
+  FitCheck,
+  Section,
+  SectionHead,
+  StepCards,
+} from '@/components/marketing/atelier';
+import { RelatedLinksSection } from '@/components/marketing/atelier/b1-components';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const INTRO = "Il budget freelance partita IVA è complicato perché le entrate ballano e le tasse aspettano. Fatturi i clienti, i soldi arrivano in ritardo, e intanto affitto, strumenti e scadenze fiscali continuano ad arrivare. Tracky ti dà una divisione semplice: conti lavoro da una parte, conti vita dall'altra, con le scadenze fiscali dentro il flusso di cassa come voci pianificate. Vedi sempre cosa puoi spendere davvero.\n\nImporti gli export bancari come CSV nei conti manuali, abbini le colonne e controlli ogni riga prima che venga registrata. I duplicati vengono segnalati, così puoi reimportare in sicurezza dopo un'interruzione. Scadenze fiscali pianificate, sottoscrizioni e trasferimenti costruiscono un calendario di cassa che mostra il saldo dopo ogni data. Sono stime basate sulle voci conosciute, non garanzie, e i suggerimenti sulle sottoscrizioni vanno sempre verificati da te.\n\nLe money box sono contenitori virtuali dove accantoni le tasse senza spostare soldi veri. Il tuo Piano mensile mostra cosa è pronto da assegnare e cosa ti aspetta in ogni bucket. Esporti righe CSV pulite per il commercialista quando arriva la stagione fiscale, poi provi tutto nella demo gratis senza carta.";
-
-const BLOCKS = [
-  { h: "Il budget freelance partita IVA si rompe in un conto unico: ecco perché",
-    p: "Fai passare tutto da un unico conto, così ogni saldo ti mente: arriva una grossa fattura, ti senti ricco, e poi la scadenza fiscale ti ricorda che parte di quei soldi non è mai stata davvero tua da spendere. I clienti pagano in ritardo mentre affitto, strumenti e sottoscrizioni vanno pagati puntuali, così i mesi lenti sembrano emergenze anche quando l'anno nel complesso funziona. Il commercialista riceve un export confuso pieno di movimenti personali e di lavoro mescolati, e tu paghi quella pulizia con ore extra, costi extra e stress extra. Finisci per tirare a indovinare invece di decidere, ed è proprio qui che separare soldi lavoro e soldi vita, e mettere le scadenze fiscali nel flusso di cassa come voci pianificate, cambia tutto.", },
-  { h: "Un martedì più tranquillo con Tracky",
-    p: "Apri Tracky martedì mattina e controlli il calendario del flusso di cassa, che elenca scadenze fiscali pianificate, sottoscrizioni e trasferimenti in ordine di data e mostra il saldo dopo ogni data come stima dalle voci conosciute. Importi l'export bancario della scorsa settimana come CSV nel conto manuale giusto, abbini le colonne e controlli ogni riga mentre i duplicati restano segnalati così niente viene contato due volte. Quando arriva una fattura, accantoni una parte in una money box virtuale per le tasse, assegni il resto nel Piano e lasci intatti i bucket personali. Prima di pranzo esporti righe pulite per il commercialista, confermi i suggerimenti sulle sottoscrizioni che riconosci davvero e torni al lavoro con un numero chiaro su cosa puoi spendere.", },
-  { h: "Inizia in cinque minuti con la demo gratis",
-    p: "Parti dalla demo gratis senza carta, crei un conto manuale per il lavoro e uno per la vita, e ogni importo ha il suo posto dal primo giorno. Aggiungi le prossime scadenze fiscali come voci pianificate con date e importi reali, colleghi i conti giusti e le vedi nel flusso di cassa prima che possano sorprenderti. Importi l'ultimo CSV bancario, controlli l'anteprima riga per riga, tieni solo i suggerimenti sulle sottoscrizioni che riconosci e crei la prima money box virtuale per la quota tasse della prossima fattura. Nel Piano assegni cosa è pronto, esporti un file pulito per il commercialista e ripeti questo giro ogni martedì finché le entrate irregolari diventano noiose e sotto controllo.", },
+export const freelancersItFaq: Array<FaqItem> = [
+  {
+    q: 'Tracky funziona per freelance e partite IVA con entrate irregolari?',
+    a: 'Sì. Poiché Tracky ancora il Piano alla liquidità già osservata nei conti — mai a fatture ancora da incassare — assegni il denaro solo quando il cliente paga davvero. Tieni separati conti lavoro e personali, inserisci le scadenze fiscali come voci pianificate e leggi il Flusso di cassa come stima costruita sugli impegni noti.',
+  },
+  {
+    q: 'Come gestisco tasse, contributi e scadenze F24 in Tracky?',
+    a: 'Registri ogni scadenza fiscale come voce pianificata con data, importo e conto di addebito, così pesa subito sul Flusso di cassa e sul Disponibile dopo le spese. Puoi abbinarla a una money box virtuale per tenere traccia della quota tasse accantonata da ogni fattura. Quando paghi, colleghi il movimento reale e la scadenza smette di pesare sulle date future.',
+  },
+  {
+    q: 'Posso importare i CSV della banca ed esportare file puliti per il commercialista?',
+    a: 'Sì. Importi gli export bancari in locale nel browser nei conti manuali correnti o carta attivi con mappatura colonne e salto dei duplicati, mantenendo ogni valuta nel proprio conto. Dai Report puoi filtrare per conto lavoro, categoria o tag ed esportare riepiloghi CSV aggregati per valuta, oppure scaricare un backup JSON completo dalle Impostazioni.',
+  },
+  {
+    q: 'Le money box spostano denaro reale e i suggerimenti sulle sottoscrizioni sono garantiti?',
+    a: 'No a entrambe le domande. Le money box sono accantonamenti virtuali dentro Tracky: registrano quanto metti da parte senza muovere i saldi bancari, quindi registra o collega il trasferimento reale quando sposti soldi tra conti. Il rilevamento delle sottoscrizioni arriva come suggerimento di cui confermi esercente, importo e cadenza prima di trattarlo come impegno.',
+  },
 ];
 
-const PAGE_FAQ = [
-  { q: "Il budget freelance partita IVA funziona con entrate irregolari?",
-    a: "Sì. Tieni separati conti lavoro e personali, aggiungi le scadenze fiscali come voci pianificate e leggi il flusso di cassa come stime dalle voci conosciute. Il Piano mostra cosa è pronto da assegnare dopo gli impegni. Hai controllo senza cambiare come ti pagano i clienti, e puoi esplorare tutto nella demo gratis.", },
-  { q: "Come gestisco le tasse in Tracky?",
-    a: "Registri ogni scadenza fiscale come voce pianificata con data, importo e conto reali. Appare nel flusso di cassa e nel disponibile dopo le spese come impegno, così quei soldi risultano già destinati. Quando paghi, colleghi il movimento reale e la voce smette di pesare sulle date future.", },
-  { q: "Posso importare i movimenti bancari e condividerli con il commercialista?",
-    a: "Sì. Importi gli export bancari come CSV nei conti manuali attivi, abbini le colonne e controlli l'anteprima prima di confermare. I duplicati vengono segnalati e saltati, e ogni valuta va nel suo conto corrispondente. Poi esporti righe pulite per il commercialista dai movimenti già controllati.", },
-  { q: "Le money box spostano soldi veri, e i suggerimenti sulle sottoscrizioni sono certi?",
-    a: "No, senza sorprese. Le money box sono virtuali: registrano cosa accantoni senza muovere i saldi bancari, quindi collega il trasferimento reale quando i soldi si muovono davvero. Il rilevamento delle sottoscrizioni è un suggerimento, non una certezza: conferma esercente, importo e cadenza prima di trattare un rinnovo come impegno.", },
+const comparisonRows: Array<ComparisonRow> = [
+  {
+    capability: 'Saldi lavoro vs personali',
+    demo: { text: 'Un conto unico fa sembrare spendibile l’intera fattura incassata', tone: 'no' },
+    selfHost: { text: 'Conti manuali lavoro e personali separati nello stesso spazio', tone: 'yes' },
+  },
+  {
+    capability: 'Scadenze fiscali, IVA e contributi',
+    demo: { text: 'Segnate in calendario, ma invisibili nel saldo del conto', tone: 'no' },
+    selfHost: { text: 'Voci pianificate nel Flusso di cassa + money box tasse virtuale', tone: 'yes' },
+  },
+  {
+    capability: 'Incassi irregolari dei clienti',
+    demo: { text: 'I mesi lenti sembrano emergenze perché gli impegni restano nascosti', tone: 'no' },
+    selfHost: { text: 'Il Piano assegna la liquidità reale; Disponibile dopo le spese mostra il ritmo', tone: 'yes' },
+  },
+  {
+    capability: 'Software e strumenti ricorrenti',
+    demo: { text: 'I rinnovi annuali degli strumenti arrivano senza preavviso', tone: 'no' },
+    selfHost: { text: 'Le sottoscrizioni confermate entrano nel Flusso di cassa con promemoria', tone: 'yes' },
+  },
+  {
+    capability: 'Clienti in più valute (EUR / USD / GBP)',
+    demo: { text: 'Export mescolati o stime di cambio manuali', tone: 'no' },
+    selfHost: { text: 'Un conto per valuta; totali separati in ogni vista', tone: 'yes' },
+  },
+  {
+    capability: 'Consegna al commercialista',
+    demo: { text: 'Estratti conto pieni di spese personali e lavoro mescolati', tone: 'no' },
+    selfHost: { text: 'Report CSV aggregati filtrati per conto lavoro ed export JSON completo', tone: 'yes' },
+  },
+];
+
+const routineSteps: Array<StepItem> = [
+  {
+    num: 'Passo 01',
+    icon: 'import',
+    title: 'Separa conti lavoro e personali',
+    body: 'Crea conti manuali distinti per attività e vita privata (uno per valuta) e importa i CSV bancari nel browser con controllo duplicati.',
+  },
+  {
+    num: 'Passo 02',
+    icon: 'envelopes',
+    title: 'Accantona le tasse prima di assegnare',
+    body: 'Quando una fattura viene pagata, segna la quota tasse in una money box virtuale e distribuisci il resto nel Piano zero-based finché Da assegnare arriva a zero.',
+  },
+  {
+    num: 'Passo 03',
+    icon: 'cashflow',
+    title: 'Inserisci le scadenze nel Flusso di cassa',
+    body: 'Aggiungi scadenze fiscali, commercialista, affitto e abbonamenti confermati come voci datate per leggere Disponibile dopo le spese e la prima data negativa.',
+  },
+  {
+    num: 'Passo 04',
+    icon: 'reports',
+    title: 'Riconcilia ed esporta per il commercialista',
+    body: 'Collega i pagamenti reali alle scadenze così nulla conta due volte. Filtra i Report per conto lavoro, categoria o tag per esportare CSV aggregati per valuta o backup JSON.',
+  },
 ];
 
 export const Route = createFileRoute('/it/per-freelance-e-partita-iva')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Budget per freelance e partita IVA · Tracky',
+      title: 'Budget per freelance e partita IVA — Lavoro, vita e tasse · Tracky',
       description:
-        'Separa soldi lavoro e personali, metti le tasse nel flusso di cassa, esporta CSV per il commercialista. Demo gratis, senza carta.',
+        'Separa conti lavoro e personali, metti le scadenze fiscali nel Flusso di cassa, accantona le tasse in money box virtuali ed esporta Report CSV. Demo €0.',
       locale: 'it',
       path: '/it/per-freelance-e-partita-iva',
       ogImage: ogImageFor('for-freelancers'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/it/per-freelance-e-partita-iva', inLanguage: ['it', 'en'] }),
-        faqJsonLd(PAGE_FAQ.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(freelancersItFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/it/' },
           { name: 'Per freelance e partita IVA', path: '/it/per-freelance-e-partita-iva' },
         ]),
       ],
     }),
-  component: FreelanceIt,
+  component: FreelancersIt,
 });
 
-function FreelanceIt() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+function FreelancersIt() {
+  const auth = Route.useLoaderData();
+  return <FreelancersItView auth={auth} />;
+}
+
+export function FreelancersItView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/per-freelance-e-partita-iva">
-      <header className="mk-hero">
-        <Reveal>
-          <h1>
-            Soldi lavoro.
-            <br />
-            <span className="stroke">Soldi vita.</span>
-            <br />
-            <span className="hl">Separati.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            Le fatture arrivano, le tasse aspettano: tieni <b>conti separati</b>, metti le scadenze fiscali nel{' '}
-            <b>flusso di cassa</b> come spese pianificate e consegna al commercialista un <b>CSV</b> pulito. Entrate
-            irregolari, controllo regolare.
-          </p>
-        </Reveal>
-        <Reveal>
-          <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Apri la demo →' : 'Prova la demo →'}
-            </MagnetCta>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>{INTRO}</p>
-        </Reveal>
-      </section>
-      <MarqueeBand items={['CONTI SEPARATI', 'TASSE NEL FLUSSO', 'CSV AL COMMERCIALISTA', 'ENTRATE IRREGOLARI, CONTROLLO SÌ']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-duel">
-            <div className="mk-d bad">
-              <h3>😵 PENTOLONE UNICO</h3>
-              <ul>
-                <li>Stipendio o fattura? Chissà</li>
-                <li>La cartella esattoriale è una sorpresa</li>
-                <li>Al commercialista una scatola di scontrini</li>
-              </ul>
-            </div>
-            <div className="mk-d good">
-              <h3>😎 REGISTRO DOPPIO</h3>
-              <ul>
-                <li>Conti lavoro vs personali</li>
-                <li>Tasse pianificate, accantonate, visibili</li>
-                <li>Export CSV, commercialista felice</li>
-              </ul>
+    <AtelierSite locale="it" auth={auth} currentPath="/it/per-freelance-e-partita-iva">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Percorso di navigazione"
+              items={[{ label: 'Home', href: '/it/' }, { label: 'Per freelance e partita IVA' }]}
+            />
+
+            <ChipRow>
+              <Chip tone="cobalt">Lavoro e vita separati</Chip>
+              <Chip tone="marigold">Tasse nel Flusso di cassa</Chip>
+              <Chip tone="sage">Report CSV per valuta</Chip>
+              <Chip>Demo ospitata €0</Chip>
+            </ChipRow>
+
+            <h1 className="mka-hero-headline">
+              Entrate irregolari. <span className="mka-accent-ink">Controllo regolare sulla liquidità.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Quando i clienti pagano a singhiozzo mentre affitto, software e scadenze fiscali arrivano puntuali, un
+              saldo unico ti inganna. Tracky tiene separati conti lavoro e personali, mette le scadenze fiscali dentro
+              il Flusso di cassa come impegni datati e ti permette di esportare Report CSV puliti per valuta quando
+              serve al commercialista.
+            </p>
+
+            <div className="mka-hero-actions">
+              <AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="primary-lg" />
+              <a className="mka-btn-secondary" href="/it/funzioni/flusso-di-cassa">
+                Come funziona il Flusso di cassa →
+              </a>
             </div>
           </div>
-        </Reveal>
+        </div>
       </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {BLOCKS.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            <p className="mk-sub" style={{ maxWidth: 700 }}>{block.p}</p>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>Domande e risposte.</h2>
-        </Reveal>
-        {PAGE_FAQ.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Fattura. Accantona. Respira.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · 5 minuti · senza carta</p>
-            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Apri la demo →' : 'Inizia gratis →'}
-            </MagnetCta>
-          </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+
+      {/* 2. MIXED POT VS SPLIT LEDGER */}
+      <Section id="comparison" tone="parchment">
+        <SectionHead
+          kicker="La struttura che manca"
+          title="Conto unico mescolato vs registro diviso per freelance."
+          subtitle="Un solo spazio di lavoro per vedere il quadro completo, separando conti professionali, accantonamenti fiscali e spese personali."
+        />
+
+        <ComparisonTable
+          caption="Confronto tra gestire entrate da freelance e spese personali in un conto unico rispetto a Tracky"
+          headers={['Punto critico freelance', 'Un solo conto mescolato', 'Registro diviso in Tracky']}
+          rows={comparisonRows}
+        />
+      </Section>
+
+      {/* 3. FOUR-STEP WEEKLY ROUTINE */}
+      <Section id="routine">
+        <SectionHead
+          kicker="Routine settimanale"
+          title="Quattro passi dall’incasso della fattura a un disponibile chiaro."
+          subtitle="Tracky non conta mai fatture non pagate come liquidità: ogni passo parte dai saldi osservati e dagli impegni registrati."
+        />
+
+        <StepCards steps={routineSteps} />
+      </Section>
+
+      {/* 4. EDITORIAL DETAILS + FIT CHECK */}
+      <Section id="details" tone="parchment">
+        <SectionHead
+          kicker="Confini chiari"
+          title="Perché separazione dei conti, riserve virtuali e stime trasparenti fanno la differenza."
+          subtitle="Tracky è uno strumento di budget personale e flusso di cassa, non un gestionale di fatturazione né un commercialista: ecco dove dà il meglio."
+        />
+
+        <div className="mka-editorial-grid" style={{ marginBottom: '2rem' }}>
+          <article className="mka-editorial-card">
+            <h3>Perché le entrate irregolari mettono in crisi un conto unico</h3>
+            <p>
+              Quando una fattura importante entra sullo stesso conto da cui paghi la spesa, il saldo sembra comodo fino
+              al giorno in cui arrivano saldi, acconti o rinnovi annuali. I mesi più scarichi sembrano emergenze anche
+              quando il bilancio annuo è solido.
+            </p>
+            <p>
+              Separare i conti manuali lavoro e vita — e inserire le scadenze fiscali come voci pianificate nel Flusso
+              di cassa — mostra quanto è davvero libero dopo gli impegni. Ricorda sempre che le proiezioni sono stime
+              costruite dai dati registrati, mai garanzie.
+            </p>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Riserve virtuali, tag ed export per il commercialista</h3>
+            <p>
+              Usa una money box virtuale per seguire la quota tasse accantonata da ogni fattura incassata senza
+              duplicare i saldi bancari; quando sposti davvero denaro verso un conto deposito fiscale, collega il
+              trasferimento reale. Etichetta le spese professionali (fino a 10 tag colorati per movimento) e usa le note
+              private per i riferimenti fattura.
+            </p>
+            <p>
+              Quando servono i riepiloghi per il commercialista, filtra i <strong>Report</strong> sui conti lavoro ed
+              esporta CSV aggregati per valuta (con separatore virgola o punto e virgola adatto alla lingua), oppure
+              scarica un backup JSON completo dalle <strong>Impostazioni</strong>.
+            </p>
+          </article>
+        </div>
+
+        <FitCheck
+          yesTitle="Adatto a freelance e partite IVA che…"
+          yesItems={[
+            'Vogliono tenere separati conti lavoro, scadenze fiscali e bucket personali zero-based in un solo spazio.',
+            'Fatturano in EUR, USD o altre valute e vogliono totali distinti per valuta senza cambi inventati.',
+            'Preferiscono import CSV nel browser oppure self-hosting Docker con sync Enable Banking opzionale.',
+          ]}
+          noTitle="Non sostituisce…"
+          noItems={[
+            'Software di fatturazione elettronica, gestione IVA o contabilità ordinaria/forfettaria ufficiale.',
+            'Consulenza fiscale o finanziaria: verifica sempre imposte e scadenze con il tuo commercialista.',
+            'Strumenti multi-utente con login separati per soci o studio contabile.',
+          ]}
+        />
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        kicker="FAQ per freelance"
+        title="Domande su entrate irregolari, tasse ed export."
+        subtitle="Risposte dirette allineate alle funzioni rilasciate in v0.1.0."
+        items={freelancersItFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <RelatedLinksSection
+        tone="parchment"
+        kicker="Continua a esplorare"
+        title="Gli strumenti per tenere leggibile la cassa da freelance."
+        items={[
+          {
+            kicker: 'Funzione',
+            title: 'Flusso di cassa e Disponibile dopo le spese',
+            description: 'Metti in fila scadenze fiscali, affitto e rinnovi confermati sopra i saldi osservati.',
+            href: '/it/funzioni/flusso-di-cassa',
+            ctaLabel: 'Scopri il Flusso di cassa →',
+          },
+          {
+            kicker: 'Funzione',
+            title: 'Report ed export CSV per valuta',
+            description: 'Filtra per conto lavoro, categoria o tag e salva fino a 20 viste riutilizzabili.',
+            href: '/it/funzioni/report',
+            ctaLabel: 'Scopri i Report →',
+          },
+          {
+            kicker: 'Confronto',
+            title: 'Tracky vs fogli di calcolo',
+            description: 'Mantieni import ed export CSV senza riparare formule fragili in Excel.',
+            href: '/it/vs-fogli-di-calcolo',
+            ctaLabel: 'Leggi il confronto →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Fattura, accantona le tasse e vedi cosa puoi spendere davvero."
+        meta="Demo ospitata €0 · Senza carta · Open source MIT"
+        primaryCta={<AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="marigold" />}
+        secondaryCta={
+          <a className="mka-btn-outline-light" href="/it/prezzi">
+            Vedi prezzi e self-host →
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

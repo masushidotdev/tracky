@@ -1,35 +1,72 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { MarketingAuth } from '@/components/marketing/site';
+import type { FaqItem } from '@/components/marketing/atelier';
+import type { B2StepItem } from '@/components/marketing/atelier/b2-sections';
+import {
+  AtelierSite,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  FaqSection,
+  FinalCta,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import {
+  B2AppCta,
+  B2GuideSteps,
+  B2RelatedSection,
+  B2ScreenshotFigure,
+} from '@/components/marketing/atelier/b2-sections';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const steps = [
-  { t: 'Create one manual account', p: 'You open Accounts and add a manual checking account in EUR with a short name you recognize instantly every time. You set today\'s real balance as the starting point, because the plan only assigns money that truly exists right now. You connect nothing, so every later figure comes from this balance plus CSV rows you preview yourself first. This account becomes the single funding source for your first plan, and each assigned euro traces back to cash you hold now.' },
-  { t: 'Import a bank CSV', p: 'You export the CSV from your bank and bring it into Tracky on the account you just created. You map the three columns Tracky asks for, date, description, and amount, so each row lands correctly every time. You read the preview row by row and fix anything odd before anything is written, then confirm only when every row reads clean and complete. Your plan now holds real activity ready to assign, and Unexplained stays at zero from the very start.' },
-  { t: 'Create the plan', p: 'You create one plan and choose your manual account as its funding source. You keep one currency and one plan, so balances and assignments speak the same language throughout every month. The plan starts the day you create it: earlier movements stay inside today\'s balances yet create no activity and no overspending. If the origin looks wrong after a history import, use Restart from here to pick the first day that counts while groups, buckets, targets, and assignments stay intact.' },
-  { t: 'Assign every euro', p: 'You open the plan and fill each bucket with money sitting in your funding account right now. You continue until Ready to Assign reaches zero, because every euro needs a job and idle money drifts into unchosen spending. New income lands in Ready to Assign, never as negative spending inside a bucket, so you give it work the moment it arrives. You also bring Unexplained to zero, proving each account movement is attributed correctly and nothing extra ever appeared there.' },
-  { t: 'Watch Available carry', p: 'You close the month and watch positive Available balances roll into the next one. That carry is how annual funds grow: what you skip spending stays in its bucket and lowers next month\'s need. When a cash row turns red, you move Available money from another bucket to cover it, because uncovered cash overspending lowers Ready to Assign instead of carrying over. When the red sits on card spending, you fund that card\'s payment bucket before the statement is paid.' },
+const guideSteps: Array<B2StepItem> = [
+  {
+    title: 'Start from today’s observed cash balance',
+    body: 'List the checking or cash account holding the money you actually have today, in a single currency. Zero-based budgeting only allocates observed cash—never next month’s paycheck or an unused credit card limit—so every decision rests on money already in your hands.',
+    note: 'In Tracky: add a manual checking account in EUR (or your main currency) with today’s real balance—no bank link required.',
+  },
+  {
+    title: 'Bring in recent transactions cleanly',
+    body: 'Export a bank CSV for the account and check every date, description, and amount before saving. Reviewing rows up front keeps duplicates and malformed entries out of your ledger so your starting activity reflects reality.',
+    note: 'In Tracky: CSV parsing runs locally in your browser with Valid, Duplicate, and Error badges before a single row is written.',
+  },
+  {
+    title: 'Group obligations and goals into clear buckets',
+    body: 'Create one Plan in that currency and organize recurring bills, daily spending, annual expenses, and savings targets into named buckets. Anchor the Plan to today’s starting date so older transactions stay inside your opening balance without creating artificial overspending.',
+    note: 'In Tracky: if an imported history shifts your cutoff, Restart from here picks a clean origin while preserving groups, buckets, targets, and assignments.',
+  },
+  {
+    title: 'Assign every euro until Ready to Assign reaches zero',
+    body: 'Allocate your available cash across buckets—covering immediate bills first, then groceries, transport, annual reserves, and discretionary spending—until Ready to Assign hits zero. When new income arrives later, give that new money a job right away instead of treating it as negative spending inside a category.',
+    note: 'In Tracky: check that Unexplained movement stays at zero so every account inflow and outflow is properly attributed.',
+  },
+  {
+    title: 'Carry positive Available forward and cover red rows immediately',
+    body: 'At month-end, let positive Available balances roll into next month—this is how sinking funds for annual insurance, repairs, or holidays grow steadily. Whenever a cash bucket goes red, move Available funds from another bucket to cover it; when a credit card purchase lacks coverage, fund that card’s payment bucket before paying the statement.',
+    note: 'In Tracky: positive Available carries forward automatically, while uncovered cash overspending lowers next month’s Ready to Assign rather than hiding negative debt.',
+  },
 ];
 
-const faq = [
+export const guideZeroBasedEnFaq: Array<FaqItem> = [
   {
-    q: 'Can I start if my history is messy?',
-    a: 'You start anyway, because day one of the plan is the day you create it. Movements from before stay inside today\'s balances without creating activity or overspending. If that starting point feels wrong, open the plan selector and choose Restart from here for the first day that should count. Tracky keeps your groups, buckets, targets, and assignments, then rebuilds the history from the new origin.',
+    q: 'Can I start a zero-based budget if my past transaction history is messy?',
+    a: 'Yes. A zero-based budget starts from the cash you hold on day one, not from untangling last year’s receipts. Earlier movements remain part of your opening account balance without creating bucket Activity or overspending. In Tracky, you can also use Restart from here in the plan selector to pick a clean starting day while keeping groups, buckets, targets, and assignments intact.',
   },
   {
-    q: 'Do I have to reach zero on day one?',
-    a: 'That is the goal, not an obligation you must meet on day one. A positive Ready to Assign simply means some money still has no job, and money without a job tends to leave on something you did not choose. You get closer each time you sit down and assign. Even a partly assigned plan beats a month where spending comes before decisions.',
+    q: 'Do I have to reach exactly zero on day one?',
+    a: 'Zero is the target you work toward, not a test you fail on day one. A positive Ready to Assign simply means some cash still has no job—and idle money tends to drift into unchosen spending. Even a partially assigned Plan beats spending before deciding, and you refine it as bills and priorities become clearer.',
   },
   {
-    q: 'What happens if I spend more than a bucket holds?',
-    a: 'The bucket row turns red and asks for one of two fixes. For cash overspending you shift Available funds across from another bucket, or the gap reduces next month\'s Ready to Assign rather than rolling over. For credit overspending you fund the card\'s payment bucket, since the debt grew even though no cash has left yet. Either way the negative balance itself never moves forward.',
+    q: 'What should I do when I spend more than a bucket holds?',
+    a: 'Treat cash overspending and credit overspending differently. For cash overspending, money already left your account, so move Available funds from another bucket to cover the shortfall—otherwise next month’s Ready to Assign drops automatically. For credit overspending, fund the card’s payment bucket so cash waits ready when the statement is due.',
   },
   {
-    q: 'How to build zero based budget that still works next month?',
-    a: 'You carry positive Available balances into next month, building funds for yearly bills without extra work. You cover every red cash row by moving money from another bucket, so shortfalls never silently lower next month\'s Ready to Assign. New income always lands in Ready to Assign first. Each month then starts from real balances, and the plan keeps working.',
+    q: 'How do I keep a zero-based budget working smoothly month after month?',
+    a: 'Let positive Available balances carry forward so annual and irregular bills build up gradually, cover any red cash row before closing the month, and route every new paycheck through Ready to Assign first. Starting each month from observed cash keeps the math grounded in reality.',
   },
 ];
 
@@ -37,24 +74,24 @@ export const Route = createFileRoute('/guides/zero-based-budgeting')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'How to build a zero-based budget in Tracky',
+      title: 'How to build a zero-based budget in 5 steps · Tracky',
       description:
-        '5 steps: manual account, CSV import, first plan, assign to zero, carry Available. Works in the free demo — start today.',
+        'Learn how zero-based budgeting works in five practical steps: observed cash, clean CSV import, buckets, assigning to zero, and monthly carry.',
       locale: 'en',
       path: '/guides/zero-based-budgeting',
       ogImage: ogImageFor('guide-budget'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/guides/zero-based-budgeting', inLanguage: ['en', 'it'] }),
-        faqJsonLd(faq.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(guideZeroBasedEnFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         {
           '@context': 'https://schema.org',
           '@type': 'HowTo',
           name: 'How to build a zero-based budget in Tracky',
-          step: steps.map((s) => ({ '@type': 'HowToStep', name: s.t, text: s.p })),
+          step: guideSteps.map((step) => ({ '@type': 'HowToStep', name: step.title, text: step.body })),
         },
         breadcrumbJsonLd([
           { name: 'Home', path: '/' },
-          { name: 'Guides', path: '/guides/zero-based-budgeting' },
+          { name: 'Zero-based budgeting guide', path: '/guides/zero-based-budgeting' },
         ]),
       ],
     }),
@@ -62,80 +99,252 @@ export const Route = createFileRoute('/guides/zero-based-budgeting')({
 });
 
 function GuideEn() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <GuideZeroBasedEnView auth={auth} />;
+}
+
+export function GuideZeroBasedEnView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="en" auth={{ user, signInUrl, signUpUrl }} currentPath="/guides/zero-based-budgeting">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Guide</span>
-            <span className="mk-badge">5 steps</span>
-            <span className="mk-badge">Free demo</span>
-          </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            First budget,
-            <br />
-            <span className="hl">5 steps.</span>
-          </h1>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>You want a budget where every euro has a job. This guide shows you how to build zero based budget in Tracky in five practical steps, and it works in demo today.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>You open a manual EUR checking account and link no bank at all. You bring in a bank CSV through a row-by-row preview, then tie one plan to that account as its only funding source.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>Then you assign every euro until Ready to Assign reaches zero. You keep Unexplained at zero too, so each movement stays accounted for. Positive Available balances carry into next month, while cash overspending lowers Ready to Assign until you move money between buckets. Open the free demo and follow each step yourself: no card needed, guide included, first plan done today.</p>
-        </Reveal>
-      </section>
-      <MarqueeBand items={['ACCOUNT', 'CSV', 'PLAN', 'ASSIGN TO ZERO', 'CARRY OVER']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {steps.map((s, i) => (
-          <Reveal key={s.t}>
-            <div className="mk-card" style={{ maxWidth: 760, margin: '0 auto 16px', minWidth: 0, transform: 'none' }}>
-              <div className="e">{i + 1}.</div>
-              <h3>{s.t.toUpperCase()}</h3>
-              <p>{s.p}</p>
+    <AtelierSite locale="en" auth={auth} currentPath="/guides/zero-based-budgeting">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Breadcrumb"
+              items={[
+                { label: 'Home', href: '/' },
+                { label: 'Zero-based budgeting guide' },
+              ]}
+            />
+
+            <ChipRow>
+              <Chip tone="cobalt">Evergreen guide</Chip>
+              <Chip>5 practical steps</Chip>
+              <Chip tone="sage">Works in the free demo</Chip>
+            </ChipRow>
+
+            <h1 className="mka-hero-headline">
+              How to build a <span className="mka-accent-ink">zero-based budget</span> that holds up every month.
+            </h1>
+
+            <p className="mka-hero-dek">
+              Zero-based budgeting does not mean spending your bank account down to zero. It means giving every euro you
+              already hold a specific job—rent, groceries, annual bills, or savings—so unassigned cash stops vanishing
+              quietly before payday.
+            </p>
+
+            <div className="mka-hero-actions">
+              <a className="mka-btn-secondary" href="#steps">
+                Jump to the 5 steps ↓
+              </a>
+              <B2AppCta
+                auth={auth}
+                locale="en"
+                loggedInHref="/app/plan"
+                loggedInLabel="Open the Plan →"
+                loggedOutLabel="Practise in the free demo →"
+              />
             </div>
-          </Reveal>
-        ))}
-        <Reveal>
-          <figure className="mk-shot" style={{ marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-            <img src="/shots/import-preview.png" alt="Step 2 in action: Tracky CSV preview validating each row" width={1440} height={800} loading="lazy" />
-            <figcaption>Step 2 in action: the CSV preview from the live demo.</figcaption>
-          </figure>
-        </Reveal>
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Questions, answered.</h2>
-        </Reveal>
-        {faq.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Your turn. 5 steps.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · no card · guide included</p>
-            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Open the demo →' : 'Start free →'}
-            </MagnetCta>
           </div>
-        </Reveal>
+        </div>
       </section>
-    </MarketingSite>
+
+      {/* 2. EDUCATIONAL FOUNDATION */}
+      <Section id="method" tone="parchment">
+        <SectionHead
+          kicker="The principle"
+          title="Why assigning observed cash beats static monthly caps."
+          subtitle="Most budgets fail for two reasons: they plan with money that has not arrived yet, and they reset every category blindly on the first of the month."
+        />
+
+        <div className="mka-editorial-grid">
+          <article className="mka-editorial-card">
+            <h3>Observed money vs. forecasted paychecks</h3>
+            <p>
+              Traditional percentage budgets or monthly spending caps look tidy on paper, yet they rarely answer a real
+              Tuesday question: <em>can I afford this right now without breaking next week’s rent?</em>
+            </p>
+            <p>
+              Zero-based budgeting flips the question. You look only at the cash sitting in your checking and savings
+              accounts today and divide it across deliberate buckets—including irregular annual costs like insurance,
+              taxes, or car maintenance—until <strong>Ready to Assign</strong> reaches zero.
+            </p>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Three habits that keep the method alive</h3>
+            <ul className="mka-b2-prose-list">
+              <li>
+                <strong>Keep credit limits separate from cash:</strong> a card limit is borrowing capacity, not money to
+                allocate. Every covered card purchase sets cash aside to pay the statement.
+              </li>
+              <li>
+                <strong>Let positive balances roll forward:</strong> money you do not spend in a sinking fund stays in
+                that bucket next month instead of disappearing into a vague leftover.
+              </li>
+              <li>
+                <strong>Adjust when life changes:</strong> moving money between buckets is not failure—it is an
+                explicit trade-off made with real numbers.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </Section>
+
+      {/* 3. FIVE STEPS */}
+      <Section id="steps">
+        <SectionHead
+          kicker="Step-by-step method"
+          title="Build your first zero-based budget in five steps."
+          subtitle="Follow this sequence on paper, in a clean ledger, or inside the free Tracky demo—no bank connection required."
+        />
+
+        <B2GuideSteps steps={guideSteps} stepPrefix="Step" />
+
+        <div style={{ marginTop: '2rem' }}>
+          <B2ScreenshotFigure
+            src="/shots/import-preview.png"
+            alt="Tracky CSV import preview classifying rows as Valid or Duplicate before saving into a manual account"
+            width={1440}
+            height={800}
+            captionTitle="Step 2 in practice: browser-local CSV preview"
+            captionBody="Before saving a single transaction into your manual account, Tracky checks every row locally in your browser and flags Valid, Duplicate, or Error rows with plain reasons."
+          />
+        </div>
+      </Section>
+
+      {/* 4. HOW TRACKY HELPS */}
+      <Section id="how-tracky-helps" tone="parchment">
+        <SectionHead
+          kicker="How Tracky helps"
+          title="Built specifically around observed-cash, single-currency accounting."
+          subtitle="Every part of this five-step workflow runs at €0 in the hosted demo using manual accounts and browser-parsed CSV import, or on your own MIT self-hosted Docker server."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">What Tracky handles for you</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Assigned, Activity, and Available per bucket</strong>
+                  <span>
+                    Every bucket tracks what you allocated this month, booked spending and refunds, and what carries
+                    forward—while keeping unmapped categories visible in <strong>Unplanned</strong>.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Targets &amp; previewed Auto-Assign</strong>
+                  <span>
+                    Set weekly, monthly, yearly, or custom targets, compare total needs against expected income with{' '}
+                    <strong>Cost to Be Me</strong>, and preview Auto-Assign proposals before confirming.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Protected card &amp; instalment buckets</strong>
+                  <span>
+                    Covered card purchases reserve cash automatically for the upcoming statement, and linked virtual
+                    money boxes count as <strong>Already set aside</strong> without double counting.
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Transparent boundaries</h3>
+            <ul className="mka-check-list">
+              <li>One currency per Plan—never silently converts mixed currencies</li>
+              <li>No bank credentials required on the hosted demo (browser-local CSV import)</li>
+              <li>Full JSON backup and aggregated CSV reports exportable anytime</li>
+              <li className="is-muted">PSD2 bank sync (Enable Banking) is optional and self-host only</li>
+              <li className="is-muted">Free includes one Plan; multiple Plans are reserved for Pro (not for sale)</li>
+            </ul>
+
+            <div className="mka-trust-actions" style={{ marginTop: 'auto' }}>
+              <a className="mka-text-link" href="/features/zero-based-plan">
+                Read full Zero-based Plan feature details →
+              </a>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="cotton"
+        kicker="Guide FAQ"
+        title="Common questions when starting a zero-based budget."
+        subtitle="Practical answers for your first month and beyond."
+        moreLink={{ href: '/faq', label: 'Read the full FAQ →' }}
+        items={guideZeroBasedEnFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <B2RelatedSection
+        tone="parchment"
+        kicker="Keep reading"
+        title="Next guides and product pages."
+        items={[
+          {
+            kicker: 'Feature · Demo + Self-host',
+            title: 'Zero-based Plan in Tracky',
+            description: 'Deep dive into Ready to Assign, card payment buckets, Auto-Assign strategies, and linked money boxes.',
+            href: '/features/zero-based-plan',
+            linkLabel: 'Explore the Plan →',
+          },
+          {
+            kicker: 'Evergreen guide',
+            title: 'How to forecast personal cash flow',
+            description: 'Once your Plan is funded, lay dated bills and paydays onto real balances to spot any upcoming cash dip.',
+            href: '/guides/cash-flow-forecast',
+            linkLabel: 'Read Cash Flow guide →',
+          },
+          {
+            kicker: 'Evergreen guide',
+            title: 'Find & cancel unused subscriptions',
+            description: 'Use two to three months of CSV history to audit recurring charges before they drain your buckets.',
+            href: '/guides/cancel-unused-subscriptions',
+            linkLabel: 'Read Subscriptions guide →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Put the five steps into practice today."
+        meta="€0 hosted demo · Zero-based Plan & browser-parsed CSV included · No credit card"
+        primaryCta={
+          <B2AppCta
+            auth={auth}
+            locale="en"
+            loggedInHref="/app/plan"
+            loggedInLabel="Open the Plan →"
+            loggedOutLabel="Try the demo free →"
+            variant="marigold"
+          />
+        }
+        secondaryCta={
+          <a className="mka-btn-outline-light" href="/features/zero-based-plan">
+            Zero-based Plan details →
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

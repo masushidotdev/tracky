@@ -1,35 +1,67 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { MarketingAuth } from '@/components/marketing/site';
+import type { FaqItem } from '@/components/marketing/atelier';
+import type { B2StepItem } from '@/components/marketing/atelier/b2-sections';
+import {
+  AtelierSite,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  FaqSection,
+  FinalCta,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import { B2AppCta, B2GuideSteps, B2RelatedSection } from '@/components/marketing/atelier/b2-sections';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const steps = [
-  { t: 'Prima finanzia il piano', p: 'Apri il Piano e dai un compito ai soldi già presenti nei conti liquidi prima di proiettare. Assegni la liquidità ai bucket così Da assegnare mostra ciò che è davvero libero, con ogni piano in una sola valuta e il debito delle carte fuori dalla liquidità. Senza questa base finanziata, il Flusso di cassa non costruisce una proiezione solida. Finanzia prima il Piano e ogni data successiva si legge meglio.' },
-  { t: 'Aggiungi spese pianificate', p: 'Aggiungi ogni bolletta, stipendio e trasferimento conosciuti come voce pianificata con data, importo, conto e direzione reali. Includi anche i movimenti programmati una tantum, e Tracky elenca ogni occorrenza del ciclo scelto in ordine di data. Assegna a ogni riga il conto di origine, altrimenti resta non assegnata e non riduce il saldo giusto. Righe complete trasformano il calendario in un quadro affidabile della liquidità.' },
-  { t: 'Converti gli abbonamenti', p: 'Trasforma gli addebiti ricorrenti in sottoscrizioni così i rinnovi entrano da soli nella previsione. Le crei a mano o converti un addebito passato, poi imposti importo, intervallo, prossima scadenza e conto di addebito. Tieni Attiva ogni voce che paghi ancora, e metti in pausa o chiudi le altre. Il rilevamento di Tracky è solo un suggerimento, non una certezza: verifica esercente, importo e cadenza prima di fidarti di ogni rinnovo.' },
-  { t: 'Leggi la prima data negativa', p: 'Leggi il calendario dall\'alto in basso e osserva il saldo dopo ogni riga. Segui la serie del conto e la linea aggregata della liquidità, sapendo che il debito delle carte non conta mai come deficit di cassa. La prima data sotto zero è il tuo segnale principale se non cambia niente. Considera tutte le proiezioni come stime da voci note, poi apri quel giorno, controlla le righe precedenti e verifica saldo, valuta e conti.' },
-  { t: 'Sistemala presto', p: 'Muoviti mentre hai ancora margine per spostare una data, aggiungere un\'entrata reale o tagliare un\'uscita. Sposti un pagamento solo quando cambia la sua vera scadenza, finanzi un salvadanaio virtuale verso il buco oppure alleggerisci un bucket. Riconcilia le voci pagate con Collega transazione così smettono di pesare sul futuro. Ricontrolla il Flusso di cassa e guarda la data negativa spostarsi più avanti o sparire.' },
+const guideSteps: Array<B2StepItem> = [
+  {
+    title: 'Ancora la previsione ai saldi liquidi reali',
+    body: 'Parti dall’ultimo saldo osservato di ogni conto liquido nella tua valuta principale, tenendo il debito delle carte di credito fuori dalla liquidità spendibile. Finanzia prima il Piano zero-based così sai già quale parte della cassa è impegnata prima di guardare avanti.',
+    note: 'In Tracky: il Flusso di cassa parte dagli ultimi saldi liquidi osservati e tiene i conti CARD separati dalla liquidità aggregata.',
+  },
+  {
+    title: 'Inserisci bollette, stipendi e scadenze con la loro data',
+    body: 'Elenca ogni bolletta nota, stipendio atteso, trasferimento pianificato, rata, estratto carta e uscita una tantum programmata con data, importo e conto di origine reali. Lasciare una voce senza conto impedisce di sapere quale saldo assorbirà l’addebito.',
+    note: 'In Tracky: assegna un conto di origine a ogni spesa e un conto di regolamento a ogni estratto carta per non lasciare voci nel gruppo non assegnato.',
+  },
+  {
+    title: 'Conferma le sottoscrizioni attive ed escludi quelle chiuse',
+    body: 'Porta nel calendario gli addebiti ricorrenti solo dopo aver verificato esercente, importo, intervallo e prossima scadenza. Mantieni attivi solo i rinnovi che paghi davvero e metti in pausa o termina il resto così nessun addebito fantasma distorce le cifre.',
+    note: 'In Tracky: il rilevamento automatico delle sottoscrizioni resta sempre un suggerimento da confermare prima di entrare nel Flusso di cassa.',
+  },
+  {
+    title: 'Leggi il saldo progressivo per individuare la prima data negativa',
+    body: 'Scorri la cronologia riga dopo riga applicando saldo prima + entrata − uscita su ogni data. Guarda bene l’ordine: un saldo di fine mese positivo non evita uno scoperto se affitto ed estratto carta escono tre giorni prima dello stipendio. Evidenzia il primo giorno in cui la serie scende sotto zero.',
+    note: 'In Tracky: il Flusso di cassa mostra sia le serie per singolo conto sia la linea aggregata nella valuta principale, segnalando la prima data negativa.',
+  },
+  {
+    title: 'Intervieni in anticipo e riconcilia i pagamenti quando arrivano',
+    body: 'Quando compare un buco di cassa, agisci finché hai margine: riduci un’uscita discrezionale, aggiungi un’entrata reale o sposta una data solo se è cambiata la scadenza effettiva. Quando il movimento passa in banca, riconcilialo con la voce pianificata così non pesa due volte.',
+    note: 'In Tracky: collega la transazione reale con Collega transazione o segna la voce pagata — resta tracciabile nello storico senza doppi conteggi.',
+  },
 ];
 
-const faq = [
+export const guideCashFlowItFaq: Array<FaqItem> = [
   {
-    q: 'Cosa mi serve per capire come prevedere flusso di cassa in Tracky?',
-    a: 'Ti servono gli ultimi saldi dei conti liquidi, un Piano finanziato in una sola valuta e voci pianificate datate con conto di origine. Aggiungi sottoscrizioni attive e movimenti programmati una tantum, poi apri il Flusso di cassa. Leggi i saldi dopo ogni data in ordine. Funziona nella demo gratuita senza collegamento bancario, e ogni proiezione resta una stima.',
+    q: 'Cosa mi serve prima di iniziare a prevedere il flusso di cassa personale?',
+    a: 'Ti servono gli ultimi saldi liquidi osservati in una valuta principale, l’elenco datato di bollette, stipendi, rate ed estratti carta con il relativo conto di origine, e le sottoscrizioni attive confermate. Ogni proiezione di flusso di cassa è una stima aritmetica basata sulle voci registrate, mai una garanzia.',
   },
   {
-    q: 'Perché vedo una riga non assegnata?',
-    a: 'Una voce risulta non assegnata quando manca il conto di origine, oppure quando un estratto non ha un conto di regolamento. Vedi comunque l\'impegno, ma Tracky non sa quale saldo ridurrà. Assegna il giusto conto liquido nella stessa valuta. La proiezione diventa completa, mentre il debito delle carte resta separato dalla liquidità.',
+    q: 'Perché è importante risolvere una riga non assegnata nel calendario?',
+    a: 'Se un’uscita o una sottoscrizione non ha un conto di origine — oppure un estratto carta non ha un conto di regolamento — l’impegno resta visibile, ma nessuna serie di conto può ancora sottrarlo. Assegnare il conto liquido corrispondente nella stessa valuta rende completa la proiezione.',
   },
   {
-    q: 'I rinnovi delle sottoscrizioni sono sempre giusti?',
-    a: 'No. Il rilevamento guarda esercente, valuta, importo simile e intervallo tra date, ma acquisti ripetuti non sono sempre abbonamenti e i prezzi possono cambiare. Prendi ogni segnalazione come un suggerimento, poi verifica nome, importo, intervallo e prossima scadenza. Tieni Attive solo le vere sottoscrizioni così la previsione riflette impegni reali.',
+    q: 'Posso fidarmi del rilevamento automatico degli abbonamenti senza controllarlo?',
+    a: 'No. Il rilevamento confronta nomi esercente, valuta, importi simili e distanza fra le date, quindi spese regolari o cambi di tariffa possono trarre in inganno. Verifica sempre esercente, importo, cadenza e prossima scadenza prima di marcare una sottoscrizione come Attiva.',
   },
   {
-    q: 'I salvadanai spostano i soldi in banca?',
-    a: 'No. Il salvadanaio è virtuale: segue obiettivo e importo accantonato senza creare un altro saldo bancario. Registrare un versamento non muove soldi nella tua banca. Collega il salvadanaio a un bucket del Piano per mostrare Già accantonato così l\'obiettivo chiede solo la parte mancante, e sposta i fondi reali a parte se la liquidità deve cambiare davvero conto.',
+    q: 'Le money box virtuali o i trasferimenti pianificati spostano soldi in banca?',
+    a: 'No. Money box virtuali e trasferimenti pianificati registrano obiettivi e intenzioni dentro lo strumento di pianificazione senza muovere denaro reale in banca. Collega una money box a un bucket per mostrare Già accantonato ed esegui a parte ogni movimento effettivo presso la banca.',
   },
 ];
 
@@ -37,24 +69,27 @@ export const Route = createFileRoute('/it/guide/previsione-flusso-di-cassa')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Come prevedere il flusso di cassa in Tracky',
+      title: 'Come prevedere il flusso di cassa personale in 5 passi · Tracky',
       description:
-        '5 passi: finanzia il piano, aggiungi spese pianificate, converti abbonamenti, leggi la prima data negativa, sistemala. Demo gratis.',
+        'Guida pratica in cinque passi alla previsione del flusso di cassa: saldi reali, impegni datati, sottoscrizioni attive, prima data negativa e riconciliazione.',
       locale: 'it',
       path: '/it/guide/previsione-flusso-di-cassa',
       ogImage: ogImageFor('guide-cashflow'),
       jsonLd: [
-        softwareAppJsonLd({ url: 'https://www.trytracky.app/it/guide/previsione-flusso-di-cassa', inLanguage: ['it', 'en'] }),
-        faqJsonLd(faq.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        softwareAppJsonLd({
+          url: 'https://www.trytracky.app/it/guide/previsione-flusso-di-cassa',
+          inLanguage: ['it', 'en'],
+        }),
+        faqJsonLd(guideCashFlowItFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         {
           '@context': 'https://schema.org',
           '@type': 'HowTo',
           name: 'Come prevedere il flusso di cassa in Tracky',
-          step: steps.map((s) => ({ '@type': 'HowToStep', name: s.t, text: s.p })),
+          step: guideSteps.map((step) => ({ '@type': 'HowToStep', name: step.title, text: step.body })),
         },
         breadcrumbJsonLd([
           { name: 'Home', path: '/it/' },
-          { name: 'Guide', path: '/it/guide/previsione-flusso-di-cassa' },
+          { name: 'Guida al flusso di cassa', path: '/it/guide/previsione-flusso-di-cassa' },
         ]),
       ],
     }),
@@ -62,74 +97,243 @@ export const Route = createFileRoute('/it/guide/previsione-flusso-di-cassa')({
 });
 
 function GuideIt() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <GuideCashFlowItView auth={auth} />;
+}
+
+export function GuideCashFlowItView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/guide/previsione-flusso-di-cassa">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Guida</span>
-            <span className="mk-badge">5 passi</span>
-            <span className="mk-badge">Demo gratis</span>
-          </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            Prevedi la cassa,
-            <br />
-            <span className="hl">5 passi.</span>
-          </h1>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>Vuoi una risposta chiara a una domanda sola: i tuoi soldi arriveranno al prossimo stipendio? Questa guida ti spiega come prevedere flusso di cassa in Tracky usando voci che conosci già.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>Parti dagli ultimi saldi dei conti liquidi, aggiungi spese ed entrate pianificate, includi le sottoscrizioni attive e leggi il calendario giorno per giorno. Vedi ogni impegno in ordine di data, individui il primo giorno in cui il saldo scenderebbe sotto zero e lo sistemi finché sei in tempo.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>Le proiezioni sono stime basate su voci note, non garanzie. Lavori nella demo gratuita, senza collegamento bancario. Segui i cinque passi qui sotto, tieni in ordine date e conti, e saprai con precisione quanto puoi spendere. Assegna ogni voce al conto giusto, con la sua data reale, così la proiezione resta completa.</p>
-        </Reveal>
-      </section>
-      <MarqueeBand items={['PRIMA IL PIANO', 'SPESE PIANIFICATE', 'ABBONAMENTI', 'DATA NEGATIVA', 'SISTEMA PRESTO']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {steps.map((s, i) => (
-          <Reveal key={s.t}>
-            <div className="mk-card" style={{ maxWidth: 760, margin: '0 auto 16px', minWidth: 0, transform: 'none' }}>
-              <div className="e">{i + 1}.</div>
-              <h3>{s.t.toUpperCase()}</h3>
-              <p>{s.p}</p>
+    <AtelierSite locale="it" auth={auth} currentPath="/it/guide/previsione-flusso-di-cassa">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Percorso di navigazione"
+              items={[
+                { label: 'Home', href: '/it/' },
+                { label: 'Guida al flusso di cassa' },
+              ]}
+            />
+
+            <ChipRow>
+              <Chip tone="cobalt">Guida pratica</Chip>
+              <Chip>5 passi concreti</Chip>
+              <Chip tone="sage">Stime, non garanzie</Chip>
+            </ChipRow>
+
+            <h1 className="mka-hero-headline">
+              Come prevedere il <span className="mka-accent-ink">flusso di cassa personale</span> prima che le scadenze si scontrino.
+            </h1>
+
+            <p className="mka-hero-dek">
+              Un budget mensile ti dice se le entrate totali coprono le spese totali. Una previsione del flusso di cassa
+              risponde alla domanda sui tempi: ci sarà abbastanza liquidità sul conto giusto nel giorno esatto in cui
+              passano affitto, rate ed estratto carta?
+            </p>
+
+            <div className="mka-hero-actions">
+              <a className="mka-btn-secondary" href="#steps">
+                Vai ai 5 passi ↓
+              </a>
+              <B2AppCta
+                auth={auth}
+                locale="it"
+                loggedInHref="/app/planning"
+                loggedInLabel="Apri il Flusso di cassa →"
+                loggedOutLabel="Costruisci il calendario nella demo →"
+              />
             </div>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Domande e risposte.</h2>
-        </Reveal>
-        {faq.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Conosci il buco. Evitalo.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · stime, non promesse</p>
-            <MagnetCta href={user ? '/app/planning' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Apri la cassa →' : 'Inizia gratis →'}
-            </MagnetCta>
           </div>
-        </Reveal>
+        </div>
       </section>
-    </MarketingSite>
+
+      {/* 2. EDUCATIONAL FOUNDATION */}
+      <Section id="why-timing-matters" tone="parchment">
+        <SectionHead
+          kicker="Perché contano le date"
+          title="Un mese può chiudere in positivo sulla carta e andare in rosso il giorno 2."
+          subtitle="Prevedere il flusso di cassa è aritmetica semplice in ordine cronologico — senza indovinare il futuro."
+        />
+
+        <div className="mka-editorial-grid">
+          <article className="mka-editorial-card">
+            <h3>L’ordine delle date cambia tutto</h3>
+            <p>
+              Immagina un conto corrente con <strong>€1.800</strong>, affitto da <strong>€900</strong> il giorno 2,
+              abbonamenti per <strong>€150</strong> a metà mese e stipendio da <strong>€2.200</strong> il 27. Con un
+              ciclo che parte il 25 lo stipendio entra prima; con un ciclo dal 1° le uscite portano il saldo a €750
+              prima dell’accredito.
+            </p>
+            <p>
+              Mettere gli impegni in sequenza cronologica reale mostra i cali temporanei che le medie mensili nascondono
+              del tutto.
+            </p>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Errori comuni da evitare</h3>
+            <ul className="mka-b2-prose-list">
+              <li>
+                <strong>Contare stipendi futuri come spendibili oggi:</strong> tratta le entrate attese come voci
+                future, mai come liquidità già spendibile.
+              </li>
+              <li>
+                <strong>Trattare il plafond della carta come contante:</strong> la spesa con carta crea debito; la vera
+                uscita di cassa avviene sul conto corrente alla data dell’estratto.
+              </li>
+              <li>
+                <strong>Dimenticare di riconciliare le bollette pagate:</strong> lasciare aperta una voce già addebitata
+                la sottrae due volte generando falsi allarmi.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </Section>
+
+      {/* 3. FIVE STEPS */}
+      <Section id="steps">
+        <SectionHead
+          kicker="Procedura passo passo"
+          title="Costruisci un calendario del flusso di cassa affidabile in cinque passi."
+          subtitle="Ogni proiezione è una stima di pianificazione costruita sulle voci note: aggiornala man mano che cambiano saldi e impegni."
+        />
+
+        <B2GuideSteps steps={guideSteps} stepPrefix="Passo" />
+      </Section>
+
+      {/* 4. HOW TRACKY HELPS */}
+      <Section id="how-tracky-helps" tone="parchment">
+        <SectionHead
+          kicker="Come ti aiuta Tracky"
+          title="Calendario Flusso di cassa e Disponibile dopo le spese inclusi nella demo gratis."
+          subtitle="Applica tutti e cinque i passi a €0 su trytracky.app con conti manuali e import CSV nel browser, oppure sul tuo server Docker self-hosted con licenza MIT."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Cosa automatizza Tracky con chiarezza</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Tutti gli impegni datati in un’unica cronologia</strong>
+                  <span>
+                    Riunisce entrate e uscite pianificate, sottoscrizioni attive, rate, estratti carta, trasferimenti
+                    pianificati e movimenti programmati una tantum dentro la finestra di ciclo scelta.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Prima data negativa e Disponibile dopo le spese</strong>
+                  <span>
+                    Evidenzia la prima data negativa proiettata per conto e sulla liquidità aggregata, mentre il{' '}
+                    <strong>Disponibile dopo le spese</strong> in Dashboard scala impegni residui e accantonamenti senza
+                    gonfiare il dato di oggi con stipendi futuri.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Promemoria in-app e riconciliazione pulita</strong>
+                  <span>
+                    Le spese pianificate generano promemoria in-app configurabili (tre giorni di anticipo di default,
+                    fino a quattro soglie), e collegare i pagamenti arrivati evita doppi conteggi.
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Confini trasparenti</h3>
+            <ul className="mka-check-list">
+              <li>Funziona nella demo ospitata senza richiedere credenziali bancarie</li>
+              <li>I saldi carta non alterano la liquidità; gli estratti gravano sul conto di regolamento</li>
+              <li>Le valute diverse restano visibili senza conversioni silenziose</li>
+              <li className="is-muted">Creare voci pianificate registra solo l’intenzione: i pagamenti reali restano in banca</li>
+              <li className="is-muted">Gli scenari Forecast pluriennali sono riservati a Pro (non in vendita oggi)</li>
+            </ul>
+
+            <div className="mka-trust-actions" style={{ marginTop: 'auto' }}>
+              <a className="mka-text-link" href="/it/funzioni/flusso-di-cassa">
+                Leggi tutti i dettagli del Flusso di cassa →
+              </a>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="cotton"
+        kicker="FAQ della guida"
+        title="Domande frequenti sulla previsione del flusso di cassa."
+        subtitle="Risposte pratiche su conti, sottoscrizioni e money box virtuali."
+        moreLink={{ href: '/it/domande-frequenti', label: 'Leggi tutte le FAQ →' }}
+        items={guideCashFlowItFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <B2RelatedSection
+        tone="parchment"
+        kicker="Continua a leggere"
+        title="Guide e funzioni collegate."
+        items={[
+          {
+            kicker: 'Funzione · Demo + Self-host',
+            title: 'Flusso di cassa in Tracky',
+            description: 'Approfondisci serie per conto, liquidità aggregata, righe non assegnate e controlli di ciclo.',
+            href: '/it/funzioni/flusso-di-cassa',
+            linkLabel: 'Scopri il Flusso di cassa →',
+          },
+          {
+            kicker: 'Guida pratica',
+            title: 'Come creare un budget zero-based',
+            description: 'Finanzia prima i bucket dalla liquidità osservata così il Flusso di cassa parte da numeri puliti.',
+            href: '/it/guide/budget-zero-based',
+            linkLabel: 'Leggi la guida Zero-based →',
+          },
+          {
+            kicker: 'Guida pratica',
+            title: 'Trova e cancella abbonamenti inutili',
+            description: 'Verifica quali addebiti ricorrenti meritano di entrare nella previsione ed elimina i doppioni prima del rinnovo.',
+            href: '/it/guide/cancella-abbonamenti-inutili',
+            linkLabel: 'Leggi la guida Sottoscrizioni →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Individua in anticipo il calo di cassa e intervieni con calma."
+        meta="Demo ospitata a €0 · Calendario Flusso di cassa e promemoria in-app inclusi · Stime, non garanzie"
+        primaryCta={
+          <B2AppCta
+            auth={auth}
+            locale="it"
+            loggedInHref="/app/planning"
+            loggedInLabel="Apri il Flusso di cassa →"
+            loggedOutLabel="Prova gratis la demo →"
+            variant="marigold"
+          />
+        }
+        secondaryCta={
+          <a className="mka-btn-outline-light" href="/it/funzioni/flusso-di-cassa">
+            Dettagli del Flusso di cassa →
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

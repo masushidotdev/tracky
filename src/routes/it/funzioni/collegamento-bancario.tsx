@@ -1,50 +1,69 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { MarketingAuth } from '@/components/marketing/site';
+import type { FaqItem } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  Breadcrumb,
+  Chip,
+  CodePlate,
+  FaqSection,
+  FinalCta,
+  FitCheck,
+  GITHUB_REPO_URL,
+  ScopePill,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import {
+  B2AppCta,
+  B2AvailabilityBand,
+  B2RelatedSection,
+  B2ScreenshotFigure,
+} from '@/components/marketing/atelier/b2-sections';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const INTRO = "Vuoi tenere traccia delle spese senza digitare ogni scontrino, e questa sincronizzazione banca PSD2 ti dà proprio questo sul tuo server. Colleghi la banca tramite Enable Banking, approvi l'accesso presso la tua banca e Tracky importa conti, saldi e movimenti. Non consegni mai le credenziali bancarie a Tracky e nessuno del team le vede.\n\nResti al comando anche dopo il collegamento. Dai a ogni conto un alias riconoscibile, nascondi i conti che non vuoi nei totali della Dashboard e disattivi la sincronizzazione per singolo conto senza perdere lo storico. Rinnovi il consenso quando la banca lo chiede e la cronologia delle importazioni mostra cosa è arrivato e cosa è stato scartato come duplicato.\n\nQuesta pagina dichiara subito un limite onesto. La sincronizzazione bancaria è solo self-host ed è disabilitata sulla demo ospitata, dove conti manuali e CSV tengono la scena. Sulla tua istanza usi le tue chiavi app Enable Banking e, se il provider non è configurato, il pulsante di collegamento resta disabilitato.\n\nHai comunque il quadro completo dove conta. Apri ogni conto di liquidità o credito nel suo registro e controlli Tutti i conti per la vista condivisa. Ogni conto conserva la propria valuta come comunicata dalla banca e i conti carta restano passività, mai liquidità.";
-
-const BLOCKS = [
-  { h: "Cosa fa la sincronizzazione banca PSD2",
-    p: "Colleghi la banca una volta e Tracky mantiene aggiornato il quadro dei tuoi soldi, con conti, snapshot dei saldi e movimenti raggruppati nella barra laterale come Liquidità, Credito e Prestiti. Apri qualsiasi conto di liquidità o credito per il suo registro dedicato, usi Tutti i conti per la vista condivisa e rinomini i conti con gli alias senza toccare i dati del provider. Nascondi i conti che vuoi escludere dai totali della Dashboard conservandoli, e aggiungi conti manuali per contanti, carte o prestiti che la banca non espone. Vedi sempre lo stato — attiva, disattivata, in errore o in attesa di rinnovo del consenso — così niente si aggiorna in silenzio.", },
-  { h: "Come funziona, passo passo",
-    p: "Apri Impostazioni → Connessioni bancarie e scegli la tua banca dall'elenco. Accedi e approvi l'accesso presso la tua banca, non dentro Tracky, poi torni e Tracky crea la connessione e importa i conti con valuta, stato e snapshot dei saldi. Lasci i controlli automatici ogni sei ore e richiedi un aggiornamento su qualsiasi conto quando vuoi dati freschi, rinnovando il consenso quando la banca lo chiede o quando vedi Ricollega. Controlli la cronologia delle importazioni quando i numeri sorprendono, perché mostra elementi visti e importati, e spesso i buchi sono duplicati scartati o dati non ancora pubblicati dalla banca.", },
-  { h: "Limiti onesti: solo self-host, disabilitata sulla demo",
-    p: "Meriti tutta la verità prima di cliccare, quindi ecco il badge: solo self-host; DISABILITATA sulla demo ospitata; porta le tue chiavi Enable Banking. Usi la sincronizzazione bancaria solo su un'istanza dove il provider è configurato con le tue chiavi app Enable Banking, e trovi il pulsante disabilitato ovunque manchino le chiavi. Esplori la demo ospitata con conti manuali e importazione CSV con mappatura delle colonne, un fallback onesto che funziona ovunque. Revochi l'accesso quando vuoi presso la tua banca e puoi disattivare la sincronizzazione per singolo conto dentro Tracky senza cancellare lo storico.", },
-  { h: "A chi è adatta",
-    p: "Ami l'automazione ma vuoi restare padrone dei tuoi dati e delle chiavi che li toccano. Gestisci Tracky in proprio o pensi di farlo, non ti spaventa creare un'app Enable Banking e aggiungerne le chiavi alla tua istanza, e hai conti presso banche che condividono dati via PSD2. Segui contanti, carte e prestiti affiancati e apprezzi alias, conti nascosti e registri per conto, con l'importazione CSV a coprire dove la sincronizzazione non arriva. Se ti riconosci, installa Tracky in self-host, collega la banca e rinnova il consenso senza drammi quando scade.", },
-];
-
-const PAGE_FAQ = [
-  { q: "Questa sincronizzazione banca PSD2 funziona sulla demo ospitata?",
-    a: "No. La sincronizzazione è solo self-host e resta DISABILITATA sulla demo ospitata per scelta. Esplori la demo con conti manuali e importazione CSV. Le connessioni live funzionano solo sulla tua istanza, dove configuri il provider con le tue chiavi app Enable Banking.", },
-  { q: "Tracky conserva le mie credenziali bancarie?",
-    a: "No. Ti autentichi e approvi l'accesso presso la tua banca tramite Enable Banking. Tracky non chiede mai le tue credenziali bancarie e nessuno del team le vede. Puoi revocare l'accesso presso la banca in qualsiasi momento e puoi anche disattivare la sincronizzazione per singolo conto dentro Tracky.", },
-  { q: "Cosa faccio quando una sincronizzazione fallisce?",
-    a: "Rinnova prima il consenso quando vedi Ricollega o Autorizzazione richiesta. Apri il dettaglio del job quando lo stato è errore, poi riprova più tardi. Aggiornamenti ripetuti non forzano la banca a pubblicare nuovi dati. La disponibilità dipende comunque dalla banca, anche quando la connessione sembra sana.", },
-  { q: "Posso rinominare, nascondere o mettere in pausa un conto?",
-    a: "Sì. Imposti un alias per cambiare il nome visualizzato senza modificare i dati del provider. Nascondi i conti che vuoi escludere dai totali della Dashboard, conservandoli e ripristinandoli facilmente. Disattivi la sincronizzazione per singolo conto per fermare i futuri aggiornamenti mantenendo tutto lo storico.", },
-  { q: "Quali conti vengono importati?",
-    a: "Dipende da cosa la tua banca condivide tramite Enable Banking. Tracky importa solo conti, saldi e movimenti forniti dall'istituto. Copri i buchi con conti manuali e importazione CSV con mappatura delle colonne. Quando il provider non è configurato su un'istanza, il pulsante di collegamento resta disabilitato.", },
+export const bankConnectionsItFaq: Array<FaqItem> = [
+  {
+    q: 'La sincronizzazione bancaria PSD2 funziona sulla demo ospitata?',
+    a: 'No. Il collegamento bancario è solo self-host e resta disattivato sulla demo ospitata per scelta. Su trytracky.app lavori con conti manuali e import CSV nel browser. Le connessioni live funzionano solo sulla tua istanza dopo aver configurato app ID, chiave PEM e URL di callback HTTPS di Enable Banking.',
+  },
+  {
+    q: 'Tracky conserva o vede mai le mie credenziali bancarie?',
+    a: 'No. Autenticazione e consenso avvengono direttamente sul sito della tua banca tramite Enable Banking. Tracky non chiede mai username o password bancari e i maintainer non vedono mai le tue chiavi o credenziali. Puoi revocare il consenso quando vuoi presso la banca e disattivare la sincronizzazione per singolo conto in Tracky.',
+  },
+  {
+    q: 'Con quale frequenza viene valutata la sincronizzazione automatica?',
+    a: 'La sincronizzazione automatica viene valutata ogni sei ore, e puoi anche richiedere un aggiornamento manuale su qualsiasi conto collegato. La disponibilità effettiva dei dati dipende comunque dai tempi di pubblicazione della tua banca.',
+  },
+  {
+    q: 'Cosa devo fare se una sincronizzazione va in errore o chiede una nuova autorizzazione?',
+    a: 'Se vedi Ricollega o Autorizzazione richiesta, rinnova prima il consenso presso la banca. Se lo stato è errore, apri il dettaglio del job nella cronologia e riprova più tardi: avviare molti aggiornamenti ripetuti non forza la banca a pubblicare nuovi dati.',
+  },
+  {
+    q: 'Posso rinominare, nascondere o mettere in pausa un conto collegato senza perdere lo storico?',
+    a: 'Sì. Puoi impostare un alias per cambiare il nome visualizzato senza toccare i dati del provider, nascondere un conto per escluderlo dai totali della Dashboard mantenendolo salvato, oppure disattivare la sincronizzazione per singolo conto fermando i futuri aggiornamenti senza cancellare lo storico.',
+  },
 ];
 
 export const Route = createFileRoute('/it/funzioni/collegamento-bancario')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Collegamento bancario PSD2, le tue chiavi · Tracky',
+      title: 'Collegamento bancario PSD2 self-hosted via Enable Banking · Tracky',
       description:
-        'Tracky sincronizza le banche via Enable Banking con consenso in banca. Usa le tue chiavi app sul self-host; disabilitato sulla demo.',
+        'Collega le banche via Enable Banking sulla tua istanza self-hosted con le tue chiavi app. Disattivato sulla demo ospitata; CSV disponibile ovunque.',
       locale: 'it',
       path: '/it/funzioni/collegamento-bancario',
       ogImage: ogImageFor('feature-banksync'),
       jsonLd: [
-        softwareAppJsonLd({ url: 'https://www.trytracky.app/it/funzioni/collegamento-bancario', inLanguage: ['it', 'en'] }),
-        faqJsonLd(PAGE_FAQ.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        softwareAppJsonLd({
+          url: 'https://www.trytracky.app/it/funzioni/collegamento-bancario',
+          inLanguage: ['it', 'en'],
+        }),
+        faqJsonLd(bankConnectionsItFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/it/' },
           { name: 'Collegamento bancario', path: '/it/funzioni/collegamento-bancario' },
@@ -55,82 +74,325 @@ export const Route = createFileRoute('/it/funzioni/collegamento-bancario')({
 });
 
 function BankIt() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <BankConnectionsItView auth={auth} />;
+}
+
+export function BankConnectionsItView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/funzioni/collegamento-bancario">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Self-host</span>
-            <span className="mk-badge">Disabilitato sulla demo</span>
+    <AtelierSite locale="it" auth={auth} currentPath="/it/funzioni/collegamento-bancario">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Percorso di navigazione"
+              items={[{ label: 'Home', href: '/it/' }, { label: 'Collegamento bancario' }]}
+            />
+
+            <div className="mka-b2-hero-badges">
+              <ScopePill scope="selfhost" label="Solo self-host" />
+              <Chip>Disattivato sulla demo ospitata</Chip>
+              <Chip tone="cobalt">Con le tue chiavi Enable Banking</Chip>
+            </div>
+
+            <h1 className="mka-hero-headline">
+              Sincronizzazione bancaria PSD2 via Enable Banking —{' '}
+              <span className="mka-accent-ink">sul tuo server, con le tue chiavi.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Collega le banche supportate sulla tua istanza Tracky self-hosted usando il tuo app ID e la tua chiave
+              privata PEM di Enable Banking. Il consenso avviene direttamente presso la tua banca, la sincronizzazione
+              automatica viene valutata ogni sei ore, mentre conti manuali e import CSV nel browser coprono la demo
+              ospitata e qualsiasi banca non supportata.
+            </p>
+
+            <div className="mka-hero-actions">
+              <a className="mka-btn-primary mka-btn-primary--lg" href="/it/blog/self-hosting-tracky-docker">
+                Self-host con Docker →
+              </a>
+              <B2AppCta
+                auth={auth}
+                locale="it"
+                loggedInHref="/app"
+                loggedInLabel="Apri la demo →"
+                loggedOutLabel="Prova la demo con CSV →"
+                variant="primary"
+              />
+            </div>
+
+            <p className="mka-hero-meta">
+              <span>Consenso PSD2 in sola lettura</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>Revocabile quando vuoi in banca</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>I maintainer non vedono mai le tue credenziali</span>
+            </p>
           </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            La banca,
-            <br />
-            <span className="stroke">le tue</span> <span className="hl">chiavi.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            La sync passa da <b>Enable Banking</b>: il consenso avviene in banca, Tracky importa conti, saldi e
-            movimenti. Ogni utente collega <b>la propria app e le proprie chiavi</b> — nessuno vede le credenziali. Se
-            il provider non è configurato, il collegamento resta disabilitato. La demo non ce l'ha: conti manuali + CSV
-            fanno tutto.
-          </p>
-        </Reveal>
-        <Reveal>
-          <MagnetCta href="https://github.com/masushidotdev/tracky" variant="pill">
-            Self-host con sync →
-          </MagnetCta>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>{INTRO}</p>
-        </Reveal>
+        </div>
       </section>
-      <MarqueeBand items={['CONSENSO PSD2', 'LE TUE CHIAVI', 'REVOCABILE SEMPRE', 'FALLBACK CSV', 'NESSUNA CREDENZIALE SALVATA']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <figure className="mk-shot">
-            <img src="/shots/import-mapping.png" alt="Mappatura colonne CSV di Tracky: il fallback manuale quando la sync non è disponibile" width={1440} height={800} loading="lazy" />
-            <figcaption>Il fallback onesto: mappatura colonne CSV. Funziona ovunque, demo inclusa.</figcaption>
-          </figure>
-        </Reveal>
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {BLOCKS.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            <p className="mk-sub" style={{ maxWidth: 700 }}>{block.p}</p>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>Domande e risposte.</h2>
-        </Reveal>
-        {PAGE_FAQ.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Sync dove lo ospiti. CSV ovunque.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Repo MIT · le tue chiavi · revocabile</p>
-            <MagnetCta href="https://github.com/masushidotdev/tracky">Leggi il codice →</MagnetCta>
+
+      {/* 2. EXPLICIT AVAILABILITY */}
+      <Section id="availability" tone="parchment">
+        <SectionHead
+          kicker="Dove gira"
+          title="Disattivato sulla demo ospitata; opzionale sulla tua istanza Docker."
+          subtitle="Lo dichiariamo subito: le credenziali Enable Banking appartengono a chi gestisce la singola istanza, mai a una demo pubblica condivisa."
+        />
+
+        <B2AvailabilityBand
+          demoTone="default"
+          demoBadge="Disattivato sulla demo"
+          demoTitle="Demo ospitata (trytracky.app)"
+          demoBody="Il pulsante di collegamento resta disabilitato su trytracky.app. Puoi provare ogni funzione di Piano zero-based, Flusso di cassa e Report usando conti manuali e import CSV nel browser, senza condividere credenziali bancarie."
+          selfHostTone="cobalt"
+          selfHostBadge="Opzionale · Le tue chiavi"
+          selfHostTitle="Self-hosted Docker (MIT)"
+          selfHostBody={
+            <>
+              Configura il tuo app ID Enable Banking, la chiave privata PEM e l’URL di callback HTTPS tramite le
+              variabili <code>ENABLE_BANKING_*</code> sincronizzate al backend Convex locale. Dietro reverse proxy, la
+              porta <code>3211</code> gestisce i callback in ingresso.
+            </>
+          }
+        />
+      </Section>
+
+      {/* 3. HOW IT WORKS & ACCOUNT CONTROLS */}
+      <Section id="how-it-works">
+        <SectionHead
+          kicker="Flusso e controlli"
+          title="Richieste firmate al provider, cronologia dei job e controlli per singolo conto."
+          subtitle="Anche dopo aver collegato la banca, decidi tu quali conti entrano nei totali della Dashboard, come chiamarli e quando sincronizzarli."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Dal consenso bancario ai registri puliti</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Approva l’accesso direttamente in banca</strong>
+                  <span>
+                    Apri <strong>Impostazioni → Connessioni bancarie</strong>, scegli il tuo istituto e completa
+                    autenticazione e consenso sulla pagina della banca. Al ritorno Tracky crea la connessione e pianifica
+                    le prime importazioni.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Sincronizzazione automatica valutata ogni sei ore</strong>
+                  <span>
+                    La sincronizzazione automatica viene valutata ogni sei ore, con possibilità di richiedere un
+                    aggiornamento manuale su qualsiasi conto. Lo stato distingue chiaramente attiva, disattivata, in
+                    errore o con consenso da rinnovare.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Cronologia dei job con riconoscimento duplicati</strong>
+                  <span>
+                    Controlla nella cronologia quanti elementi sono stati visti e quanti importati: un numero minore di
+                    voci importate indica di solito che i duplicati già presenti sono stati riconosciuti e saltati.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--vermilion" aria-hidden="true">
+                  04
+                </span>
+                <div>
+                  <strong>Regole coerenti su saldi e valute</strong>
+                  <span>
+                    Tracky usa lo snapshot più recente preferendo il saldo disponibile, poi il contabilizzato, poi
+                    l’atteso. I conti CARD restano sempre passività — mai liquidità — e ogni conto mantiene la valuta
+                    comunicata dalla banca.
+                  </span>
+                </div>
+              </li>
+            </ul>
           </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Barra laterale e controlli per conto</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  NAV
+                </span>
+                <div>
+                  <strong>Raggruppati in Liquidità, Credito e Prestiti</strong>
+                  <span>
+                    Apri qualsiasi conto di liquidità o credito per vedere solo i suoi movimenti, apri un prestito per
+                    la sua pagina dedicata oppure usa <strong>Tutti i conti</strong> per il registro condiviso.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  CTRL
+                </span>
+                <div>
+                  <strong>Alias, visibilità e pausa per singolo conto</strong>
+                  <span>
+                    Imposta un alias leggibile senza alterare i dati del provider, nascondi i conti che vuoi escludere
+                    dai totali della Dashboard o disattiva la sincronizzazione di un conto conservando tutto lo storico.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  KEY
+                </span>
+                <div>
+                  <strong>Variabili d’ambiente self-host</strong>
+                  <span>
+                    Enable Banking resta spento finché non inserisci le tue credenziali provider e un dominio HTTPS
+                    pubblico per i callback nel file <code>.env</code>.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <CodePlate
+              ariaLabel="Prerequisiti Enable Banking per il self-hosting"
+              lines={[
+                { text: '# Sulla tua istanza Docker self-hosted (vedi docs/self-hosting.it.md)', comment: true },
+                { text: 'ENABLE_BANKING_*  # App ID, chiave privata PEM e callback HTTPS' },
+                { text: 'docker compose up -d' },
+              ]}
+            />
+
+            <div className="mka-trust-actions">
+              <a
+                className="mka-text-link"
+                href={`${GITHUB_REPO_URL}/blob/main/docs/self-hosting.it.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Leggi docs/self-hosting.it.md ↗
+              </a>
+              <a className="mka-text-link" href="/it/open-source">
+                Panoramica architettura →
+              </a>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* 4. HONEST FALLBACK SCREENSHOT */}
+      <Section id="csv-fallback" tone="parchment">
+        <SectionHead
+          kicker="Funziona ovunque"
+          title="Il fallback onesto: import CSV elaborato nel browser."
+          subtitle="Sia sulla demo ospitata sia per istituti che non espongono dati via PSD2, conti manuali e mappatura guidata CSV mantengono completo il registro."
+        />
+
+        <B2ScreenshotFigure
+          src="/shots/import-mapping.png"
+          alt="Schermata di mappatura colonne CSV di Tracky (interfaccia in inglese) con data contabile, descrizione, controparte e colonne importo per un conto manuale"
+          width={1440}
+          height={800}
+          captionTitle="Mappatura guidata colonne CSV"
+          captionBody="I file CSV vengono letti e validati in locale nel tuo browser con supporto per quattro formati data, virgola o punto decimale e salto idempotente dei duplicati — senza alcuna credenziale bancaria."
+        />
+      </Section>
+
+      {/* 5. FIT CHECK */}
+      <Section id="fit">
+        <SectionHead
+          kicker="Verifica trasparente"
+          title="Quando vale la pena configurare il sync bancario in self-host."
+        />
+
+        <FitCheck
+          yesTitle="Fa per te se…"
+          yesItems={[
+            'Gestisci (o prevedi di gestire) Tracky sul tuo host Docker dietro HTTPS e vuoi importazioni PSD2 automatiche in sola lettura.',
+            'Ti trovi a tuo agio nel registrare una tua app Enable Banking e custodire la tua chiave di firma PEM.',
+            'Vuoi alias per conto, pausa/nascondi e cronologia dei job affiancati a conti manuali e import CSV.',
+          ]}
+          noTitle="Non fa per te se…"
+          noItems={[
+            'Cerchi connessioni bancarie chiavi in mano su cloud ospitato senza fare self-hosting né configurare le tue chiavi.',
+            'Ti aspetti che l’app disponga bonifici o pagamenti: le connessioni Enable Banking in Tracky sono solo in lettura.',
+            'Vuoi un’istanza puramente locale senza un endpoint HTTPS pubblico per i callback OAuth bancari.',
+          ]}
+        />
+      </Section>
+
+      {/* 6. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="parchment"
+        kicker="FAQ sul collegamento bancario"
+        title="Domande su consenso PSD2, chiavi e stato della sincronizzazione."
+        subtitle="Verificato rispetto a docs/self-hosting.it.md e alle guide sui conti."
+        moreLink={{ href: '/it/domande-frequenti', label: 'Leggi tutte le FAQ →' }}
+        items={bankConnectionsItFaq}
+      />
+
+      {/* 7. RELATED LINKS */}
+      <B2RelatedSection
+        tone="cotton"
+        kicker="Continua a esplorare"
+        title="Self-hosting e flussi manuali."
+        items={[
+          {
+            kicker: 'Guida self-hosting',
+            title: 'Self-hosting di Tracky con Docker',
+            description: 'Guida passo passo con Docker Compose, WorkOS AuthKit, reverse proxy TLS e backup.',
+            href: '/it/blog/self-hosting-tracky-docker',
+            linkLabel: 'Leggi la guida Docker →',
+          },
+          {
+            kicker: 'Funzione · Solo self-host',
+            title: 'Analyst AI con scritture approvate',
+            description: 'Interroga il tuo registro autorizzato in linguaggio naturale sulla tua istanza self-hosted con la tua chiave AI gateway.',
+            href: '/it/funzioni/analyst-ai',
+            linkLabel: 'Scopri Analyst AI →',
+          },
+          {
+            kicker: 'Panoramica',
+            title: 'Prezzi e confronto Demo vs Self-host',
+            description: 'Confronta ogni funzione fianco a fianco tra trytracky.app e un’installazione Docker self-hosted.',
+            href: '/it/prezzi',
+            linkLabel: 'Vedi il confronto →',
+          },
+        ]}
+      />
+
+      {/* 8. FINAL CTA */}
+      <FinalCta
+        headline="Sincronizza sul tuo server. Importa CSV ovunque."
+        meta="Open source MIT · Le tue chiavi Enable Banking · Consenso revocabile sempre"
+        primaryCta={
+          <a className="mka-btn-marigold" href="/it/blog/self-hosting-tracky-docker">
+            Leggi la guida self-host Docker →
+          </a>
+        }
+        secondaryCta={
+          <a className="mka-btn-outline-light" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+            Esplora il repo MIT ↗
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }
