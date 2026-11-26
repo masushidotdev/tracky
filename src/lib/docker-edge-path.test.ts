@@ -8,6 +8,7 @@ describe('isBlockedEdgePath', () => {
     expect(isBlockedEdgePath('/pricing')).toBe(false);
     expect(isBlockedEdgePath('/sitemap.xml')).toBe(false);
     expect(isBlockedEdgePath('/blog/tracky-v0-1-0')).toBe(false);
+    expect(isBlockedEdgePath('/blog/self-hosting-tracky-docker')).toBe(false);
     expect(isBlockedEdgePath('/docs/cdn-cgi')).toBe(false);
     expect(isBlockedEdgePath('/cdn-cginfo')).toBe(false);
     expect(isBlockedEdgePath('/app?next=/cdn-cgi/local/scheduled')).toBe(false);

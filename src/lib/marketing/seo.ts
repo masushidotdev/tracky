@@ -140,6 +140,7 @@ const OG_FILES: Record<string, string> = {
   'guide-cashflow': 'og-guide-cashflow.png',
   'guide-subscriptions': 'og-guide-subscriptions.png',
   'blog-v0-1-0': 'og-blog-v0-1-0.png',
+  'blog-self-hosting-docker': 'og-blog-self-hosting-docker.png',
 };
 
 export function ogImageFor(key: string): string {

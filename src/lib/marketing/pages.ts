@@ -107,10 +107,17 @@ export const marketingPages: Array<MarketingPage> = [
     priority: 0.8,
     changefreq: 'monthly',
   },
+  {
+    key: 'blog-self-hosting-docker',
+    en: '/blog/self-hosting-tracky-docker',
+    it: '/it/blog/self-hosting-tracky-docker',
+    priority: 0.8,
+    changefreq: 'monthly',
+  },
 ];
 
 /** Bump when marketing copy changes; used as sitemap lastmod. */
-export const MARKETING_LASTMOD = '2026-11-24';
+export const MARKETING_LASTMOD = '2026-11-26';
 
 export function alternateFor(path: string): { en: string; it: string } | null {
   const page = marketingPages.find((entry) => entry.en === path || entry.it === path);
