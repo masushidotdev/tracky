@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
-import type { MarketingAuth } from '@/components/marketing/site';
-import type { FaqItem } from '@/components/marketing/atelier';
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
 import {
   AtelierSite,
   Breadcrumb,

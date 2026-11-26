@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
-import type { MarketingAuth } from '@/components/marketing/site';
-import type { ComparisonRow, FaqItem, ProofTabItem, StepItem } from '@/components/marketing/atelier';
+import type { ComparisonRow, FaqItem, MarketingAuth, ProofTabItem, StepItem } from '@/components/marketing/atelier';
 import {
   AtelierSite,
   AuthCta,

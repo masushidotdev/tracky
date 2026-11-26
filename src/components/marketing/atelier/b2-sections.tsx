@@ -4,7 +4,7 @@ import '../../../styles/marketing/b2-pages.css';
 import { Chip, Section, SectionHead } from './primitives';
 
 import type { StampTone } from './primitives';
-import type { MarketingAuth } from '@/components/marketing/site';
+import type { MarketingAuth } from './types';
 import type { AppLocale } from '@/lib/i18n';
 import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 

@@ -1,3 +1,4 @@
+export type { MarketingAuth } from './types';
 export { AtelierSite, GITHUB_REPO_URL } from './shell';
 export type { AtelierSiteProps } from './shell';
 export {

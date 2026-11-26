@@ -3,7 +3,7 @@ import * as React from 'react';
 import { FeatureSpotIcon, FitIcon, PosterCornerMotifs, StepIcon } from './brand';
 
 import type { FeatureSpotKind, StepIconKind } from './brand';
-import type { MarketingAuth } from '@/components/marketing/site';
+import type { MarketingAuth } from './types';
 import type { AppLocale } from '@/lib/i18n';
 import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
