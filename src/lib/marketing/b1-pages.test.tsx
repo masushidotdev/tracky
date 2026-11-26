@@ -1,9 +1,10 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test } from 'vitest';
 
 import { marketingPages } from './pages';
+import { extractVisibleText } from './test-html';
 import { Route as FaqEnRoute, FaqEnView, faqEnItems } from '@/routes/faq';
 import { Route as FaqItRoute, FaqItView, faqItItems } from '@/routes/it/domande-frequenti';
 import { Route as OpenSourceEnRoute, OpenSourceEnView, openSourceEnFaq } from '@/routes/open-source';
@@ -40,20 +41,6 @@ const loggedInAuth = {
 };
 
 const knownMarketingPaths = new Set(marketingPages.flatMap((page) => [page.en, page.it]));
-
-function decodeEntities(html: string): string {
-  return html
-    .replaceAll('&amp;', '&')
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>')
-    .replaceAll('&quot;', '"')
-    .replaceAll('&#x27;', "'")
-    .replaceAll('&#39;', "'");
-}
-
-function stripTags(html: string): string {
-  return decodeEntities(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
-}
 
 const forbiddenCopyPatterns = [
   /90\s*days/i,
@@ -285,10 +272,10 @@ describe('Atelier Phase b1 marketing pages (14 routes EN/IT)', () => {
         const block = match[1];
         const summaryMatch = block.match(/<summary>([\s\S]*?)<\/summary>/);
         const bodyMatch = block.match(/<p class="mka-faq-body">([\s\S]*?)<\/p>/);
-        const visibleQuestion = stripTags(summaryMatch?.[1] ?? '')
+        const visibleQuestion = extractVisibleText(summaryMatch?.[1] ?? '')
           .replace(/^\d+\s*/, '')
           .replace(/\s*\+$/, '');
-        const visibleAnswer = stripTags(bodyMatch?.[1] ?? '');
+        const visibleAnswer = extractVisibleText(bodyMatch?.[1] ?? '');
 
         expect(visibleQuestion).toBe(faqLd?.mainEntity[idx].name);
         expect(visibleAnswer).toBe(faqLd?.mainEntity[idx].acceptedAnswer.text);
