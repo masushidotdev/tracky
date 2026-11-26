@@ -20,6 +20,7 @@ import { Route as OpenSourceRouteImport } from './routes/open-source'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as VsSpreadsheetsRouteImport } from './routes/vs-spreadsheets'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
+import { Route as BlogSelfHostingTrackyDockerRouteImport } from './routes/blog/self-hosting-tracky-docker'
 import { Route as BlogTrackyV010RouteImport } from './routes/blog/tracky-v0-1-0'
 import { Route as FeaturesAiAnalystRouteImport } from './routes/features/ai-analyst'
 import { Route as FeaturesBankConnectionsRouteImport } from './routes/features/bank-connections'
@@ -36,6 +37,7 @@ import { Route as ItPerCoppieEFamiglieRouteImport } from './routes/it/per-coppie
 import { Route as ItPerFreelanceEPartitaIvaRouteImport } from './routes/it/per-freelance-e-partita-iva'
 import { Route as ItPrezziRouteImport } from './routes/it/prezzi'
 import { Route as ItVsFogliDiCalcoloRouteImport } from './routes/it/vs-fogli-di-calcolo'
+import { Route as ItBlogSelfHostingTrackyDockerRouteImport } from './routes/it/blog/self-hosting-tracky-docker'
 import { Route as ItBlogTrackyV010RouteImport } from './routes/it/blog/tracky-v0-1-0'
 import { Route as ItFunzioniAnalystAiRouteImport } from './routes/it/funzioni/analyst-ai'
 import { Route as ItFunzioniCollegamentoBancarioRouteImport } from './routes/it/funzioni/collegamento-bancario'
@@ -123,6 +125,12 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/_app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const BlogSelfHostingTrackyDockerRoute =
+  BlogSelfHostingTrackyDockerRouteImport.update({
+    id: '/blog/self-hosting-tracky-docker',
+    path: '/blog/self-hosting-tracky-docker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogTrackyV010Route = BlogTrackyV010RouteImport.update({
   id: '/blog/tracky-v0-1-0',
   path: '/blog/tracky-v0-1-0',
@@ -206,6 +214,12 @@ const ItVsFogliDiCalcoloRoute = ItVsFogliDiCalcoloRouteImport.update({
   path: '/it/vs-fogli-di-calcolo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ItBlogSelfHostingTrackyDockerRoute =
+  ItBlogSelfHostingTrackyDockerRouteImport.update({
+    id: '/it/blog/self-hosting-tracky-docker',
+    path: '/it/blog/self-hosting-tracky-docker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ItBlogTrackyV010Route = ItBlogTrackyV010RouteImport.update({
   id: '/it/blog/tracky-v0-1-0',
   path: '/it/blog/tracky-v0-1-0',
@@ -408,6 +422,7 @@ export interface FileRoutesByFullPath {
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
+  '/blog/self-hosting-tracky-docker': typeof BlogSelfHostingTrackyDockerRoute
   '/blog/tracky-v0-1-0': typeof BlogTrackyV010Route
   '/features/ai-analyst': typeof FeaturesAiAnalystRoute
   '/features/bank-connections': typeof FeaturesBankConnectionsRoute
@@ -424,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
   '/it/': typeof ItIndexRoute
+  '/it/blog/self-hosting-tracky-docker': typeof ItBlogSelfHostingTrackyDockerRoute
   '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
   '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
   '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
@@ -468,6 +484,7 @@ export interface FileRoutesByTo {
   '/open-source': typeof OpenSourceRoute
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
+  '/blog/self-hosting-tracky-docker': typeof BlogSelfHostingTrackyDockerRoute
   '/blog/tracky-v0-1-0': typeof BlogTrackyV010Route
   '/features/ai-analyst': typeof FeaturesAiAnalystRoute
   '/features/bank-connections': typeof FeaturesBankConnectionsRoute
@@ -484,6 +501,7 @@ export interface FileRoutesByTo {
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
   '/it': typeof ItIndexRoute
+  '/it/blog/self-hosting-tracky-docker': typeof ItBlogSelfHostingTrackyDockerRoute
   '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
   '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
   '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
@@ -529,6 +547,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/vs-spreadsheets': typeof VsSpreadsheetsRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
+  '/blog/self-hosting-tracky-docker': typeof BlogSelfHostingTrackyDockerRoute
   '/blog/tracky-v0-1-0': typeof BlogTrackyV010Route
   '/features/ai-analyst': typeof FeaturesAiAnalystRoute
   '/features/bank-connections': typeof FeaturesBankConnectionsRoute
@@ -545,6 +564,7 @@ export interface FileRoutesById {
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
   '/it/': typeof ItIndexRoute
+  '/it/blog/self-hosting-tracky-docker': typeof ItBlogSelfHostingTrackyDockerRoute
   '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
   '/it/funzioni/analyst-ai': typeof ItFunzioniAnalystAiRoute
   '/it/funzioni/collegamento-bancario': typeof ItFunzioniCollegamentoBancarioRoute
@@ -591,6 +611,7 @@ export interface FileRouteTypes {
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
+    | '/blog/self-hosting-tracky-docker'
     | '/blog/tracky-v0-1-0'
     | '/features/ai-analyst'
     | '/features/bank-connections'
@@ -607,6 +628,7 @@ export interface FileRouteTypes {
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
     | '/it/'
+    | '/it/blog/self-hosting-tracky-docker'
     | '/it/blog/tracky-v0-1-0'
     | '/it/funzioni/analyst-ai'
     | '/it/funzioni/collegamento-bancario'
@@ -651,6 +673,7 @@ export interface FileRouteTypes {
     | '/open-source'
     | '/pricing'
     | '/vs-spreadsheets'
+    | '/blog/self-hosting-tracky-docker'
     | '/blog/tracky-v0-1-0'
     | '/features/ai-analyst'
     | '/features/bank-connections'
@@ -667,6 +690,7 @@ export interface FileRouteTypes {
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
     | '/it'
+    | '/it/blog/self-hosting-tracky-docker'
     | '/it/blog/tracky-v0-1-0'
     | '/it/funzioni/analyst-ai'
     | '/it/funzioni/collegamento-bancario'
@@ -711,6 +735,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/vs-spreadsheets'
     | '/_authenticated/_app'
+    | '/blog/self-hosting-tracky-docker'
     | '/blog/tracky-v0-1-0'
     | '/features/ai-analyst'
     | '/features/bank-connections'
@@ -727,6 +752,7 @@ export interface FileRouteTypes {
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
     | '/it/'
+    | '/it/blog/self-hosting-tracky-docker'
     | '/it/blog/tracky-v0-1-0'
     | '/it/funzioni/analyst-ai'
     | '/it/funzioni/collegamento-bancario'
@@ -773,6 +799,7 @@ export interface RootRouteChildren {
   OpenSourceRoute: typeof OpenSourceRoute
   PricingRoute: typeof PricingRoute
   VsSpreadsheetsRoute: typeof VsSpreadsheetsRoute
+  BlogSelfHostingTrackyDockerRoute: typeof BlogSelfHostingTrackyDockerRoute
   BlogTrackyV010Route: typeof BlogTrackyV010Route
   FeaturesAiAnalystRoute: typeof FeaturesAiAnalystRoute
   FeaturesBankConnectionsRoute: typeof FeaturesBankConnectionsRoute
@@ -789,6 +816,7 @@ export interface RootRouteChildren {
   ItPrezziRoute: typeof ItPrezziRoute
   ItVsFogliDiCalcoloRoute: typeof ItVsFogliDiCalcoloRoute
   ItIndexRoute: typeof ItIndexRoute
+  ItBlogSelfHostingTrackyDockerRoute: typeof ItBlogSelfHostingTrackyDockerRoute
   ItBlogTrackyV010Route: typeof ItBlogTrackyV010Route
   ItFunzioniAnalystAiRoute: typeof ItFunzioniAnalystAiRoute
   ItFunzioniCollegamentoBancarioRoute: typeof ItFunzioniCollegamentoBancarioRoute
@@ -878,6 +906,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/blog/self-hosting-tracky-docker': {
+      id: '/blog/self-hosting-tracky-docker'
+      path: '/blog/self-hosting-tracky-docker'
+      fullPath: '/blog/self-hosting-tracky-docker'
+      preLoaderRoute: typeof BlogSelfHostingTrackyDockerRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/blog/tracky-v0-1-0': {
       id: '/blog/tracky-v0-1-0'
@@ -989,6 +1024,13 @@ declare module '@tanstack/react-router' {
       path: '/it/vs-fogli-di-calcolo'
       fullPath: '/it/vs-fogli-di-calcolo'
       preLoaderRoute: typeof ItVsFogliDiCalcoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/blog/self-hosting-tracky-docker': {
+      id: '/it/blog/self-hosting-tracky-docker'
+      path: '/it/blog/self-hosting-tracky-docker'
+      fullPath: '/it/blog/self-hosting-tracky-docker'
+      preLoaderRoute: typeof ItBlogSelfHostingTrackyDockerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/it/blog/tracky-v0-1-0': {
@@ -1340,6 +1382,7 @@ const rootRouteChildren: RootRouteChildren = {
   OpenSourceRoute: OpenSourceRoute,
   PricingRoute: PricingRoute,
   VsSpreadsheetsRoute: VsSpreadsheetsRoute,
+  BlogSelfHostingTrackyDockerRoute: BlogSelfHostingTrackyDockerRoute,
   BlogTrackyV010Route: BlogTrackyV010Route,
   FeaturesAiAnalystRoute: FeaturesAiAnalystRoute,
   FeaturesBankConnectionsRoute: FeaturesBankConnectionsRoute,
@@ -1356,6 +1399,7 @@ const rootRouteChildren: RootRouteChildren = {
   ItPrezziRoute: ItPrezziRoute,
   ItVsFogliDiCalcoloRoute: ItVsFogliDiCalcoloRoute,
   ItIndexRoute: ItIndexRoute,
+  ItBlogSelfHostingTrackyDockerRoute: ItBlogSelfHostingTrackyDockerRoute,
   ItBlogTrackyV010Route: ItBlogTrackyV010Route,
   ItFunzioniAnalystAiRoute: ItFunzioniAnalystAiRoute,
   ItFunzioniCollegamentoBancarioRoute: ItFunzioniCollegamentoBancarioRoute,

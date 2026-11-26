@@ -39,6 +39,7 @@ const cards = {
   'og-guide-cashflow': ['Forecast cash, 5 steps.', 'Tracky* — guide'],
   'og-guide-subscriptions': ['Hunt subs, 5 steps.', 'Tracky* — guide'],
   'og-blog-v0-1-0': ['Tracky v0.1.0 is out.', 'Tracky* — release'],
+  'og-blog-self-hosting-docker': ['Your money. Your server.', 'Tracky* — self-hosting guide'],
 };
 
 if (!accountId || !apiToken) {

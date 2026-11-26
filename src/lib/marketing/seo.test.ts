@@ -35,8 +35,8 @@ describe('marketing pages registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  test('inventory covers 16 pages (32 URLs)', () => {
-    expect(marketingPages).toHaveLength(16);
+  test('inventory covers 17 pages (34 URLs)', () => {
+    expect(marketingPages).toHaveLength(17);
   });
 });
 
@@ -168,6 +168,63 @@ describe('buildMarketingHead', () => {
     }
   });
 
+  test('self-hosting Docker blog routes resolve bilingual hreflang pair and OG image', () => {
+    const ogImage = ogImageFor('blog-self-hosting-docker');
+    expect(ogImage.endsWith('og-blog-self-hosting-docker.png')).toBe(true);
+
+    const enHead = buildMarketingHead({
+      ...base,
+      locale: 'en',
+      path: '/blog/self-hosting-tracky-docker',
+      ogImage,
+    });
+    expect(enHead.links).toContainEqual({
+      rel: 'canonical',
+      href: 'https://www.trytracky.app/blog/self-hosting-tracky-docker',
+    });
+    expect(enHead.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'en',
+      href: 'https://www.trytracky.app/blog/self-hosting-tracky-docker',
+    });
+    expect(enHead.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'it',
+      href: 'https://www.trytracky.app/it/blog/self-hosting-tracky-docker',
+    });
+    expect(enHead.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'x-default',
+      href: 'https://www.trytracky.app/blog/self-hosting-tracky-docker',
+    });
+
+    const itHead = buildMarketingHead({
+      ...base,
+      locale: 'it',
+      path: '/it/blog/self-hosting-tracky-docker',
+      ogImage,
+    });
+    expect(itHead.links).toContainEqual({
+      rel: 'canonical',
+      href: 'https://www.trytracky.app/it/blog/self-hosting-tracky-docker',
+    });
+    expect(itHead.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'en',
+      href: 'https://www.trytracky.app/blog/self-hosting-tracky-docker',
+    });
+    expect(itHead.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'it',
+      href: 'https://www.trytracky.app/it/blog/self-hosting-tracky-docker',
+    });
+    expect(itHead.links).toContainEqual({
+      rel: 'alternate',
+      hrefLang: 'x-default',
+      href: 'https://www.trytracky.app/blog/self-hosting-tracky-docker',
+    });
+  });
+
   test('OG image per-page mapping', () => {
     expect(ogImageFor('home')).toContain('og-home.png');
     expect(ogImageFor('pricing')).toContain('og-pricing.png');
@@ -175,6 +232,7 @@ describe('buildMarketingHead', () => {
     expect(ogImageFor('faq')).toContain('og-faq.png');
     expect(ogImageFor('blog-v0-1-0')).toContain('og-blog-v0-1-0.png');
     expect(ogImageFor('blog-v0-1-0')).not.toContain('og-open-source.png');
+    expect(ogImageFor('blog-self-hosting-docker')).toContain('og-blog-self-hosting-docker.png');
     expect(ogImageFor('unknown-key')).toContain('og-default.png');
   });
 });

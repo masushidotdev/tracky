@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Self-hosting guide article (EN/IT)**: Added a bilingual blog article on running Tracky with Docker Compose (setup script, WorkOS requirement, first sign-up backfill, reverse proxy, upgrade, backup, no telemetry), with its own OG image and sitemap entries.
 - **One-time `signup_completed` onboarding milestone**: Added idempotent `signupAtMs` tracking on `userSettings.onboardingMilestones` (`userSettings.claimSignupMilestone`) and consent-gated, self-host-silent emission in `OnboardingMilestoneFlusher` (`{ surface: 'app_bootstrap' }`) to complete the `signup -> first import -> first budget` funnel without emitting false signups for pre-existing accounts with data.
 - **README status badges**: Added CI, MIT license, latest release, and GitHub stars badges to `README.md`.
 
