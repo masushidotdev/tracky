@@ -330,6 +330,10 @@ export type FirstBankAccountConnectedProps = {
   surface: 'bank-connections';
 };
 
+export type SignupCompletedProps = {
+  surface: 'app_bootstrap';
+};
+
 export function buildFirstCsvImportCompletedProps(importedCount: number): FirstCsvImportCompletedProps {
   return {
     row_count_bucket: countBucket(importedCount),
@@ -352,5 +356,11 @@ export function buildFirstTransactionCreatedProps(source: FirstTransactionSource
 export function buildFirstBankAccountConnectedProps(): FirstBankAccountConnectedProps {
   return {
     surface: 'bank-connections',
+  };
+}
+
+export function buildSignupCompletedProps(): SignupCompletedProps {
+  return {
+    surface: 'app_bootstrap',
   };
 }

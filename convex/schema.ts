@@ -75,6 +75,7 @@ export default defineSchema({
     ),
     onboardingMilestones: v.optional(
       v.object({
+        signupAtMs: v.optional(v.number()),
         firstCsvImportAtMs: v.optional(v.number()),
         firstPlanAtMs: v.optional(v.number()),
         firstTransactionAtMs: v.optional(v.number()),

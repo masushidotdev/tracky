@@ -1,5 +1,10 @@
 # Tracky
 
+[![CI](https://github.com/masushidotdev/tracky/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/masushidotdev/tracky/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/masushidotdev/tracky)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/masushidotdev/tracky)](https://github.com/masushidotdev/tracky/releases/latest)
+[![GitHub stars](https://img.shields.io/github/stars/masushidotdev/tracky?style=flat)](https://github.com/masushidotdev/tracky)
+
 Personal finance tracker: manual and bank-synced accounts, transaction ledger,
 zero-based planning, credit facilities, reports, and an AI analyst with an
 optional Telegram channel.

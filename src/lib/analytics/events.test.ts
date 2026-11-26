@@ -8,6 +8,7 @@ import {
   buildFirstCsvImportCompletedProps,
   buildFirstPlanCreatedProps,
   buildFirstTransactionCreatedProps,
+  buildSignupCompletedProps,
   countBucket,
   lengthBucket,
   normalizeRouteId,
@@ -138,6 +139,7 @@ const FORBIDDEN_PII_KEYS = [
 
 describe('onboarding first-time milestone events', () => {
   test('defines snake_case first-time event names while keeping existing recurring events', () => {
+    expect(analyticsEvents.signupCompleted).toBe('signup_completed');
     expect(analyticsEvents.firstCsvImportCompleted).toBe('first_csv_import_completed');
     expect(analyticsEvents.firstPlanCreated).toBe('first_plan_created');
     expect(analyticsEvents.firstTransactionCreated).toBe('first_transaction_created');
@@ -189,6 +191,15 @@ describe('onboarding first-time milestone events', () => {
   test('first_bank_account_connected props contain only surface', () => {
     const props = buildFirstBankAccountConnectedProps();
     expect(props).toEqual({ surface: 'bank-connections' });
+    expect(Object.keys(props)).toEqual(['surface']);
+    for (const key of FORBIDDEN_PII_KEYS) {
+      expect(props).not.toHaveProperty(key);
+    }
+  });
+
+  test('signup_completed props contain only allowed enum surface', () => {
+    const props = buildSignupCompletedProps();
+    expect(props).toEqual({ surface: 'app_bootstrap' });
     expect(Object.keys(props)).toEqual(['surface']);
     for (const key of FORBIDDEN_PII_KEYS) {
       expect(props).not.toHaveProperty(key);

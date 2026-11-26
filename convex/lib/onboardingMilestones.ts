@@ -5,6 +5,7 @@ export type FirstMilestoneDecision = 'emit' | 'backfill' | 'skip';
 export type FirstTransactionSource = 'csv' | 'manual' | 'bank';
 
 export type OnboardingMilestoneDecisions = {
+  signup?: FirstMilestoneDecision;
   firstCsvImport?: FirstMilestoneDecision;
   firstPlan?: FirstMilestoneDecision;
   firstTransaction?: FirstMilestoneDecision;
@@ -38,11 +39,73 @@ export function shouldEmitFirstMilestone(args: {
   return 'emit';
 }
 
+/**
+ * Pure idempotency rule for the one-time `signup_completed` milestone.
+ *
+ * Delegates to `shouldEmitFirstMilestone`: an account is treated as newly signed
+ * up only when `signupAtMs` is not yet persisted and the user has no prior
+ * financial data (`financialAccounts`, `transactions`, `plans`) and no prior
+ * onboarding milestone markers. A bare `userSettings` row (e.g., notification
+ * preferences saved before consent) without financial data or prior milestones
+ * still qualifies as new.
+ */
+export function shouldEmitSignupMilestone(args: {
+  alreadyMarked: boolean;
+  hasFinancialAccounts: boolean;
+  hasTransactions: boolean;
+  hasPlans: boolean;
+  hasPriorMilestones?: boolean;
+}): FirstMilestoneDecision {
+  return shouldEmitFirstMilestone({
+    alreadyMarked: args.alreadyMarked,
+    hadPriorData:
+      args.hasFinancialAccounts ||
+      args.hasTransactions ||
+      args.hasPlans ||
+      Boolean(args.hasPriorMilestones),
+  });
+}
+
+export function hasPriorOnboardingMilestones(
+  milestones:
+    | {
+        firstCsvImportAtMs?: number;
+        firstPlanAtMs?: number;
+        firstTransactionAtMs?: number;
+        firstBankAccountAtMs?: number;
+      }
+    | undefined,
+): boolean {
+  if (!milestones) return false;
+  return (
+    milestones.firstCsvImportAtMs !== undefined ||
+    milestones.firstPlanAtMs !== undefined ||
+    milestones.firstTransactionAtMs !== undefined ||
+    milestones.firstBankAccountAtMs !== undefined
+  );
+}
+
 export async function getUserSettingsByUserId(ctx: MutationCtx, userId: string) {
   return await ctx.db
     .query('userSettings')
     .withIndex('by_userId', (q) => q.eq('userId', userId))
     .unique();
+}
+
+export async function hasPriorUserFinancialAccount(ctx: MutationCtx, userId: string): Promise<boolean> {
+  const existing = await ctx.db
+    .query('financialAccounts')
+    .withIndex('by_userId', (q) => q.eq('userId', userId))
+    .first();
+  return existing !== null;
+}
+
+export async function hasPriorUserPlan(ctx: MutationCtx, userId: string): Promise<boolean> {
+  const existing = await ctx.db
+    .query('plans')
+    .withIndex('by_userId', (q) => q.eq('userId', userId))
+    .first();
+  return existing !== null;
 }
 
 export async function hasPriorUserTransaction(ctx: MutationCtx, userId: string): Promise<boolean> {
@@ -88,6 +151,7 @@ export async function persistOnboardingMilestones(
     queueClientEvents?: PendingClientMilestoneQueue;
   },
 ): Promise<void> {
+  const shouldWriteSignup = args.decisions.signup === 'emit' || args.decisions.signup === 'backfill';
   const shouldWriteCsv =
     args.decisions.firstCsvImport === 'emit' || args.decisions.firstCsvImport === 'backfill';
   const shouldWritePlan = args.decisions.firstPlan === 'emit' || args.decisions.firstPlan === 'backfill';
@@ -99,7 +163,15 @@ export async function persistOnboardingMilestones(
   const queueBankAccount = Boolean(args.queueClientEvents?.firstBankAccountConnected);
   const queueBankTx = Boolean(args.queueClientEvents?.firstTransactionBank);
 
-  if (!shouldWriteCsv && !shouldWritePlan && !shouldWriteTx && !shouldWriteBank && !queueBankAccount && !queueBankTx) {
+  if (
+    !shouldWriteSignup &&
+    !shouldWriteCsv &&
+    !shouldWritePlan &&
+    !shouldWriteTx &&
+    !shouldWriteBank &&
+    !queueBankAccount &&
+    !queueBankTx
+  ) {
     return;
   }
 
@@ -118,6 +190,7 @@ export async function persistOnboardingMilestones(
 
   const nextMilestones = {
     ...current,
+    ...(shouldWriteSignup && current.signupAtMs === undefined ? { signupAtMs: args.nowMs } : {}),
     ...(shouldWriteCsv && current.firstCsvImportAtMs === undefined ? { firstCsvImportAtMs: args.nowMs } : {}),
     ...(shouldWritePlan && current.firstPlanAtMs === undefined ? { firstPlanAtMs: args.nowMs } : {}),
     ...(shouldWriteTx && current.firstTransactionAtMs === undefined ? { firstTransactionAtMs: args.nowMs } : {}),

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **One-time `signup_completed` onboarding milestone**: Added idempotent `signupAtMs` tracking on `userSettings.onboardingMilestones` (`userSettings.claimSignupMilestone`) and consent-gated, self-host-silent emission in `OnboardingMilestoneFlusher` (`{ surface: 'app_bootstrap' }`) to complete the `signup -> first import -> first budget` funnel without emitting false signups for pre-existing accounts with data.
+- **README status badges**: Added CI, MIT license, latest release, and GitHub stars badges to `README.md`.
+
 ## [0.1.0] - 2026-11-24
 
 First public tagged release of Tracky, covering the initial public release (`654561d`, 2026-09-15) through PR #64.
