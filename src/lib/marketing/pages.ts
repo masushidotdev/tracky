@@ -101,6 +101,13 @@ export const marketingPages: Array<MarketingPage> = [
     changefreq: 'monthly',
   },
   {
+    key: 'blog',
+    en: '/blog',
+    it: '/it/blog',
+    priority: 0.8,
+    changefreq: 'weekly',
+  },
+  {
     key: 'blog-v0-1-0',
     en: '/blog/tracky-v0-1-0',
     it: '/it/blog/tracky-v0-1-0',

@@ -5124,6 +5124,10 @@ function interpolate(message: string | undefined, values: TranslationValues | un
   }, message);
 }
 
+export function translate(locale: AppLocale, key: TranslationKey, values?: TranslationValues): string {
+  return interpolate(messages[locale][key], values);
+}
+
 export function I18nProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [locale, setLocaleState] = React.useState<AppLocale>('en');
 
@@ -5140,7 +5144,7 @@ export function I18nProvider({ children }: Readonly<{ children: React.ReactNode 
   }, [locale]);
 
   const value = React.useMemo<I18nContextValue>(() => {
-    const t = (key: TranslationKey, values?: TranslationValues) => interpolate(messages[locale][key], values);
+    const t = (key: TranslationKey, values?: TranslationValues) => translate(locale, key, values);
 
     return {
       intlLocale: intlLocales[locale],

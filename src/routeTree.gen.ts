@@ -20,6 +20,7 @@ import { Route as OpenSourceRouteImport } from './routes/open-source'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as VsSpreadsheetsRouteImport } from './routes/vs-spreadsheets'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
 import { Route as BlogSelfHostingTrackyDockerRouteImport } from './routes/blog/self-hosting-tracky-docker'
 import { Route as BlogTrackyV010RouteImport } from './routes/blog/tracky-v0-1-0'
 import { Route as FeaturesAiAnalystRouteImport } from './routes/features/ai-analyst'
@@ -37,6 +38,7 @@ import { Route as ItPerCoppieEFamiglieRouteImport } from './routes/it/per-coppie
 import { Route as ItPerFreelanceEPartitaIvaRouteImport } from './routes/it/per-freelance-e-partita-iva'
 import { Route as ItPrezziRouteImport } from './routes/it/prezzi'
 import { Route as ItVsFogliDiCalcoloRouteImport } from './routes/it/vs-fogli-di-calcolo'
+import { Route as ItBlogIndexRouteImport } from './routes/it/blog/index'
 import { Route as ItBlogSelfHostingTrackyDockerRouteImport } from './routes/it/blog/self-hosting-tracky-docker'
 import { Route as ItBlogTrackyV010RouteImport } from './routes/it/blog/tracky-v0-1-0'
 import { Route as ItFunzioniAnalystAiRouteImport } from './routes/it/funzioni/analyst-ai'
@@ -125,6 +127,11 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/_app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSelfHostingTrackyDockerRoute =
   BlogSelfHostingTrackyDockerRouteImport.update({
     id: '/blog/self-hosting-tracky-docker',
@@ -212,6 +219,11 @@ const ItPrezziRoute = ItPrezziRouteImport.update({
 const ItVsFogliDiCalcoloRoute = ItVsFogliDiCalcoloRouteImport.update({
   id: '/it/vs-fogli-di-calcolo',
   path: '/it/vs-fogli-di-calcolo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItBlogIndexRoute = ItBlogIndexRouteImport.update({
+  id: '/it/blog/',
+  path: '/it/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItBlogSelfHostingTrackyDockerRoute =
@@ -438,6 +450,7 @@ export interface FileRoutesByFullPath {
   '/it/per-freelance-e-partita-iva': typeof ItPerFreelanceEPartitaIvaRoute
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
+  '/blog/': typeof BlogIndexRoute
   '/it/': typeof ItIndexRoute
   '/it/blog/self-hosting-tracky-docker': typeof ItBlogSelfHostingTrackyDockerRoute
   '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
@@ -449,6 +462,7 @@ export interface FileRoutesByFullPath {
   '/it/guide/budget-zero-based': typeof ItGuideBudgetZeroBasedRoute
   '/it/guide/cancella-abbonamenti-inutili': typeof ItGuideCancellaAbbonamentiInutiliRoute
   '/it/guide/previsione-flusso-di-cassa': typeof ItGuidePrevisioneFlussoDiCassaRoute
+  '/it/blog/': typeof ItBlogIndexRoute
   '/app/analyst': typeof AuthenticatedAppAppAnalystRoute
   '/app/docs': typeof AuthenticatedAppAppDocsRouteWithChildren
   '/app/forecast': typeof AuthenticatedAppAppForecastRoute
@@ -500,6 +514,7 @@ export interface FileRoutesByTo {
   '/it/per-freelance-e-partita-iva': typeof ItPerFreelanceEPartitaIvaRoute
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
+  '/blog': typeof BlogIndexRoute
   '/it': typeof ItIndexRoute
   '/it/blog/self-hosting-tracky-docker': typeof ItBlogSelfHostingTrackyDockerRoute
   '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
@@ -511,6 +526,7 @@ export interface FileRoutesByTo {
   '/it/guide/budget-zero-based': typeof ItGuideBudgetZeroBasedRoute
   '/it/guide/cancella-abbonamenti-inutili': typeof ItGuideCancellaAbbonamentiInutiliRoute
   '/it/guide/previsione-flusso-di-cassa': typeof ItGuidePrevisioneFlussoDiCassaRoute
+  '/it/blog': typeof ItBlogIndexRoute
   '/app/analyst': typeof AuthenticatedAppAppAnalystRoute
   '/app/forecast': typeof AuthenticatedAppAppForecastRoute
   '/app/goals': typeof AuthenticatedAppAppGoalsRoute
@@ -563,6 +579,7 @@ export interface FileRoutesById {
   '/it/per-freelance-e-partita-iva': typeof ItPerFreelanceEPartitaIvaRoute
   '/it/prezzi': typeof ItPrezziRoute
   '/it/vs-fogli-di-calcolo': typeof ItVsFogliDiCalcoloRoute
+  '/blog/': typeof BlogIndexRoute
   '/it/': typeof ItIndexRoute
   '/it/blog/self-hosting-tracky-docker': typeof ItBlogSelfHostingTrackyDockerRoute
   '/it/blog/tracky-v0-1-0': typeof ItBlogTrackyV010Route
@@ -574,6 +591,7 @@ export interface FileRoutesById {
   '/it/guide/budget-zero-based': typeof ItGuideBudgetZeroBasedRoute
   '/it/guide/cancella-abbonamenti-inutili': typeof ItGuideCancellaAbbonamentiInutiliRoute
   '/it/guide/previsione-flusso-di-cassa': typeof ItGuidePrevisioneFlussoDiCassaRoute
+  '/it/blog/': typeof ItBlogIndexRoute
   '/_authenticated/_app/app/analyst': typeof AuthenticatedAppAppAnalystRoute
   '/_authenticated/_app/app/docs': typeof AuthenticatedAppAppDocsRouteWithChildren
   '/_authenticated/_app/app/forecast': typeof AuthenticatedAppAppForecastRoute
@@ -627,6 +645,7 @@ export interface FileRouteTypes {
     | '/it/per-freelance-e-partita-iva'
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
+    | '/blog/'
     | '/it/'
     | '/it/blog/self-hosting-tracky-docker'
     | '/it/blog/tracky-v0-1-0'
@@ -638,6 +657,7 @@ export interface FileRouteTypes {
     | '/it/guide/budget-zero-based'
     | '/it/guide/cancella-abbonamenti-inutili'
     | '/it/guide/previsione-flusso-di-cassa'
+    | '/it/blog/'
     | '/app/analyst'
     | '/app/docs'
     | '/app/forecast'
@@ -689,6 +709,7 @@ export interface FileRouteTypes {
     | '/it/per-freelance-e-partita-iva'
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
+    | '/blog'
     | '/it'
     | '/it/blog/self-hosting-tracky-docker'
     | '/it/blog/tracky-v0-1-0'
@@ -700,6 +721,7 @@ export interface FileRouteTypes {
     | '/it/guide/budget-zero-based'
     | '/it/guide/cancella-abbonamenti-inutili'
     | '/it/guide/previsione-flusso-di-cassa'
+    | '/it/blog'
     | '/app/analyst'
     | '/app/forecast'
     | '/app/goals'
@@ -751,6 +773,7 @@ export interface FileRouteTypes {
     | '/it/per-freelance-e-partita-iva'
     | '/it/prezzi'
     | '/it/vs-fogli-di-calcolo'
+    | '/blog/'
     | '/it/'
     | '/it/blog/self-hosting-tracky-docker'
     | '/it/blog/tracky-v0-1-0'
@@ -762,6 +785,7 @@ export interface FileRouteTypes {
     | '/it/guide/budget-zero-based'
     | '/it/guide/cancella-abbonamenti-inutili'
     | '/it/guide/previsione-flusso-di-cassa'
+    | '/it/blog/'
     | '/_authenticated/_app/app/analyst'
     | '/_authenticated/_app/app/docs'
     | '/_authenticated/_app/app/forecast'
@@ -815,6 +839,7 @@ export interface RootRouteChildren {
   ItPerFreelanceEPartitaIvaRoute: typeof ItPerFreelanceEPartitaIvaRoute
   ItPrezziRoute: typeof ItPrezziRoute
   ItVsFogliDiCalcoloRoute: typeof ItVsFogliDiCalcoloRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   ItIndexRoute: typeof ItIndexRoute
   ItBlogSelfHostingTrackyDockerRoute: typeof ItBlogSelfHostingTrackyDockerRoute
   ItBlogTrackyV010Route: typeof ItBlogTrackyV010Route
@@ -826,6 +851,7 @@ export interface RootRouteChildren {
   ItGuideBudgetZeroBasedRoute: typeof ItGuideBudgetZeroBasedRoute
   ItGuideCancellaAbbonamentiInutiliRoute: typeof ItGuideCancellaAbbonamentiInutiliRoute
   ItGuidePrevisioneFlussoDiCassaRoute: typeof ItGuidePrevisioneFlussoDiCassaRoute
+  ItBlogIndexRoute: typeof ItBlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -906,6 +932,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/blog/self-hosting-tracky-docker': {
       id: '/blog/self-hosting-tracky-docker'
@@ -1024,6 +1057,13 @@ declare module '@tanstack/react-router' {
       path: '/it/vs-fogli-di-calcolo'
       fullPath: '/it/vs-fogli-di-calcolo'
       preLoaderRoute: typeof ItVsFogliDiCalcoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/it/blog/': {
+      id: '/it/blog/'
+      path: '/it/blog'
+      fullPath: '/it/blog/'
+      preLoaderRoute: typeof ItBlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/it/blog/self-hosting-tracky-docker': {
@@ -1398,6 +1438,7 @@ const rootRouteChildren: RootRouteChildren = {
   ItPerFreelanceEPartitaIvaRoute: ItPerFreelanceEPartitaIvaRoute,
   ItPrezziRoute: ItPrezziRoute,
   ItVsFogliDiCalcoloRoute: ItVsFogliDiCalcoloRoute,
+  BlogIndexRoute: BlogIndexRoute,
   ItIndexRoute: ItIndexRoute,
   ItBlogSelfHostingTrackyDockerRoute: ItBlogSelfHostingTrackyDockerRoute,
   ItBlogTrackyV010Route: ItBlogTrackyV010Route,
@@ -1410,6 +1451,7 @@ const rootRouteChildren: RootRouteChildren = {
   ItGuideCancellaAbbonamentiInutiliRoute:
     ItGuideCancellaAbbonamentiInutiliRoute,
   ItGuidePrevisioneFlussoDiCassaRoute: ItGuidePrevisioneFlussoDiCassaRoute,
+  ItBlogIndexRoute: ItBlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

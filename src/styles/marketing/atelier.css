@@ -1758,6 +1758,34 @@
 }
 
 /* Responsive breakpoints */
+@media (max-width: 1160px) {
+  .mka-header-inner {
+    gap: 0.75rem;
+  }
+
+  .mka-nav-links {
+    gap: 0.85rem;
+  }
+
+  .mka-nav-links a {
+    font-size: 0.86rem;
+  }
+
+  .mka-header-actions {
+    gap: 0.4rem;
+  }
+
+  .mka-header-actions .mka-link-subtle {
+    font-size: 0.84rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .mka-header-actions .mka-btn-primary {
+    font-size: 0.84rem;
+    padding: 0.55rem 0.9rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .mka-hero-grid,
   .mka-proof-stage,

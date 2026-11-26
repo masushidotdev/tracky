@@ -123,6 +123,36 @@ export function blogPostingJsonLd(args: {
   };
 }
 
+export function blogIndexJsonLd(args: {
+  name: string;
+  description: string;
+  url: string;
+  inLanguage: 'en' | 'it';
+  posts: Array<{
+    headline: string;
+    url: string;
+    datePublished: string;
+    inLanguage: 'en' | 'it';
+  }>;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    'name': args.name,
+    'description': args.description,
+    'url': args.url,
+    'inLanguage': args.inLanguage,
+    'publisher': { '@type': 'Organization', 'name': 'Tracky contributors', 'url': SITE_ORIGIN },
+    'blogPost': args.posts.map((post) => ({
+      '@type': 'BlogPosting',
+      'headline': post.headline,
+      'url': post.url,
+      'datePublished': post.datePublished,
+      'inLanguage': post.inLanguage,
+    })),
+  };
+}
+
 const OG_FILES: Record<string, string> = {
   home: 'og-home.png',
   pricing: 'og-pricing.png',

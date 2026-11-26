@@ -181,6 +181,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.trytracky.app/blog</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.trytracky.app/it/blog</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.trytracky.app/blog/tracky-v0-1-0</loc>
     <lastmod>2026-11-26</lastmod>
     <changefreq>monthly</changefreq>
