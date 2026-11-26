@@ -29,6 +29,7 @@ function buildNavItems(locale: AppLocale, currentPath: string) {
       { key: 'features', label: 'Funzioni', href: '/it/funzioni/piano-zero-based' },
       { key: 'deploy', label: 'Demo vs self-host', href: isHome ? '#deployment' : '/it/open-source' },
       { key: 'pricing', label: 'Prezzi', href: '/it/prezzi' },
+      { key: 'blog', label: 'Blog', href: '/it/blog' },
       { key: 'faq', label: 'FAQ', href: '/it/domande-frequenti' },
     ];
   }
@@ -38,8 +39,17 @@ function buildNavItems(locale: AppLocale, currentPath: string) {
     { key: 'features', label: 'Features', href: '/features/zero-based-plan' },
     { key: 'deploy', label: 'Demo vs self-host', href: isHome ? '#deployment' : '/open-source' },
     { key: 'pricing', label: 'Pricing', href: '/pricing' },
+    { key: 'blog', label: 'Blog', href: '/blog' },
     { key: 'faq', label: 'FAQ', href: '/faq' },
   ];
+}
+
+function isNavItemCurrent(item: { key: string; href: string }, currentPath: string) {
+  if (item.href === currentPath) return true;
+  if (item.key === 'blog') {
+    return currentPath.startsWith('/blog/') || currentPath.startsWith('/it/blog/');
+  }
+  return false;
 }
 
 function buildFooterColumns(locale: AppLocale): Array<{ title: string; links: Array<FooterLink> }> {
@@ -71,6 +81,7 @@ function buildFooterColumns(locale: AppLocale): Array<{ title: string; links: Ar
         links: [
           { label: 'Prezzi', href: '/it/prezzi' },
           { label: 'Open source e self-host', href: '/it/open-source' },
+          { label: 'Blog', href: '/it/blog' },
           { label: 'Self-hosting con Docker', href: '/it/blog/self-hosting-tracky-docker' },
           { label: 'Note di rilascio (v0.1.0)', href: '/it/blog/tracky-v0-1-0' },
           { label: 'FAQ', href: '/it/domande-frequenti' },
@@ -107,6 +118,7 @@ function buildFooterColumns(locale: AppLocale): Array<{ title: string; links: Ar
       links: [
         { label: 'Pricing', href: '/pricing' },
         { label: 'Open source & self-host', href: '/open-source' },
+        { label: 'Blog', href: '/blog' },
         { label: 'Self-hosting with Docker', href: '/blog/self-hosting-tracky-docker' },
         { label: 'Release notes (v0.1.0)', href: '/blog/tracky-v0-1-0' },
         { label: 'FAQ', href: '/faq' },
@@ -156,13 +168,7 @@ export function AtelierSite({ locale, auth, currentPath, children }: AtelierSite
     : isIt
       ? 'Prova gratis la demo →'
       : 'Try the demo free →';
-  const primaryShortLabel = auth.user
-    ? isIt
-      ? 'Apri demo →'
-      : 'Open demo →'
-    : isIt
-      ? 'Prova demo →'
-      : 'Try demo →';
+  const primaryShortLabel = auth.user ? (isIt ? 'Apri demo →' : 'Open demo →') : isIt ? 'Prova demo →' : 'Try demo →';
 
   const onSignInClick = () => {
     // sendBeacon: the full-page WorkOS redirect unloads us before XHR flushes.
@@ -192,7 +198,7 @@ export function AtelierSite({ locale, auth, currentPath, children }: AtelierSite
             <ul className="mka-nav-links">
               {navItems.map((item) => (
                 <li key={item.key}>
-                  <a href={item.href} aria-current={item.href === currentPath ? 'page' : undefined}>
+                  <a href={item.href} aria-current={isNavItemCurrent(item, currentPath) ? 'page' : undefined}>
                     {item.label}
                   </a>
                 </li>
@@ -245,12 +251,7 @@ export function AtelierSite({ locale, auth, currentPath, children }: AtelierSite
             >
               {menuOpen ? (
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <path
-                    d="M4 4L14 14M14 4L4 14"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
+                  <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                 </svg>
               ) : (
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -270,7 +271,11 @@ export function AtelierSite({ locale, auth, currentPath, children }: AtelierSite
           <ul className="mka-mobile-nav-list">
             {navItems.map((item) => (
               <li key={item.key}>
-                <a href={item.href} onClick={() => setMenuOpen(false)}>
+                <a
+                  href={item.href}
+                  aria-current={isNavItemCurrent(item, currentPath) ? 'page' : undefined}
+                  onClick={() => setMenuOpen(false)}
+                >
                   {item.label}
                 </a>
               </li>
@@ -327,7 +332,11 @@ export function AtelierSite({ locale, auth, currentPath, children }: AtelierSite
         <div className="mka-container">
           <div className="mka-footer-grid">
             <div className="mka-footer-brand">
-              <a className="mka-wordmark" href={homeHref} aria-label={isIt ? 'Tracky — pagina iniziale' : 'Tracky home'}>
+              <a
+                className="mka-wordmark"
+                href={homeHref}
+                aria-label={isIt ? 'Tracky — pagina iniziale' : 'Tracky home'}
+              >
                 <TrackyMark />
                 <span>Tracky</span>
               </a>

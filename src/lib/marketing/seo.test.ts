@@ -35,8 +35,8 @@ describe('marketing pages registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  test('inventory covers 17 pages (34 URLs)', () => {
-    expect(marketingPages).toHaveLength(17);
+  test('inventory covers 18 pages (36 URLs)', () => {
+    expect(marketingPages).toHaveLength(18);
   });
 });
 
