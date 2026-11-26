@@ -1,46 +1,86 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  AuthCta,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  FaqSection,
+  FinalCta,
+  FitCheck,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import { RelatedLinksSection } from '@/components/marketing/atelier/b1-components';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, DragStrip, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const INTRO = "Dividete affitto, frigo e corse a scuola, eppure i soldi accendono sempre la stessa discussione: si spende in buona fede e nessuno vede il quadro intero. Se cercavate un budget familiare coppie che metta tutti d'accordo, Tracky elimina proprio questo problema. Un unico proprietario gestisce un singolo Piano familiare: stessi saldi, stessi bucket, un unico registro, rivisti insieme allo stesso tavolo.\n\nLe grandi spese smettono di essere sorprese. Date a retta scolastica, assicurazione e vacanze i loro bucket con un obiettivo e una scadenza, e Tracky stima quanto accantonare questo mese. Saltate un mese e la richiesta del mese dopo cresce da sola. I money box sono buste virtuali che pre-finanziano gli stessi obiettivi, e potete collegarne uno a un bucket del Piano così Tracky lo conta come già accantonato.\n\nNel quotidiano tutte le spese di casa passano da bucket condivisi e l'attività elenca ogni movimento in un unico registro, così la revisione sostituisce gli interrogatori. Le entrate finiscono in Pronte da assegnare, e ogni euro riceve un compito finché non arriva a zero. Provate la Demo gratis senza carta: sedetevi insieme, rivedete gli stessi numeri e chiudete il mese in una sola sera.";
-
-const BLOCKS = [
-  { h: "Due portafogli, un punto cieco",
-    p: "Uno dei due paga l'affitto, l'altro la spesa, e tutti e due tirano a indovinare su cosa resta. La retta arriva a settembre come un'imboscata, la vacanza si prenota sulla speranza, e la bolletta grossa arriva proprio quando il conto è più leggero. Poi tocca all'interrogatorio serale: chi ha speso cosa, e perché nessuno l'ha visto arrivare?\n\nIn questa storia nessuno è sprovveduto. Semplicemente non avete mai avuto un unico posto dove ogni euro aveva già un compito prima che il mese iniziasse.", },
-  { h: "Una giornata tipo con questo budget familiare coppie",
-    p: "Mattina: aprite un unico Piano e vedete lo stesso Disponibile in ogni bucket — casa, spesa, scuola, vacanze. Ogni acquisto finisce in un unico registro, così la revisione serale sostituisce l'interrogatorio con i fatti. Le spese annuali si finanziano mese dopo mese: un'assicurazione in scadenza a marzo chiede di meno man mano che il bucket si riempie, e i mesi saltati fanno salire da sola la richiesta successiva, come stima che si aggiusta.\n\nSera: i money box mostrano scuola e vacanze che crescono virtualmente, già conteggiati come accantonati nei loro bucket del Piano. Le entrate arrivano in Pronte da assegnare e vengono assegnate giù fino a zero, chiudendo la giornata su numeri concordati.", },
-  { h: "Un tavolo, stessi numeri stasera",
-    p: "Iniziate dalla Demo gratis — senza carta, solo la vostra casa e pochi minuti onesti. Come proprietario dell'account, create un unico Piano sui conti di casa, aggiungete bucket per casa, spesa, scuola e vacanze, e date alle spese annuali un obiettivo con la sua scadenza. Collegate i risparmi che avete già come money box virtuale così il bucket li conta come già accantonati.\n\nPoi finanziate il mese: assegnate le entrate finché Pronte da assegnare non arriva a zero, partendo dai bucket in rosso e dagli obiettivi in scadenza. Da stasera, ogni acquisto ha un bucket e ogni bucket viene rivisto insieme.", },
+export const couplesItFaq: Array<FaqItem> = [
+  {
+    q: 'Come funziona Tracky per coppie e famiglie se è uno spazio a utente singolo?',
+    a: 'Tracky ricava l’identità da una sola sessione e oggi non offre login separati multi-utente. Un unico titolare gestisce un solo Piano familiare sui conti di casa — stessi saldi, stessi bucket e un unico registro attività — che si rivedono insieme allo stesso tavolo invece di riconciliare due fogli diversi.',
+  },
+  {
+    q: 'Come accantoniamo per scuola, assicurazioni e vacanze senza sorprese?',
+    a: 'Associate a ciascun obiettivo una money box virtuale con importo e data target, e collegatela al relativo bucket del Piano. Tracky mostra i risparmi idonei come Già accantonato nel Disponibile, così il target chiede solo la parte mancante: una stima che si adegua ogni mese senza doppi accantonamenti.',
+  },
+  {
+    q: 'Cosa succede se una categoria di casa sforna il budget?',
+    a: 'Il bucket mostra chiaramente lo sforamento, così decidete insieme invece di indovinare. Spostate il Disponibile da un altro bucket per coprire lo scoperto liquido, oppure finanziate il bucket di pagamento carta se l’acquisto scoperto è passato sulla carta di credito. Se non intervenite, lo scoperto liquido riduce Da assegnare del mese successivo.',
+  },
+  {
+    q: 'Come possiamo iniziare insieme con Tracky?',
+    a: 'Aprite la demo ospitata gratuita senza carta, aggiungete i conti manuali di casa nella loro valuta e create un unico Piano con bucket per casa, spesa, scuola, assicurazioni e vacanze. Collegate eventuali risparmi esistenti come money box virtuali e distribuite la liquidità osservata finché Da assegnare arriva a zero.',
+  },
 ];
 
-const PAGE_FAQ = [
-  { q: "Perché scegliere Tracky come budget familiare coppie?",
-    a: "Perché smettete di negoziare tra due versioni della verità. Un unico Piano, un unico registro, rivisti insieme: stessi saldi, stessi bucket e ogni movimento in un'unica lista attività. Le spese annuali hanno obiettivi con scadenza, scuola e vacanze crescono in money box virtuali, e alle entrate date un compito insieme finché Pronte da assegnare non arriva a zero.", },
-  { q: "Come risparmiamo per scuola e vacanze senza panico?",
-    a: "Date a ognuna un money box — virtuale, con importo obiettivo e data — e collegatelo al suo bucket del Piano così il salvato conta come già accantonato. Il bucket chiede poi solo ciò che manca ancora, come stima che si aggiusta ogni mese. Niente doppi accantonamenti, niente imboscate a settembre.", },
-  { q: "Cosa succede se uno dei due spende troppo?",
-    a: "Il bucket diventa rosso e lo vedete entrambi — niente caccia al colpevole, solo una decisione. Spostate il Disponibile da un altro bucket per coprire lo sforamento cash, o finanziate il bucket di pagamento della carta quando l'acquisto è sulla carta. Se non fate nulla, l'ammanco abbassa le Pronte da assegnare del mese dopo.", },
-  { q: "Come iniziamo insieme questa settimana?",
-    a: "Aprite la Demo gratis — senza carta — e costruite un unico Piano sui conti di casa. Aggiungete bucket per casa, spesa, scuola e vacanze, poi assegnate le entrate finché Pronte da assegnare non arriva a zero. Sedetevi allo stesso tavolo, rivedete gli stessi numeri e concordate il mese in una sola sera.", },
+const householdBuckets = [
+  {
+    tag: 'Spese fisse',
+    tone: 'cobalt' as const,
+    title: 'Casa e bollette',
+    body: 'Affitto, mutuo e utenze ricorrenti finanziati nel bucket del Piano prima che il mese cominci.',
+    foot: 'Collegati alle scadenze datate nel Flusso di cassa per averle sempre in vista.',
+  },
+  {
+    tag: 'Quotidiano',
+    tone: 'sage' as const,
+    title: 'Spesa e casa',
+    body: 'Un bucket condiviso e un unico registro movimenti: controllate il Disponibile prima di fare acquisti.',
+    foot: 'Le spese coperte con carta si spostano automaticamente nel bucket pagamento carta.',
+  },
+  {
+    tag: 'Target annuale',
+    tone: 'marigold' as const,
+    title: 'Scuola e assicurazioni',
+    body: 'Impostate un target annuale con data reale. Se saltate un mese, la quota suggerita del mese dopo si aggiorna da sola.',
+    foot: 'Abbinabile a una money box virtuale per conteggiare quanto è Già accantonato.',
+  },
+  {
+    tag: 'Fondo dedicato',
+    tone: 'vermilion' as const,
+    title: 'Vacanze e imprevisti',
+    body: 'Accantonate una quota regolare ogni mese in una money box virtuale senza creare un secondo saldo bancario.',
+    foot: 'Prenotazioni coperte da liquidità reale, non da stipendi futuri ancora da incassare.',
+  },
 ];
 
 export const Route = createFileRoute('/it/per-coppie-e-famiglie')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Budget per coppie e famiglie, stessi numeri · Tracky',
+      title: 'Budget per coppie e famiglie — Un unico Piano di casa · Tracky',
       description:
-        'Un piano, stessi saldi e bucket per tutta la casa. Money box per scuola, vacanze e bollette. Demo gratis, senza carta.',
+        'Gestisci un Piano familiare su saldi osservati, bucket condivisi e money box virtuali per scuola, bollette e vacanze. Spazio singolo, demo €0.',
       locale: 'it',
       path: '/it/per-coppie-e-famiglie',
       ogImage: ogImageFor('for-couples'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/it/per-coppie-e-famiglie', inLanguage: ['it', 'en'] }),
-        faqJsonLd(PAGE_FAQ.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(couplesItFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/it/' },
           { name: 'Per coppie e famiglie', path: '/it/per-coppie-e-famiglie' },
@@ -51,88 +91,183 @@ export const Route = createFileRoute('/it/per-coppie-e-famiglie')({
 });
 
 function CouplesIt() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <CouplesItView auth={auth} />;
+}
+
+export function CouplesItView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/per-coppie-e-famiglie">
-      <header className="mk-hero">
-        <Reveal>
-          <h1>
-            Stessi numeri.
-            <br />
-            <span className="stroke">Zero</span> <span className="hl">litigi.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            Una casa, un piano: <b>stessi saldi, stessi bucket</b>, visibili a tutti. I money box pre-finanziano
-            virtualmente scuola, vacanze e bollette grosse. Niente più “pensavo ci fossero…”.
-          </p>
-        </Reveal>
-        <Reveal>
-          <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Apri la demo →' : 'Prova la demo →'}
-            </MagnetCta>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>{INTRO}</p>
-        </Reveal>
-      </section>
-      <MarqueeBand items={['UN PIANO', 'STESSI BUCKET', 'MONEY BOX', 'SCUOLA + VACANZE', 'ZERO LITIGI']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <DragStrip>
-            <div className="mk-card"><div className="e">🏠</div><h3>CASA</h3><p>Affitto, bollette, mutuo — finanziati prima che inizi il mese.</p></div>
-            <div className="mk-card"><div className="e">🛒</div><h3>SPESA</h3><p>Un bucket, due carrelli. L'attività mostra chi ha speso cosa.</p></div>
-            <div className="mk-card"><div className="e">🎒</div><h3>SCUOLA</h3><p>Accantonata trimestre per trimestre. Niente panico a settembre.</p></div>
-            <div className="mk-card"><div className="e">🏖️</div><h3>VACANZE</h3><p>Un po' ogni mese. Prenotate quando finanziate, non quando sperate.</p></div>
-          </DragStrip>
-        </Reveal>
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {BLOCKS.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            <p className="mk-sub" style={{ maxWidth: 700 }}>{block.p}</p>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>Domande e risposte.</h2>
-        </Reveal>
-        {PAGE_FAQ.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Un tavolo. Stessi numeri.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Demo gratis · 5 minuti · senza carta</p>
-            <MagnetCta href={user ? '/app' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Apri la demo →' : 'Inizia gratis →'}
-            </MagnetCta>
+    <AtelierSite locale="it" auth={auth} currentPath="/it/per-coppie-e-famiglie">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Percorso di navigazione"
+              items={[{ label: 'Home', href: '/it/' }, { label: 'Per coppie e famiglie' }]}
+            />
+
+            <ChipRow>
+              <Chip tone="cobalt">Un solo Piano familiare</Chip>
+              <Chip tone="sage">Money box virtuali</Chip>
+              <Chip>Spazio a utente singolo</Chip>
+              <Chip tone="marigold">Demo ospitata €0</Chip>
+            </ChipRow>
+
+            <h1 className="mka-hero-headline">
+              Un unico registro di casa. <span className="mka-accent-ink">Gli stessi numeri allo stesso tavolo.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Quando uno paga l’affitto e l’altro fa la spesa, gli imprevisti arrivano anche se entrambi spendete con
+              attenzione. Con Tracky un unico titolare mantiene un solo Piano zero-based di famiglia — stessi saldi
+              osservati, stessi bucket e money box virtuali per scuola, assicurazioni e vacanze — da rivedere insieme su
+              un’unica schermata chiara.
+            </p>
+
+            <div className="mka-hero-actions">
+              <AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="primary-lg" />
+              <a className="mka-btn-secondary" href="/it/funzioni/piano-zero-based">
+                Scopri il Piano zero-based →
+              </a>
+            </div>
           </div>
-        </Reveal>
+        </div>
       </section>
-    </MarketingSite>
+
+      {/* 2. HOUSEHOLD BUCKETS */}
+      <Section id="buckets" tone="parchment">
+        <SectionHead
+          kicker="Struttura familiare"
+          title="Quattro bucket chiave al posto dei conti a memoria."
+          subtitle="Date un lavoro a ogni euro osservato prima che inizi il mese e preparate le spese annuali con money box virtuali collegate."
+        />
+
+        <div className="mka-b1-cards-4">
+          {householdBuckets.map((card) => (
+            <article className="mka-b1-card" key={card.title}>
+              <span className={`mka-b1-card-tag mka-b1-card-tag--${card.tone}`}>{card.tag}</span>
+              <h3>{card.title}</h3>
+              <p>{card.body}</p>
+              <div className="mka-b1-card-foot">{card.foot}</div>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      {/* 3. HOW A HOUSEHOLD USES TRACKY */}
+      <Section id="workflow">
+        <SectionHead
+          kicker="Lavorare sugli stessi numeri"
+          title="Da due punti ciechi a un’unica revisione condivisa."
+          subtitle="Il Piano zero-based sostituisce le discussioni a posteriori con scelte esplicite sulla liquidità reale."
+        />
+
+        <div className="mka-editorial-grid">
+          <article className="mka-editorial-card">
+            <h3>Perché due portafogli creano punti ciechi</h3>
+            <p>
+              L’affitto esce da un conto, la spesa da un altro, ed entrambi stimate a occhio quanto resta davvero libero.
+              La retta scolastica arriva a settembre, l’assicurazione auto a marzo e le vacanze si prenotano sulla
+              fiducia invece che su fondi già accantonati.
+            </p>
+            <p>
+              Nessuno sta spendendo con leggerezza: manca semplicemente un unico posto in cui la liquidità osservata ha
+              già un destino prima che il mese cominci.
+            </p>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Un confronto mensile sui saldi reali</h3>
+            <p>
+              Le entrate arrivano in <strong>Da assegnare</strong> e vengono distribuite tra casa, spesa, scuola e
+              vacanze finché Da assegnare arriva a zero. Collegando una money box virtuale a un bucket del Piano, i
+              risparmi già presenti compaiono come <strong>Già accantonato</strong> e il target chiede solo ciò che manca.
+            </p>
+            <p>
+              Se una categoria supera il previsto, l’ammanco è subito visibile: spostate il <strong>Disponibile</strong>{' '}
+              da un altro bucket oppure finanziate il bucket di pagamento carta se la spesa è passata su carta di
+              credito. Nessuna sorpresa nascosta.
+            </p>
+          </article>
+        </div>
+      </Section>
+
+      {/* 4. CANDID FIT CHECK */}
+      <Section id="fit" tone="parchment">
+        <SectionHead
+          kicker="Verifica trasparente"
+          title="Quando Tracky è adatto a una famiglia — e quando non ancora."
+          subtitle="Preferiamo chiarire subito il modello a utente singolo prima che impostiate il vostro spazio di lavoro."
+        />
+
+        <FitCheck
+          yesTitle="Funziona bene se in casa…"
+          yesItems={[
+            'Vi sedete insieme una volta a settimana o al mese per rivedere un unico Piano, un unico registro e gli stessi saldi osservati.',
+            'Volete finanziare spese annuali (scuola, assicurazioni, imposte) con target datati e money box virtuali collegate.',
+            'Usate conti manuali e import CSV nel browser — oppure self-hosting Docker se desiderate il sync bancario PSD2.',
+            'Volete regole chiare sulle carte così le spese coperte restano pronte per l’estratto mensile.',
+          ]}
+          noTitle="Non è ancora adatto se…"
+          noItems={[
+            'Vi servono login multi-utente separati, permessi individuali o cronologie distinte per partner nello stesso spazio.',
+            'Cercate una conversione automatica che unisca conti familiari in EUR e USD in un solo patrimonio aggregato.',
+            'Volete sync bancario ospitato pronto all’uso senza self-hosting né chiavi Enable Banking vostre.',
+          ]}
+        />
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        kicker="FAQ per famiglie"
+        title="Le domande di coppie e famiglie prima di iniziare."
+        subtitle="Risposte chiare su accesso singolo, money box virtuali e gestione degli sforamenti."
+        items={couplesItFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <RelatedLinksSection
+        tone="parchment"
+        kicker="Continua a esplorare"
+        title="Guide utili per impostare il Piano di casa."
+        items={[
+          {
+            kicker: 'Funzione',
+            title: 'Piano zero-based e target',
+            description: 'Target settimanali, mensili, annuali e personalizzati con anteprima Assegnazione automatica.',
+            href: '/it/funzioni/piano-zero-based',
+            ctaLabel: 'Scopri il Piano →',
+          },
+          {
+            kicker: 'Guida',
+            title: 'Guida al budget zero-based',
+            description: 'Come assegnare la liquidità osservata fino a zero e gestire i riporti mensili.',
+            href: '/it/guide/budget-zero-based',
+            ctaLabel: 'Leggi la guida →',
+          },
+          {
+            kicker: 'Prezzi',
+            title: 'Demo ospitata €0 vs self-host MIT',
+            description: 'Tutto ciò che è incluso gratis oggi senza carta né checkout.',
+            href: '/it/prezzi',
+            ctaLabel: 'Leggi i prezzi →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Un tavolo. Un Piano. Gli stessi saldi osservati."
+        meta="Demo ospitata €0 · Senza carta · Open source MIT"
+        primaryCta={<AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="marigold" />}
+        secondaryCta={
+          <a className="mka-btn-outline-light" href="/it/domande-frequenti">
+            Leggi tutte le FAQ →
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

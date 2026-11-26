@@ -1,0 +1,342 @@
+/* Tracky Atelier v2 — Phase b1 page-specific layout helpers.
+   Scoped strictly under .mka so nothing bleeds into /app or legacy .mk routes. */
+
+/* Related internal links band */
+.mka .mka-b1-related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.mka .mka-b1-related-card {
+  background: var(--mka-white);
+  border: 1.5px solid var(--mka-navy);
+  border-radius: var(--mka-radius-md);
+  padding: 1.35rem 1.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  transition:
+    border-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.mka .mka-b1-related-card:hover {
+  border-color: var(--mka-cobalt);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--mka-rule);
+}
+
+.mka .mka-b1-related-kicker {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--mka-cobalt);
+}
+
+.mka .mka-b1-related-card h3 {
+  margin: 0;
+  font-family: var(--mka-font-display);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--mka-navy);
+}
+
+.mka .mka-b1-related-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--mka-navy-muted);
+  line-height: 1.55;
+}
+
+.mka .mka-b1-related-cta {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--mka-cobalt);
+}
+
+.mka .mka-b1-related-card:hover .mka-b1-related-cta {
+  color: var(--mka-vermilion);
+}
+
+/* 4-card structured grid (buckets / scenarios / guardrails) */
+.mka .mka-b1-cards-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.mka .mka-b1-card {
+  background: var(--mka-white);
+  border: 1.5px solid var(--mka-navy);
+  border-radius: var(--mka-radius-md);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mka .mka-b1-card-tag {
+  align-self: flex-start;
+  font-family: var(--mka-font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+
+.mka .mka-b1-card-tag--cobalt {
+  background: var(--mka-cobalt-tint);
+  color: var(--mka-cobalt);
+}
+
+.mka .mka-b1-card-tag--marigold {
+  background: var(--mka-marigold-tint);
+  color: var(--mka-navy);
+}
+
+.mka .mka-b1-card-tag--sage {
+  background: var(--mka-sage-tint);
+  color: var(--mka-sage);
+}
+
+.mka .mka-b1-card-tag--vermilion {
+  background: var(--mka-vermilion-tint);
+  color: var(--mka-vermilion);
+}
+
+.mka .mka-b1-card h3 {
+  margin: 0.15rem 0 0;
+  font-family: var(--mka-font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.24;
+  color: var(--mka-navy);
+}
+
+.mka .mka-b1-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--mka-navy-muted);
+  line-height: 1.6;
+}
+
+.mka .mka-b1-card-foot {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--mka-rule);
+  font-size: 0.83rem;
+  color: var(--mka-navy);
+  line-height: 1.5;
+}
+
+/* Editorial prose + readable blog article layout (~70ch measure) */
+.mka .mka-b1-prose {
+  max-width: 70ch;
+}
+
+.mka .mka-b1-prose p {
+  margin: 0 0 1.1rem;
+  font-size: 1rem;
+  line-height: 1.72;
+  color: var(--mka-navy-muted);
+}
+
+.mka .mka-b1-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.mka .mka-b1-prose strong {
+  color: var(--mka-navy);
+}
+
+.mka .mka-b1-prose a {
+  color: var(--mka-cobalt);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mka .mka-b1-prose a:hover {
+  color: var(--mka-vermilion);
+}
+
+.mka .mka-b1-article-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 78ch;
+}
+
+.mka .mka-b1-entry {
+  background: var(--mka-white);
+  border: 1.5px solid var(--mka-navy);
+  border-radius: var(--mka-radius-md);
+  padding: clamp(1.35rem, 2.8vw, 1.95rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.mka .mka-b1-entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.mka .mka-b1-entry-num {
+  font-family: var(--mka-font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--mka-cobalt);
+  background: var(--mka-cobalt-tint);
+  border: 1px solid rgba(43, 89, 195, 0.28);
+  padding: 0.16rem 0.5rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.mka .mka-b1-entry h3 {
+  margin: 0;
+  font-family: var(--mka-font-display);
+  font-size: 1.28rem;
+  font-weight: 700;
+  line-height: 1.24;
+  color: var(--mka-navy);
+}
+
+.mka .mka-b1-entry p {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--mka-navy-muted);
+}
+
+.mka .mka-b1-entry strong {
+  color: var(--mka-navy);
+}
+
+.mka .mka-b1-entry a {
+  color: var(--mka-cobalt);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mka .mka-b1-entry a:hover {
+  color: var(--mka-vermilion);
+}
+
+/* Styled fenced code blocks for technical blog guides */
+.mka .mka-b1-pre {
+  margin: 0.25rem 0;
+  padding: 1rem 1.2rem;
+  background: var(--mka-navy);
+  color: var(--mka-cotton);
+  border-radius: 10px;
+  overflow-x: auto;
+  font-family: var(--mka-font-mono);
+  font-size: 0.85rem;
+  line-height: 1.62;
+}
+
+.mka .mka-b1-pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Framed figures for blog screenshots */
+.mka .mka-b1-figure {
+  margin: 0.5rem 0 0;
+  background: var(--mka-white);
+  border: 1.5px solid var(--mka-navy);
+  border-radius: var(--mka-radius-md);
+  padding: 0.85rem;
+  box-shadow: 5px 5px 0 rgba(28, 37, 65, 0.08);
+}
+
+.mka .mka-b1-figure-frame {
+  position: relative;
+  padding: 8px;
+  border: 1px dashed var(--mka-rule);
+  border-radius: 10px;
+  background: var(--mka-cotton);
+}
+
+.mka .mka-b1-figure img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--mka-rule);
+}
+
+.mka .mka-b1-figure figcaption {
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--mka-rule);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--mka-navy-muted);
+}
+
+/* Blog article FAQ stack (single-column measure matching article) */
+.mka .mka-b1-article-faq {
+  max-width: 78ch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Editorial card bullet list */
+.mka .mka-b1-plain-list {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.mka .mka-b1-plain-list li {
+  position: relative;
+  padding-left: 1.3rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: var(--mka-navy-muted);
+}
+
+.mka .mka-b1-plain-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0.2rem;
+  color: var(--mka-cobalt);
+  font-weight: 700;
+}
+
+.mka .mka-b1-plain-list strong {
+  color: var(--mka-navy);
+}
+
+@media (max-width: 1024px) {
+  .mka .mka-b1-related-grid,
+  .mka .mka-b1-cards-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .mka .mka-b1-related-grid,
+  .mka .mka-b1-cards-4 {
+    grid-template-columns: 1fr;
+  }
+}

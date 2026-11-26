@@ -1,27 +1,40 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  AuthCta,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  CodePlate,
+  FaqSection,
+  FinalCta,
+  GITHUB_REPO_URL,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import { RelatedLinksSection } from '@/components/marketing/atelier/b1-components';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const faq = [
+export const openSourceItFaq: Array<FaqItem> = [
   {
-    q: 'Tracky è davvero un budget open source self-hosted con licenza MIT?',
-    a: 'Sì. Il codice su masushidotdev/tracky ha licenza MIT: puoi usarlo, modificarlo e distribuirlo mantenendo il copyright notice. Esegui backend Convex e frontend Worker tuoi, con le tue chiavi. Il badge in questa pagina rispecchia la licenza del repo — un solo codice, leggibile da tutti.',
+    q: 'Tracky è davvero un’app di budget open source da eseguire in self-hosting con licenza MIT?',
+    a: 'Sì. Il repository su masushidotdev/tracky ha licenza MIT: puoi leggerlo, modificarlo, eseguirlo sul tuo server e ridistribuirlo mantenendo l’avviso di copyright. La demo ospitata e le installazioni self-hosted girano sullo stesso codice pubblico.',
   },
   {
-    q: 'La demo ospitata include sync bancaria e analyst?',
-    a: 'No. La demo è un deployment limitato dello stesso codice, così esplori senza configurare servizi. Sync bancaria e analyst si attivano nel tuo deployment con i tuoi servizi e le tue chiavi. Considera l\'analyst un aiuto, mai una consulenza finanziaria o un consulente finanziario.',
+    q: 'La demo ospitata include sincronizzazione bancaria e Analyst AI?',
+    a: 'No. La demo ospitata tiene spente le integrazioni di terze parti così puoi valutare Piano zero-based, Flusso di cassa, Report e import CSV nel browser senza configurare chiavi. La sincronizzazione bancaria PSD2 (Enable Banking, con sync automatico valutato ogni sei ore) e l’Analyst AI con scritture approvate si attivano sulla tua installazione con le tue credenziali. Considera l’Analyst uno strumento di esplorazione, mai consulenza finanziaria.',
   },
   {
-    q: 'Cosa serve per la mia installazione?',
-    a: 'Un tuo deployment Convex, un tuo ambiente WorkOS e facoltativamente la tua app Enable Banking per i collegamenti bancari. Il repo dà la procedura esatta: npm ci, .env.local compilato, npx convex dev e npm run dev. Non puntare mai un checkout al backend di qualcun altro.',
+    q: 'Cosa serve per avviare una mia istanza?',
+    a: 'Per il self-hosting con Docker (consigliato su computer personale o VPS singolo) servono Docker 24+ con Compose v2, Node.js 22 per eseguire node scripts/selfhost-setup.mjs e un account gratuito WorkOS AuthKit: Convex gira in locale dentro Docker senza telemetria di prodotto. Per sviluppo locale o deploy su Convex Cloud servono Node.js (>=22.23.4 <23), npm e un tuo deployment Convex (npx convex dev può creare automaticamente un ambiente WorkOS dev). Enable Banking, AI Gateway, Resend e Telegram sono tutti opzionali.',
   },
   {
-    q: 'Proiezioni, abbonamenti e money box sono affidabili?',
-    a: 'Le proiezioni sono stime basate sui dati salvati, mai saldi garantiti — verifica sempre con la banca. Il rilevamento abbonamenti è un suggerimento, non una certezza: conferma esercente, importo e cadenza. I money box sono buste virtuali dentro l\'app e ogni valuta mantiene totali separati — niente viene mai convertito.',
+    q: 'Come si comportano proiezioni, suggerimenti sugli abbonamenti e money box virtuali?',
+    a: 'Le proiezioni sono stime di pianificazione costruite su saldi registrati e impegni datati, mai risultati garantiti: verifica sempre rispetto alla banca. Il rilevamento delle sottoscrizioni arriva come suggerimento di cui confermi esercente, importo e cadenza. Le money box sono salvadanai virtuali che non spostano saldi bancari, e ogni valuta mantiene totali separati senza conversioni silenziose.',
   },
 ];
 
@@ -29,111 +42,370 @@ export const Route = createFileRoute('/it/open-source')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Tracky è open source MIT — installalo tu',
+      title: 'Open source e self-hosting (MIT) — Tracky',
       description:
-        'Tracky è MIT su GitHub: backend Convex, frontend TanStack, guide bilingue. Prova la demo ospitata o eseguilo tuo.',
+        'Tracky è open source MIT su GitHub: backend Convex, frontend TanStack Start, guide EN/IT e self-hosting Docker Compose senza telemetria.',
       locale: 'it',
       path: '/it/open-source',
       ogImage: ogImageFor('open-source'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/it/open-source', inLanguage: ['it', 'en'] }),
-        faqJsonLd(faq.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(openSourceItFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/it/' },
           { name: 'Open source', path: '/it/open-source' },
         ]),
       ],
     }),
-  component: OssIt,
+  component: OpenSourceIt,
 });
 
-function OssIt() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+function OpenSourceIt() {
+  const auth = Route.useLoaderData();
+  return <OpenSourceItView auth={auth} />;
+}
+
+export function OpenSourceItView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="it" auth={{ user, signInUrl, signUpUrl }} currentPath="/it/open-source">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">MIT</span>
-            <span className="mk-badge">GitHub</span>
-            <span className="mk-badge">Self-host</span>
+    <AtelierSite locale="it" auth={auth} currentPath="/it/open-source">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Percorso di navigazione"
+              items={[{ label: 'Home', href: '/it/' }, { label: 'Open source' }]}
+            />
+
+            <ChipRow>
+              <Chip tone="cobalt">Licenza MIT</Chip>
+              <Chip>masushidotdev/tracky</Chip>
+              <Chip tone="sage">Self-host Docker</Chip>
+              <Chip tone="marigold">Guide bilingui IT / EN</Chip>
+            </ChipRow>
+
+            <h1 className="mka-hero-headline">
+              Leggi ogni formula, fai fork del repository,{' '}
+              <span className="mka-accent-ink">eseguilo sul tuo server.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Tracky è un tracker per le finanze personali con licenza MIT costruito su Convex, TanStack Start e WorkOS
+              AuthKit. Ogni regola contabile, decisione architetturale e guida utente bilingue è pubblica su GitHub.
+              Prova prima la demo ospitata, poi passa al self-hosting con Docker Compose e le tue chiavi.
+            </p>
+
+            <div className="mka-hero-actions">
+              <a className="mka-btn-primary mka-btn-primary--lg" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+                Esplora il codice su GitHub ↗
+              </a>
+              <AuthCta auth={auth} locale="it" ctaLocation="marketing" />
+              <a className="mka-btn-secondary" href="/it/blog/self-hosting-tracky-docker">
+                Guida self-host Docker →
+              </a>
+            </div>
           </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            Leggilo.
-            <br />
-            <span className="stroke">Forkalo.</span>
-            <br />
-            <span className="hl">Eseguilo.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            Tracky è <b>licenza MIT</b> su <b>masushidotdev/tracky</b>: backend Convex, frontend TanStack Start, guide
-            bilingue, decisioni scritte in aperto. La demo è un deployment di questo codice — il tuo può abilitare sync
-            bancaria, analyst e funzioni Pro con le tue chiavi.
-          </p>
-        </Reveal>
-        <Reveal>
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            <MagnetCta href="https://github.com/masushidotdev/tracky">★ Stella su GitHub →</MagnetCta>
-            <MagnetCta href={user ? '/app' : signUpUrl} variant="pill" onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }>
-                {user ? 'Apri la demo →' : 'Prova la demo →'}
-            </MagnetCta>
+        </div>
+      </section>
+
+      {/* 2. ARCHITECTURE & PRIVACY */}
+      <Section id="architecture" tone="parchment">
+        <SectionHead
+          kicker="Architettura aperta"
+          title="Nessuna scatola nera tra te e i tuoi numeri."
+          subtitle="Leggi lo schema dati, le formule di calcolo e i confini di sicurezza prima di affidare un solo euro a Tracky."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Cosa c’è nel repository</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  DB
+                </span>
+                <div>
+                  <strong>Backend Convex tipizzato su runtime standard</strong>
+                  <span>
+                    Logica backend, indici, invarianti di pianificazione e adattatori bancari stanno in{' '}
+                    <code>convex/</code>. Le action applicative girano sul runtime standard (Web Crypto RS256 e fetch
+                    nativa), salvando il denaro in unità minori intere più codice valuta.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  UI
+                </span>
+                <div>
+                  <strong>Frontend TanStack Start (Worker + workerd in self-host)</strong>
+                  <span>
+                    Pagine pubbliche e area autenticata vivono in <code>src/</code>. In produzione girano su Cloudflare
+                    Workers; in self-hosting Docker il Worker compilato gira in locale su <code>workerd</code> dietro un
+                    edge proxy sulla porta 3000.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  DOC
+                </span>
+                <div>
+                  <strong>Guide utente bilingui e architecture decision records</strong>
+                  <span>
+                    Le guide utente escono in italiano e inglese in <code>src/content/user-docs/</code>, insieme a{' '}
+                    <code>docs/architecture.md</code>, <code>docs/self-hosting.it.md</code> e{' '}
+                    <code>docs/decisions/</code> con le motivazioni di ogni scelta tecnica.
+                  </span>
+                </div>
+              </li>
+            </ul>
           </div>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>Vuoi un budget tracker che puoi davvero ispezionare. Tracky è un budget open source self-hosted con licenza MIT su masushidotdev/tracky: backend Convex e frontend TanStack Start che puoi leggere riga per riga. Niente scatole nere tra te e i tuoi soldi.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>Prova prima la demo ospitata e sfoglia Dashboard, Plan, Report e Cash Flow. Quando ti convince, esegui il tuo deployment con le tue chiavi personali: la tua installazione può attivare sync bancaria, analyst e funzioni Pro-gated che restano spente sulla demo condivisa.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>Le proiezioni sono sempre stime calcolate dai dati salvati e i totali in valute diverse non vengono mai convertiti. Tutto è documentato in inglese e italiano e ogni decisione di prodotto è scritta in aperto, così capisci perché le cose funzionano in un certo modo.</p>
-          <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>Fai fork del repo, apri una pull request mirata e il tuo miglioramento può arrivare a tutti. Dai una stella al repo per restare aggiornato sugli sviluppi. I tuoi soldi, il tuo server, le tue regole — verificate nel codice che puoi leggere.</p>
-        </Reveal>
-      </section>
-      <MarqueeBand items={['LICENZA MIT', 'CONVEX + TANSTACK', 'GUIDE BILINGUE', 'DECISIONI IN APERTO', 'LE TUE CHIAVI']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Un budget tracker open source self-hosted con licenza MIT</h2>
-          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>La licenza MIT ti dà il playbook completo: usa Tracky, modificalo e distribuisci la tua versione, mantenendo il copyright notice. Sotto il cofano trovi backend Convex con schema tipizzato, frontend TanStack Start e deployment su Cloudflare Worker — lo stesso codice della demo ospitata. Le guide utente escono in inglese e italiano e le decisioni di prodotto sono scritte in aperto, così sai sempre perché una funzione si comporta in un certo modo. Leggi il codice prima di affidargli un solo euro: è proprio questo il punto.</p>
-        </Reveal>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Dal clone al tuo deployment</h2>
-          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>Clona il repo, installa con npm ci, copia .env.example in .env.local e punta l'app al tuo deployment Convex con npx convex dev. Ogni installazione ha backend proprio, ambiente WorkOS proprio e facoltativamente la propria app Enable Banking — non tocchi mai i dati altrui. Lancia npm run dev in locale, poi pubblica il frontend Worker collegandolo al tuo backend Convex per la produzione. Con le tue chiavi attivi l'intero stack — sync bancaria, analyst e funzioni Pro-gated — e puoi contribuire upstream con i tuoi miglioramenti.</p>
-        </Reveal>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Prova la demo, poi contribuisci</h2>
-          <p className="mk-sub" style={{ maxWidth: 700, marginTop: 12 }}>Comincia dalla demo ospitata per sentire il prodotto prima del self-host. Quando vuoi restituire qualcosa, metti una stella a masushidotdev/tracky e apri una pull request mirata — un tema per modifica, suite di test verde, lint pulito. Aggiorna le guide in inglese e italiano quando cambia un comportamento e usa solo dati fittizi stile Acme: mai nomi reali, saldi o export bancari nei commit. I maintainer aggiungono la voce di changelog al merge, quindi puoi saltare quel file — i piccoli contributi onesti battono sempre i grandi redesign.</p>
-        </Reveal>
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>Domande e risposte.</h2>
-        </Reveal>
-        {faq.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Fiducia, compilata.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>MIT · GitHub · self-host in minuti</p>
-            <MagnetCta href="https://github.com/masushidotdev/tracky">Leggi il codice →</MagnetCta>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Privacy, telemetria e confini chiari</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  0
+                </span>
+                <div>
+                  <strong>Zero telemetria di prodotto in self-host</strong>
+                  <span>
+                    Le build Docker disattivano PostHog (<code>VITE_POSTHOG_ENABLED=false</code>), beacon Convex (
+                    <code>DISABLE_BEACON=true</code>) e telemetria Wrangler a tempo di build. Nella demo ospitata
+                    PostHog EU resta spento finché non clicchi Accetta.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  KEY
+                </span>
+                <div>
+                  <strong>Integrazioni opzionali con le tue chiavi</strong>
+                  <span>
+                    Enable Banking (sincronizzazione PSD2 valutata ogni sei ore), Analyst AI, report email Resend e
+                    Telegram restano spenti finché non inserisci le tue chiavi. I maintainer non vedono mai le tue
+                    credenziali bancarie.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <div className="mka-disclosure-box">
+              <strong>Un solo servizio esterno obbligatorio:</strong> anche nel self-hosting con Docker, l’accesso usa{' '}
+              <strong>WorkOS AuthKit</strong> (servizio SaaS esterno con piano gratuito per sviluppatori). Oggi Tracky
+              non è quindi completamente offline o isolato al 100%.
+            </div>
           </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+        </div>
+      </Section>
+
+      {/* 3. TWO WAYS TO RUN */}
+      <Section id="run">
+        <SectionHead
+          kicker="Avvia la tua istanza"
+          title="Docker Compose per il self-hosting, oppure Convex Cloud per sviluppare."
+          subtitle="Non puntare mai un checkout al backend di qualcun altro. Scegli lo stack Docker per un server personale o avvia in locale con Vite e Convex Cloud."
+        />
+
+        <div className="mka-deploy-grid">
+          <article className="mka-deploy-card">
+            <div className="mka-deploy-head">
+              <div>
+                <h3>Docker Compose (Self-host)</h3>
+                <p className="mka-deploy-sub">Volume SQLite Convex locale + container app</p>
+              </div>
+              <Chip tone="sage">Consigliato</Chip>
+            </div>
+
+            <ul className="mka-check-list">
+              <li>Richiede Docker 24+ (Compose v2), Node.js 22 (per lo script di setup) e un account gratuito WorkOS AuthKit</li>
+              <li>Lo script di setup non ha dipendenze npm e scrive un file <code>.env</code> con permessi <code>0600</code></li>
+              <li>Immagini Convex pinnate per digest; telemetria di prodotto disattivata a tempo di build</li>
+              <li>Supporta reverse proxy TLS opzionale (Caddy, Nginx, Traefik) e backup tar del volume</li>
+            </ul>
+
+            <CodePlate
+              ariaLabel="Comandi per il self-hosting con Docker Compose"
+              lines={[
+                { text: 'git clone https://github.com/masushidotdev/tracky.git' },
+                { text: 'cd tracky' },
+                { text: 'node scripts/selfhost-setup.mjs' },
+                { text: 'docker compose up -d' },
+              ]}
+            />
+
+            <div className="mka-deploy-cta">
+              <a className="mka-btn-secondary mka-btn-secondary--sm" href="/it/blog/self-hosting-tracky-docker">
+                Guida Docker passo passo →
+              </a>
+              <a
+                className="mka-text-link"
+                href={`${GITHUB_REPO_URL}/blob/main/docs/self-hosting.it.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                docs/self-hosting.it.md ↗
+              </a>
+            </div>
+          </article>
+
+          <article className="mka-deploy-card">
+            <div className="mka-deploy-head">
+              <div>
+                <h3>Sviluppo locale e Convex Cloud</h3>
+                <p className="mka-deploy-sub">Per chi contribuisce o fa deploy su Cloudflare Worker + Convex Cloud</p>
+              </div>
+              <Chip tone="cobalt">Node 22 + npm</Chip>
+            </div>
+
+            <ul className="mka-check-list">
+              <li>Richiede Node.js <code>&gt;=22.23.4 &lt;23</code> (fissato in <code>.nvmrc</code>) e npm</li>
+              <li><code>npx convex dev</code> configura un deployment Convex dev e un ambiente WorkOS AuthKit dev</li>
+              <li><code>npm run dev</code> genera <code>WORKOS_COOKIE_PASSWORD</code> se assente e avvia Vite + Convex</li>
+              <li><code>npm run deploy</code> pubblica le funzioni Convex e il Cloudflare Worker</li>
+            </ul>
+
+            <CodePlate
+              ariaLabel="Comandi di sviluppo locale"
+              lines={[
+                { text: 'npm ci' },
+                { text: 'npx convex dev' },
+                { text: 'npm run dev' },
+              ]}
+            />
+
+            <div className="mka-deploy-cta">
+              <a
+                className="mka-text-link"
+                href={`${GITHUB_REPO_URL}/blob/main/README.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                README.md ↗
+              </a>
+              <a
+                className="mka-text-link"
+                href={`${GITHUB_REPO_URL}/blob/main/docs/deployment.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                docs/deployment.md ↗
+              </a>
+            </div>
+          </article>
+        </div>
+      </Section>
+
+      {/* 4. CONTRIBUTING & SECURITY */}
+      <Section id="contribute" tone="parchment">
+        <SectionHead
+          kicker="Contributi e sicurezza"
+          title="Pull request mirate e gestione rigorosa dei segreti."
+          subtitle="Tracky è progettato per restare leggibile mentre cresce. Ogni modifica accompagna codice, test e documentazione in italiano e inglese."
+        />
+
+        <div className="mka-editorial-grid">
+          <article className="mka-editorial-card">
+            <h3>Come contribuire al progetto</h3>
+            <p>
+              Esplora prima la demo ospitata, poi apri una pull request focalizzata su <code>masushidotdev/tracky</code>:
+              un solo tema per modifica, suite di test verde (<code>npm test</code>) e zero warning TypeScript o ESLint
+              (<code>npm run lint</code>).
+            </p>
+            <ul className="mka-b1-plain-list">
+              <li>
+                <strong>Guide bilingui aggiornate insieme al codice:</strong> aggiorna sia{' '}
+                <code>src/content/user-docs/en/</code> sia <code>it/</code> quando cambia un comportamento visibile.
+              </li>
+              <li>
+                <strong>Solo dati fittizi:</strong> usa fixture stile Acme nei test e negli screenshot — mai nomi reali,
+                IBAN, saldi o export bancari nei commit.
+              </li>
+              <li>
+                <strong>Changelog gestito al merge:</strong> i maintainer aggiornano <code>CHANGELOG.md</code>, quindi le
+                PR possono lasciarlo intatto.
+              </li>
+            </ul>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Policy di sicurezza e chiavi</h3>
+            <p>
+              I segreti risiedono nelle variabili d’ambiente cifrate di Convex o nei segreti di Cloudflare Worker — mai
+              in git, nel codice client o nelle variabili <code>VITE_*</code> visibili al browser. L’installazione delle
+              dipendenze attiva <code>githooks/pre-commit</code> per bloccare file env e chiavi PEM; la CI ripete lo
+              stesso controllo insieme alla scansione di pattern IBAN.
+            </p>
+            <p>
+              Segnala eventuali vulnerabilità in privato tramite GitHub Security Advisories (mai in issue pubbliche),
+              usando solo dati fittizi. Leggi la policy completa in{' '}
+              <a
+                className="mka-text-link"
+                href={`${GITHUB_REPO_URL}/blob/main/SECURITY.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                SECURITY.md ↗
+              </a>
+              .
+            </p>
+          </article>
+        </div>
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        kicker="FAQ open source"
+        title="Domande su licenza MIT, self-hosting e regole."
+        subtitle="Risposte dirette allineate a README.md, SECURITY.md e docs/self-hosting.it.md."
+        items={openSourceItFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <RelatedLinksSection
+        tone="parchment"
+        kicker="Guide correlate"
+        title="Esplora il resto del progetto."
+        items={[
+          {
+            kicker: 'Guida Docker',
+            title: 'Self-hosting di Tracky con Docker passo passo',
+            description: 'Script interattivo, configurazione manuale openssl, backfill locale, reverse proxy TLS e backup.',
+            href: '/it/blog/self-hosting-tracky-docker',
+            ctaLabel: 'Leggi la guida Docker →',
+          },
+          {
+            kicker: 'Note di rilascio',
+            title: 'Tracky v0.1.0 — Primo rilascio pubblico',
+            description: 'Cosa include la v0.1.0 taggata tra Piano, prestiti, import CSV, Report e sicurezza.',
+            href: '/it/blog/tracky-v0-1-0',
+            ctaLabel: 'Leggi le note v0.1.0 →',
+          },
+          {
+            kicker: 'Prezzi',
+            title: 'Confronto Demo ospitata vs Self-host',
+            description: 'Tutte le funzioni incluse a €0 oggi e come è delimitato nel codice il piano Pro riservato.',
+            href: '/it/prezzi',
+            ctaLabel: 'Leggi i prezzi →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Fiducia verificata in un codice che puoi leggere davvero."
+        meta="Licenza MIT · Repository pubblico su GitHub · Self-hosting con Docker Compose"
+        primaryCta={<AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="marigold" />}
+        secondaryCta={
+          <a className="mka-btn-outline-light" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+            Esplora il codice su GitHub ↗
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

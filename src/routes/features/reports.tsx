@@ -1,50 +1,63 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  Breadcrumb,
+  Chip,
+  FaqSection,
+  FinalCta,
+  FitCheck,
+  ScopePill,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import {
+  B2AppCta,
+  B2AvailabilityBand,
+  B2PillarGrid,
+  B2RelatedSection,
+} from '@/components/marketing/atelier/b2-sections';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const INTRO = "You want answers from your money, and Tracky's spending reports CSV export gives them to you fast. You get three tabs — cash flow, spending, income — that show where money comes from, where it goes, and how habits change over time. You see every currency separately, so you never get a misleading mixed total.\n\nYou compare groups in Breakdown mode or watch months, quarters, and years in Trends mode. You switch between a donut and horizontal bars for spending and income, or grouped and stacked bars for trends. You tap any segment, legend row, or bar to open the newest transactions underneath, with date, description, category, and signed amount.\n\nYou filter by relative or custom dates, grouping, accounts, categories, tags, and amount limits. You save up to 20 views that store only the configuration, so This month always follows the current month. You drill into the ten largest groups while smaller ones combine into Other, and hidden transactions stay out of every total.\n\nYou explore every tab in the demo — the badge says Works in demo — with filters, views, and export ready to try. You keep transfers and internal movements out of spending and income, so your totals stay clean. You finish with clean numbers, ready to share with your accountant.";
-
-const BLOCKS = [
-  { h: "Cash flow, spending, and income in one place",
-    p: "You open Reports when you want the full picture without guessing. You pick Cash Flow to connect income sources to spending groups and categories in a flow diagram. You pick Spending for debit expenses only, with transfers and internal movements left out. You pick Income for credit income only, with the same clean exclusion. You read Income, Expenses, Net, and Savings rate for each currency, where savings rate is net divided by income and zero when there is no income. You switch between Breakdown comparisons and Trends over months, quarters, or years whenever you need a different angle.", },
-  { h: "Your spending reports CSV export workflow: filter, inspect, save",
-    p: "You start by choosing a tab, a mode, and a chart style that fits your question. You set a relative range like this month or a custom start and end date, then group by category, category group, counterparty, or account. You narrow further with accounts, categories, tags, and optional minimum and maximum amounts, watching active tags appear as removable chips. In a spending or income breakdown you select a named segment, legend row, or bar to open the newest transactions, loading more when a group runs long. You save the full configuration as a named view, reopen it later, and export the trend series and breakdown totals when you need a file.", },
-  { h: "Honest limits: what reports do not do",
-    p: "You work with a badge that says Works in demo, so you can explore every report tab right away. You always see each currency in its own section, and Tracky never converts amounts or merges them into one total. You get aggregated trend series and breakdown totals in the CSV file, not the individual drill-down rows. You see the ten largest groups in the chart while smaller ones combine into Other, so you open a named group for full detail. You save up to 20 views that store settings only, and transactions marked Hidden from reports never appear in totals.", },
-  { h: "Who reports are for",
-    p: "You are a good fit for reports if you run a household, a freelance activity, or a small project across one or more accounts. You like grouping by category, counterparty, or account and checking Trends before you change a habit. You save views for recurring questions like this month spending or yearly income, then reopen them in one click. You filter by tags and amounts when you want a focused answer without touching your data. You export aggregated totals when your accountant or a spreadsheet needs clean numbers by currency.", },
-];
-
-const PAGE_FAQ = [
-  { q: "What does the spending reports CSV export include?",
-    a: "You download the current trend series and breakdown totals as report-<tab>-<from>-<to>.csv. You get aggregated values grouped by currency, not the individual transactions from drill-down. You open the file easily because Tracky uses a comma for decimal-point locales and a semicolon for decimal-comma locales.", },
-  { q: "How do currencies work in reports?",
-    a: "You see Income, Expenses, Net, and Savings rate inside each currency section. You read charts, drill-down lists, and exported rows grouped by currency. You use account filters when you want to focus on one currency or institution. You never get converted amounts or a combined total.", },
-  { q: "What is the difference between Breakdown and Trends?",
-    a: "You use Breakdown to compare groups across the selected range with a donut or horizontal bars. You use Trends to split the same data into monthly, quarterly, or yearly periods with grouped or stacked bars. You pick Cash Flow for the flow view, Spending for debit expenses, and Income for credit income.", },
-  { q: "How do saved views work?",
-    a: "You configure tab, mode, chart, dates, grouping, accounts, categories, tags, and amount limits. You open Saved reports, choose Save current report, and enter a recognizable name. You restore the full view later, rename it, or delete it permanently. You save up to 20 views, and relative ranges like This month follow the current month.", },
-  { q: "Why do some transactions not appear in reports?",
-    a: "You never see transfers and internal movements in Spending or Income because only classified expenses and income count. You never see transactions marked Hidden from reports in any total or drill-down row. You match a tag filter with at least one selected tag. You open a named group for detail because smaller groups combine into Other.", },
+export const reportsEnFaq: Array<FaqItem> = [
+  {
+    q: 'What does the Reports CSV export contain?',
+    a: 'Export CSV downloads the current trend series and breakdown totals as report-<tab>-<from>-<to>.csv, grouped by currency. It contains aggregated report values rather than individual drill-down transactions. Tracky uses a comma separator for decimal-point locales and a semicolon for decimal-comma locales so spreadsheets open cleanly.',
+  },
+  {
+    q: 'How are multiple currencies handled in Reports?',
+    a: 'Every currency gets its own section with Income, Expenses, Net, and Savings rate (net divided by income, or zero when there is no income). Charts, drill-down lists, and CSV rows stay grouped by currency—Tracky never converts or merges amounts behind your back.',
+  },
+  {
+    q: 'What is the difference between Breakdown and Trends?',
+    a: 'Breakdown compares groups across the selected date range using a donut or horizontal bars (or a flow diagram on the Cash Flow tab). Trends splits the same data into monthly, quarterly, or yearly intervals with grouped or stacked bars.',
+  },
+  {
+    q: 'How do Saved reports work?',
+    a: 'Configure your tab, mode, chart style, date preset, grouping, accounts, categories, tags, and amount limits, then save the view under a recognizable name. You can store up to 20 views; they save configuration only, so relative ranges like This month follow the current month automatically.',
+  },
+  {
+    q: 'Why do some transactions stay out of Reports?',
+    a: 'Transfers and internal movements are excluded from Spending and Income so only classified expenses and income count. Transactions marked Hidden from reports never appear in totals or drill-down rows. Charts display the ten largest groups and roll smaller ones into Other—open any named group to inspect its individual transactions.',
+  },
 ];
 
 export const Route = createFileRoute('/features/reports')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Reports that talk: spending, income, CSV · Tracky',
+      title: 'Reports: Cash Flow Sankey, breakdowns & CSV export · Tracky',
       description:
-        'Cash-flow Sankey, spending and income by category, trends vs breakdown, saved views and CSV export. Every currency kept separate.',
+        'Cash Flow Sankey, Spending, and Income reports with Breakdown vs. Trends, drill-down, up to 20 saved views, and per-currency CSV export.',
       locale: 'en',
       path: '/features/reports',
       ogImage: ogImageFor('feature-reports'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/features/reports', inLanguage: ['en', 'it'] }),
-        faqJsonLd(PAGE_FAQ.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(reportsEnFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/' },
           { name: 'Reports', path: '/features/reports' },
@@ -55,85 +68,312 @@ export const Route = createFileRoute('/features/reports')({
 });
 
 function ReportsEn() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <ReportsEnView auth={auth} />;
+}
+
+export function ReportsEnView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="en" auth={{ user, signInUrl, signUpUrl }} currentPath="/features/reports">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Works in the demo</span>
-            <span className="mk-badge">Free</span>
+    <AtelierSite locale="en" auth={auth} currentPath="/features/reports">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb ariaLabel="Breadcrumb" items={[{ label: 'Home', href: '/' }, { label: 'Reports' }]} />
+
+            <div className="mka-b2-hero-badges">
+              <ScopePill scope="both" label="Demo + Self-host" />
+              <Chip tone="marigold">€0 today</Chip>
+              <Chip>Per-currency sections</Chip>
+              <Chip>Aggregated CSV export</Chip>
+            </div>
+
+            <h1 className="mka-hero-headline">
+              Spending, income, and cash-flow reports <span className="mka-accent-ink">with clean numbers.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Explore where money comes from and where it goes across three focused tabs—<strong>Cash Flow</strong>{' '}
+              Sankey, <strong>Spending</strong>, and <strong>Income</strong>. Switch between Breakdown and Trends, drill
+              into underlying transactions, save up to 20 reusable views, and export per-currency CSV totals.
+            </p>
+
+            <div className="mka-hero-actions">
+              <B2AppCta
+                auth={auth}
+                locale="en"
+                loggedInHref="/app/reports"
+                loggedInLabel="Open Reports →"
+                loggedOutLabel="Try Reports in the demo →"
+              />
+              <a className="mka-btn-secondary" href="/vs-spreadsheets">
+                Compare with spreadsheets →
+              </a>
+            </div>
+
+            <p className="mka-hero-meta">
+              <span>Works in the hosted demo</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>Transfers excluded automatically</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>Never invents exchange rates</span>
+            </p>
           </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            Numbers
-            <br />
-            <span className="stroke">that</span> <span className="hl">talk.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            Three tabs — <b>cash-flow Sankey, spending, income</b> — by category with trends vs breakdown, saved views
-            and <b>CSV export</b> your accountant will love. Transfers excluded from spending, every currency shown
-            separately, never converted behind your back.
-          </p>
-        </Reveal>
-        <Reveal>
-          <MagnetCta href={user ? '/app/reports' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Open reports →' : 'Try the demo →'}
-            </MagnetCta>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>{INTRO}</p>
-        </Reveal>
+        </div>
       </section>
-      <MarqueeBand items={['SANKEY FLOW', 'BY CATEGORY', 'TRENDS VS BREAKDOWN', 'SAVED VIEWS', 'CSV EXPORT']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {BLOCKS.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            <p className="mk-sub" style={{ maxWidth: 700 }}>{block.p}</p>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>Questions, answered.</h2>
-        </Reveal>
-        {PAGE_FAQ.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Your accountant says thanks.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · reports included · no card</p>
-            <MagnetCta href={user ? '/app/reports' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Open reports →' : 'Start free →'}
-            </MagnetCta>
+
+      {/* 2. AVAILABILITY & THE THREE TABS */}
+      <Section id="overview" tone="parchment">
+        <SectionHead
+          kicker="Availability & tabs"
+          title="Three tabs built for distinct financial questions."
+          subtitle="Every tab, filter, saved view, and CSV export is included at €0 on both the hosted demo and self-hosted Docker."
+        />
+
+        <B2AvailabilityBand
+          demoTone="sage"
+          demoBadge="Included at €0"
+          demoTitle="Hosted demo (trytracky.app)"
+          demoBody="Cash Flow Sankey, Spending, Income, Breakdown and Trends modes, transaction drill-down, up to 20 saved views, and aggregated CSV export work immediately on manual accounts and CSV imports."
+          selfHostTone="sage"
+          selfHostBadge="Included · MIT"
+          selfHostTitle="Self-hosted Docker"
+          selfHostBody="Runs the identical reporting engine locally. If you enable the optional AI Analyst on your self-hosted instance, it can query the same exact date-range aggregations in chat."
+        />
+
+        <div style={{ marginTop: '1.75rem' }}>
+          <B2PillarGrid
+            items={[
+              {
+                tag: 'Tab 01',
+                title: 'Cash Flow',
+                body: 'Compares incoming and outgoing money. Composition mode draws a Sankey flow diagram connecting income sources to spending groups and categories.',
+                footer: (
+                  <>
+                    <strong>KPIs per currency:</strong> Income, Expenses, Net, and Savings rate (net ÷ income).
+                  </>
+                ),
+              },
+              {
+                tag: 'Tab 02',
+                title: 'Spending',
+                body: 'Tracks classified debit expenses only—leaving transfers and internal movements out—using donut or horizontal bars in Breakdown, or grouped/stacked bars in Trends.',
+                footer: (
+                  <>
+                    <strong>Instant drill-down:</strong> Select any named segment, legend row, or bar to inspect the
+                    newest matching transactions.
+                  </>
+                ),
+              },
+              {
+                tag: 'Tab 03',
+                title: 'Income',
+                body: 'Focuses strictly on classified credit income with the same clean transfer exclusion, ready to group by category, counterparty, or account across months, quarters, or years.',
+                footer: (
+                  <>
+                    <strong>Focused clarity:</strong> Charts keep the ten largest groups visible and bundle smaller
+                    entries into <strong>Other</strong>.
+                  </>
+                ),
+              },
+            ]}
+          />
+        </div>
+      </Section>
+
+      {/* 3. FILTERS, SAVED VIEWS & CSV */}
+      <Section id="workflow">
+        <SectionHead
+          kicker="Filtering & export"
+          title="Filter down to the exact answer, save the view, or export CSV."
+          subtitle="Reports stay read-only over your ledger so you can slice periods, tags, and counterparties without altering a single booking."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Granular filters &amp; up to 20 saved views</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Relative or custom date ranges</strong>
+                  <span>
+                    Pick presets such as last 30 days, this month, this year, or last 12 months—or exact start and end
+                    dates. Relative presets evaluate when you open the report, so <strong>This month</strong> always
+                    follows the current month.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Group &amp; slice across dimensions</strong>
+                  <span>
+                    Group by category, category group, counterparty, or account; switch Trends between monthly,
+                    quarterly, and yearly intervals; filter by accounts, categories, tags (matching at least one
+                    selected tag), and min/max amounts.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Save, restore, rename, or delete views</strong>
+                  <span>
+                    Store up to 20 named report configurations in <strong>Saved reports</strong>. Saving a view stores
+                    settings only—never duplicate transaction copies.
+                  </span>
+                </div>
+              </li>
+            </ul>
           </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Currency discipline &amp; CSV export</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  FX
+                </span>
+                <div>
+                  <strong>Separate sections per currency</strong>
+                  <span>
+                    EUR, USD, and other currencies are always totaled, charted, drilled down, and exported separately.
+                    Use account filters whenever you want to focus on one currency or institution.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  CSV
+                </span>
+                <div>
+                  <strong>Spreadsheet-ready aggregated export</strong>
+                  <span>
+                    <strong>Export CSV</strong> downloads trend series and breakdown totals as{' '}
+                    <code>report-&lt;tab&gt;-&lt;from&gt;-&lt;to&gt;.csv</code>, choosing a comma for decimal-point
+                    locales and a semicolon for decimal-comma locales.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--vermilion" aria-hidden="true">
+                  HIDE
+                </span>
+                <div>
+                  <strong>Hidden transactions stay hidden</strong>
+                  <span>
+                    Any movement marked <strong>Hidden from reports</strong> (manually or via an auto-categorization
+                    rule) stays out of every total and drill-down list.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <div className="mka-disclosure-box">
+              <strong>Aggregated vs. full backup:</strong> Reports CSV exports aggregated totals and trend series, not
+              individual drill-down rows. Whenever you need a full raw copy of your workspace, request a full JSON export
+              from <strong>Settings</strong>.
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* 4. FIT CHECK */}
+      <Section id="fit" tone="parchment">
+        <SectionHead
+          kicker="Candid fit check"
+          title="Who Tracky Reports are built for—and what they intentionally leave out."
+        />
+
+        <FitCheck
+          yesTitle="Good fit if you…"
+          yesItems={[
+            'Run a household or freelance activity across multiple accounts and want transfers kept out of spending.',
+            'Want one-click saved views for recurring reviews such as monthly spending, yearly income, or tagged projects.',
+            'Need clean per-currency CSV summaries to hand to an accountant or drop into a spreadsheet.',
+            'Like drilling straight from a chart bar or donut slice into the underlying booked transactions.',
+          ]}
+          noTitle="Not the right fit if you…"
+          noItems={[
+            'Expect automatic exchange-rate conversion combining EUR and USD into one blended chart.',
+            'Need raw line-item accounting ledgers inside the report CSV (use Settings JSON export for full raw data).',
+            'Require formal tax filing or double-entry bookkeeping reports for a corporation.',
+          ]}
+        />
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="cotton"
+        kicker="Reports FAQ"
+        title="Questions about CSV exports, currencies, and saved views."
+        subtitle="Every detail matches Tracky’s reporting implementation in v0.1.0."
+        moreLink={{ href: '/faq', label: 'Read the full FAQ →' }}
+        items={reportsEnFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <B2RelatedSection
+        tone="parchment"
+        kicker="Continue exploring"
+        title="Connected parts of Tracky."
+        items={[
+          {
+            kicker: 'Feature · Demo + Self-host',
+            title: 'Zero-based Plan & targets',
+            description: 'Reports and Plan share the exact same global categories—tag or categorize once and both stay in sync.',
+            href: '/features/zero-based-plan',
+            linkLabel: 'Explore the Plan →',
+          },
+          {
+            kicker: 'Feature · Demo + Self-host',
+            title: 'Cash Flow projection calendar',
+            description: 'Reports look back at what happened; Cash Flow projects known future bills onto observed balances.',
+            href: '/features/cash-flow',
+            linkLabel: 'Explore Cash Flow →',
+          },
+          {
+            kicker: 'Comparison',
+            title: 'Tracky vs. spreadsheets',
+            description: 'Keep CSV portability while dropping fragile formulas, manual duplicate checks, and broken pivot tables.',
+            href: '/vs-spreadsheets',
+            linkLabel: 'Read the comparison →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Clean totals per currency, ready to inspect or export."
+        meta="€0 hosted demo · All 3 report tabs & CSV export included · No credit card"
+        primaryCta={
+          <B2AppCta
+            auth={auth}
+            locale="en"
+            loggedInHref="/app/reports"
+            loggedInLabel="Open Reports →"
+            loggedOutLabel="Try the demo free →"
+            variant="marigold"
+          />
+        }
+        secondaryCta={
+          <a className="mka-btn-outline-light" href="/pricing">
+            Compare Demo vs. Self-host →
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

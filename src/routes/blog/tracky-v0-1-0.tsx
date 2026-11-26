@@ -1,8 +1,23 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import type { MarketingAuth } from '@/components/marketing/site';
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
+
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  AuthCta,
+  Breadcrumb,
+  Chip,
+  ChipRow,
+  FinalCta,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import {
+  B1ArticleEntry,
+  B1ArticleFaqList,
+  B1Figure,
+  RelatedLinksSection,
+} from '@/components/marketing/atelier/b1-components';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
 import { SITE_ORIGIN } from '@/lib/marketing/pages';
 import {
@@ -34,12 +49,6 @@ type HighlightItem = {
   body: string;
   figures?: Array<HighlightFigure>;
 };
-
-const inlineLinkStyle = {
-  color: 'inherit',
-  textDecoration: 'underline',
-  textUnderlineOffset: 3,
-} as const;
 
 const highlights: Array<HighlightItem> = [
   {
@@ -94,7 +103,7 @@ const highlights: Array<HighlightItem> = [
   },
 ];
 
-const faq = [
+export const releaseV010EnFaq: Array<FaqItem> = [
   {
     q: 'What is the difference between the hosted demo and self-hosting v0.1.0?',
     a: 'Both run the same MIT-licensed codebase. The hosted demo at trytracky.app costs €0 with no card and no checkout, and gives you manual accounts, browser-side CSV import, the zero-based Plan, Cash Flow, Reports, Goals, and virtual money boxes. Bank sync and the AI Analyst stay disabled on the hosted demo; you enable them on your own deployment with your own keys.',
@@ -118,7 +127,7 @@ export const Route = createFileRoute('/blog/tracky-v0-1-0')({
   head: () => {
     const title = 'Tracky v0.1.0 — First public open-source release';
     const description =
-      'Tracky v0.1.0 is tagged under the MIT license: zero-based Plan, loans, browser CSV import, Cash Flow, Reports, immediate erasure, and runtime security hardening.';
+      'Tracky v0.1.0 is tagged under the MIT license: zero-based Plan, loans, browser CSV import, Cash Flow, Reports, immediate erasure, and security hardening.';
     const url = 'https://www.trytracky.app/blog/tracky-v0-1-0';
     const image = ogImageFor('blog-v0-1-0');
 
@@ -139,7 +148,7 @@ export const Route = createFileRoute('/blog/tracky-v0-1-0')({
           dateModified: PUBLISH_DATE,
           inLanguage: 'en',
         }),
-        faqJsonLd(faq.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(releaseV010EnFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/' },
           { name: 'Tracky v0.1.0', path: '/blog/tracky-v0-1-0' },
@@ -156,232 +165,232 @@ function ReleaseV010En() {
 }
 
 export function ReleaseV010EnView({ auth }: { auth: MarketingAuth }) {
-  const { user, signUpUrl } = auth;
-  const demoHref = user ? '/app' : signUpUrl;
-
   return (
-    <MarketingSite locale="en" auth={auth} currentPath="/blog/tracky-v0-1-0">
+    <AtelierSite locale="en" auth={auth} currentPath="/blog/tracky-v0-1-0">
       <article>
-        <header className="mk-hero">
-          <Reveal>
-            <div className="mk-badges">
-              <span className="mk-badge solid">Release</span>
-              <span className="mk-badge">v0.1.0</span>
-              <time className="mk-badge" dateTime={PUBLISH_DATE}>
-                24 Nov 2026
-              </time>
-              <span className="mk-badge">MIT</span>
+        {/* 1. ARTICLE HERO */}
+        <header className="mka-hero mka-hero--page">
+          <div className="mka-container">
+            <div className="mka-hero-single">
+              <Breadcrumb
+                ariaLabel="Breadcrumb"
+                items={[{ label: 'Home', href: `${SITE_ORIGIN}/` }, { label: 'Tracky v0.1.0' }]}
+              />
+
+              <ChipRow>
+                <Chip tone="cobalt">Release notes</Chip>
+                <Chip tone="marigold">v0.1.0</Chip>
+                <time className="mka-stamp" dateTime={PUBLISH_DATE}>
+                  24 Nov 2026
+                </time>
+                <Chip tone="sage">MIT License</Chip>
+              </ChipRow>
+
+              <h1 className="mka-hero-headline">
+                Tracky <span className="mka-accent-ink">v0.1.0</span> is out.
+              </h1>
+
+              <p className="mka-hero-dek">
+                First public tagged release of Tracky, published on <strong>24 November 2026</strong> under the MIT
+                license. One readable baseline covering the initial public release through PR #64 — try the free demo or
+                self-host it with your own keys.
+              </p>
+
+              <aside aria-label="Release links" className="mka-hero-actions">
+                <a className="mka-btn-primary mka-btn-primary--lg" href={RELEASE_URL} target="_blank" rel="noopener noreferrer">
+                  GitHub release v0.1.0 ↗
+                </a>
+                <a className="mka-btn-secondary" href={CHANGELOG_URL} target="_blank" rel="noopener noreferrer">
+                  Read CHANGELOG.md ↗
+                </a>
+              </aside>
             </div>
-          </Reveal>
-          <Reveal>
-            <h1>
-              Tracky <span className="hl">v0.1.0</span>
-              <br />
-              <span className="stroke">is out.</span>
-            </h1>
-          </Reveal>
-          <Reveal>
-            <p className="mk-dek">
-              First public tagged release of Tracky, published on <b>24 November 2026</b> under the MIT license. One
-              readable baseline covering the initial public release through PR #64 — try the free demo or self-host it
-              with your own keys.
-            </p>
-          </Reveal>
-          <Reveal>
-            <aside aria-label="Release links" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <MagnetCta
-                href={demoHref}
-                onClick={() =>
-                  user
-                    ? undefined
-                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-                }
-              >
-                {user ? 'Open the demo →' : 'Try the free demo →'}
-              </MagnetCta>
-              <MagnetCta href={RELEASE_URL} variant="pill">
-                GitHub release v0.1.0 →
-              </MagnetCta>
-            </aside>
-          </Reveal>
+          </div>
         </header>
 
-        <section className="mk-section" style={{ paddingTop: 0 }}>
-          <Reveal>
-            <p className="mk-sub" style={{ maxWidth: 720 }}>
+        {/* 2. INTRO */}
+        <Section tone="parchment">
+          <div className="mka-b1-prose">
+            <p>
               Tracky has been public on GitHub since 15 September 2026. Today we tagged{' '}
-              <a href={RELEASE_URL} rel="noopener" style={inlineLinkStyle}>
+              <a href={RELEASE_URL} target="_blank" rel="noopener noreferrer">
                 v0.1.0
               </a>{' '}
               as the first semantic release, wrapping up everything from the initial public commit (<code>654561d</code>)
               through PR #64 into a clean checkpoint you can inspect, pin, and run.
             </p>
-            <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>
+            <p>
               If you are meeting Tracky for the first time: it is an MIT-licensed personal finance tracker built on
               Convex, TanStack Start, and WorkOS AuthKit. You can explore the{' '}
-              <a href={`${SITE_ORIGIN}/pricing`} style={inlineLinkStyle}>
-                free hosted demo
-              </a>{' '}
-              at <code>trytracky.app</code> with manual accounts and browser-side CSV import, or clone{' '}
-              <a href={REPO_URL} rel="noopener" style={inlineLinkStyle}>
+              <a href={`${SITE_ORIGIN}/pricing`}>free hosted demo</a> at <code>trytracky.app</code> with manual accounts
+              and browser-side CSV import, or clone{' '}
+              <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
                 masushidotdev/tracky
               </a>{' '}
               and run your own deployment.
             </p>
-            <p className="mk-sub" style={{ maxWidth: 720, marginTop: 16 }}>
+            <p>
               Below are the main pieces that landed in v0.1.0. For every bug fix, dependency update, and pull request
               reference, read the full{' '}
-              <a href={CHANGELOG_URL} rel="noopener" style={inlineLinkStyle}>
+              <a href={CHANGELOG_URL} target="_blank" rel="noopener noreferrer">
                 CHANGELOG.md
               </a>{' '}
               or the{' '}
-              <a href={RELEASE_URL} rel="noopener" style={inlineLinkStyle}>
+              <a href={RELEASE_URL} target="_blank" rel="noopener noreferrer">
                 GitHub release notes
               </a>
               .
             </p>
-          </Reveal>
-        </section>
+          </div>
+        </Section>
 
-        <MarqueeBand items={['V0.1.0 TAGGED', 'ZERO-BASED PLAN', 'MORTGAGES & LOANS', 'CSV IN BROWSER', 'MIT LICENSE']} />
+        {/* 3. HIGHLIGHTS + FIGURES */}
+        <Section id="highlights">
+          <SectionHead
+            kicker="Release highlights"
+            title="What shipped in v0.1.0"
+            subtitle="Five areas that reached a cohesive, documented baseline in the tagged release."
+          />
 
-        <section className="mk-section" style={{ paddingTop: 0 }}>
-          <Reveal>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginBottom: 24 }}>
-              What shipped in v0.1.0
-            </h2>
-          </Reveal>
-          {highlights.map((item) => (
-            <div key={item.num}>
-              <Reveal>
-                <div className="mk-card" style={{ maxWidth: 760, margin: '0 auto 16px', minWidth: 0, transform: 'none' }}>
-                  <div className="e">{item.num}</div>
-                  <h3>{item.title.toUpperCase()}</h3>
+          <div className="mka-b1-article-stack">
+            {highlights.map((item) => (
+              <React.Fragment key={item.num}>
+                <B1ArticleEntry num={item.num} title={item.title}>
                   <p>{item.body}</p>
+                </B1ArticleEntry>
+                {item.figures?.map((figure) => (
+                  <B1Figure
+                    key={figure.src}
+                    src={figure.src}
+                    alt={figure.alt}
+                    caption={figure.caption}
+                    width={figure.width}
+                    height={figure.height}
+                  />
+                ))}
+              </React.Fragment>
+            ))}
+          </div>
+        </Section>
+
+        {/* 4. HOSTED DEMO VS SELF-HOST + RUNNING YOUR OWN INSTANCE */}
+        <Section id="deployment" tone="parchment">
+          <SectionHead
+            kicker="Deployment boundaries"
+            title="Hosted demo vs. self-host"
+            subtitle="Both run the same MIT code, with honest boundaries about what is enabled where. Nothing in v0.1.0 is behind a checkout, and Pro features stay reserved in code until billing exists."
+          />
+
+          <div className="mka-deploy-grid" style={{ marginBottom: '2.5rem' }}>
+            <div className="mka-deploy-card">
+              <div className="mka-deploy-head">
+                <div>
+                  <h3>Hosted demo (€0)</h3>
+                  <p className="mka-deploy-sub">Ready at trytracky.app</p>
                 </div>
-              </Reveal>
-              {item.figures?.map((figure) => (
-                <Reveal key={figure.src}>
-                  <figure className="mk-shot" style={{ maxWidth: 760, margin: '20px auto 24px' }}>
-                    <img
-                      src={figure.src}
-                      alt={figure.alt}
-                      width={figure.width}
-                      height={figure.height}
-                      loading="lazy"
-                    />
-                    <figcaption>{figure.caption}</figcaption>
-                  </figure>
-                </Reveal>
-              ))}
-            </div>
-          ))}
-        </section>
-
-        <section className="mk-section" style={{ paddingTop: 0 }}>
-          <Reveal>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
-              Hosted demo vs. self-host
-            </h2>
-            <p className="mk-sub" style={{ maxWidth: 720 }}>
-              Both run the same MIT code, with honest boundaries about what is enabled where. Nothing in v0.1.0 is behind
-              a checkout, and Pro features stay reserved in code until billing exists.
-            </p>
-          </Reveal>
-          <Reveal>
-            <div className="mk-duel">
-              <div className="mk-d good">
-                <h3>HOSTED DEMO (€0)</h3>
-                <ul>
-                  <li>Zero-based Plan, Cash Flow, Reports, Goals</li>
-                  <li>Manual cash, card, asset, and loan accounts</li>
-                  <li>Browser-side CSV import with preview</li>
-                  <li>No card, no trial, no checkout</li>
-                </ul>
+                <Chip tone="marigold">No card</Chip>
               </div>
-              <div className="mk-d" style={{ background: '#fff' }}>
-                <h3>SELF-HOST (MIT)</h3>
-                <ul>
-                  <li>Your own Convex deployment + WorkOS AuthKit</li>
-                  <li>Optional PSD2 bank sync (your Enable Banking keys)</li>
-                  <li>Optional AI Analyst, Resend emails, Telegram Bot</li>
-                  <li>Full source + EN/IT user docs in the repo</li>
-                </ul>
-              </div>
+              <ul className="mka-check-list">
+                <li>Zero-based Plan, Cash Flow, Reports, Goals</li>
+                <li>Manual cash, card, asset, and loan accounts</li>
+                <li>Browser-side CSV import with preview</li>
+                <li>No card, no trial, no checkout</li>
+              </ul>
             </div>
-          </Reveal>
-          <Reveal>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginTop: 48 }}>
-              Running your own instance
-            </h2>
-            <p className="mk-sub" style={{ maxWidth: 720 }}>
-              Tracky does not pretend to be a one-command Docker container. It runs on Node.js (<code>&gt;=22.23.4 &lt;23</code>
-              ), npm, your own Convex deployment, and your own WorkOS AuthKit project. Clone the repository, run{' '}
-              <code>npm ci</code>, copy <code>.env.example</code> to <code>.env.local</code> (fixed from a stale filename
-              reference in PR #64), run <code>npx convex dev</code>, and start locally with <code>npm run dev</code>.
-            </p>
-            <p className="mk-sub" style={{ maxWidth: 720, marginTop: 14 }}>
-              Only add Enable Banking, AI Gateway, Resend, or Telegram keys if you want those integrations. You can also
-              browse the{' '}
-              <a href={`${SITE_ORIGIN}/features/zero-based-plan`} style={inlineLinkStyle}>
-                zero-based Plan overview
-              </a>
-              , the{' '}
-              <a href={`${SITE_ORIGIN}/features/bank-connections`} style={inlineLinkStyle}>
-                bank connections page
-              </a>
-              , or the{' '}
-              <a href={`${SITE_ORIGIN}/open-source`} style={inlineLinkStyle}>
-                open-source setup guide
-              </a>{' '}
-              before touching a terminal.
-            </p>
-          </Reveal>
-        </section>
 
-        <section className="mk-section" style={{ paddingTop: 0 }}>
-          <Reveal>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
-              Questions, answered.
-            </h2>
-          </Reveal>
-          {faq.map((entry) => (
-            <Reveal key={entry.q}>
-              <details>
-                <summary>{entry.q}</summary>
-                <p style={{ marginTop: 8 }}>{entry.a}</p>
-              </details>
-            </Reveal>
-          ))}
-        </section>
-      </article>
-
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">v0.1.0 is ready to try.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>
-              Free hosted demo · MIT release on GitHub · full changelog included
-            </p>
-            <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <MagnetCta
-                href={demoHref}
-                onClick={() =>
-                  user
-                    ? undefined
-                    : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-                }
-              >
-                {user ? 'Open the demo →' : 'Start free →'}
-              </MagnetCta>
-              <MagnetCta href={RELEASE_URL} variant="pill">
-                View v0.1.0 on GitHub →
-              </MagnetCta>
+            <div className="mka-deploy-card">
+              <div className="mka-deploy-head">
+                <div>
+                  <h3>Self-host (MIT)</h3>
+                  <p className="mka-deploy-sub">Your deployment, your keys</p>
+                </div>
+                <Chip tone="cobalt">Open source</Chip>
+              </div>
+              <ul className="mka-check-list">
+                <li>Your own Convex deployment + WorkOS AuthKit</li>
+                <li>Optional PSD2 bank sync (your Enable Banking keys)</li>
+                <li>Optional AI Analyst, Resend emails, Telegram Bot</li>
+                <li>Full source + EN/IT user docs in the repo</li>
+              </ul>
             </div>
           </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+
+          <div className="mka-b1-prose">
+            <h2 className="mka-section-title" style={{ marginBottom: '1rem' }}>
+              Running your own instance
+            </h2>
+            <p>
+              At tag v0.1.0, Tracky runs on Node.js (<code>&gt;=22.23.4 &lt;23</code>), npm, your own Convex deployment,
+              and your own WorkOS AuthKit project. Clone the repository, run <code>npm ci</code>, copy{' '}
+              <code>.env.example</code> to <code>.env.local</code> (fixed from a stale filename reference in PR #64),
+              run <code>npx convex dev</code>, and start locally with <code>npm run dev</code>.
+            </p>
+            <p>
+              <strong>Update (26 Nov 2026):</strong> Docker Compose self-hosting with a local self-hosted Convex backend
+              later landed on <code>main</code> — see the{' '}
+              <a href={`${SITE_ORIGIN}/blog/self-hosting-tracky-docker`}>step-by-step Docker self-hosting guide</a>.
+            </p>
+            <p>
+              Only add Enable Banking, AI Gateway, Resend, or Telegram keys if you want those integrations. You can also
+              browse the{' '}
+              <a href={`${SITE_ORIGIN}/features/zero-based-plan`}>zero-based Plan overview</a>, the{' '}
+              <a href={`${SITE_ORIGIN}/features/bank-connections`}>bank connections page</a>, or the{' '}
+              <a href={`${SITE_ORIGIN}/open-source`}>open-source setup guide</a> before touching a terminal.
+            </p>
+          </div>
+        </Section>
+
+        {/* 5. FAQ */}
+        <Section id="faq">
+          <SectionHead
+            kicker="Release FAQ"
+            title="Questions about Tracky v0.1.0"
+            subtitle="Quick answers on hosted demo vs. self-host, default bank sync, reserved Pro, and setup."
+          />
+          <B1ArticleFaqList items={releaseV010EnFaq} />
+        </Section>
+      </article>
+
+      {/* OUTSIDE <article>: RELATED + FINAL CTA */}
+      <RelatedLinksSection
+        tone="parchment"
+        kicker="Read next"
+        title="Continue exploring Tracky."
+        items={[
+          {
+            kicker: 'Docker guide',
+            title: 'Self-host Tracky with Docker step by step',
+            description: 'The follow-up guide covering Docker Compose, self-hosted Convex, zero telemetry, and backups.',
+            href: '/blog/self-hosting-tracky-docker',
+            ctaLabel: 'Read Docker guide →',
+          },
+          {
+            kicker: 'Open source',
+            title: 'Architecture, MIT license & contributing',
+            description: 'Inspect the stack, security policy, and both deployment paths.',
+            href: '/open-source',
+            ctaLabel: 'Read Open Source →',
+          },
+          {
+            kicker: 'Pricing',
+            title: '€0 hosted demo vs. MIT self-host',
+            description: 'See what is included free today and how reserved Pro limits are scoped.',
+            href: '/pricing',
+            ctaLabel: 'Read Pricing →',
+          },
+        ]}
+      />
+
+      <FinalCta
+        headline="v0.1.0 is ready to try."
+        meta="€0 hosted demo · MIT release on GitHub · Full changelog included"
+        primaryCta={<AuthCta auth={auth} locale="en" ctaLocation="marketing" variant="marigold" />}
+        secondaryCta={
+          <a className="mka-btn-outline-light" href={RELEASE_URL} target="_blank" rel="noopener noreferrer">
+            View v0.1.0 on GitHub ↗
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

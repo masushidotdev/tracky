@@ -55,7 +55,7 @@ describe('Self-host Tracky with Docker blog routes markup', () => {
       expect(articleMatches).toHaveLength(1);
       const articleHtml = articleMatches[0] ?? '';
 
-      expect(articleHtml).toContain(`<time class="mk-badge" dateTime="2026-11-26">${expectedDateLabel}</time>`);
+      expect(articleHtml).toContain(`<time class="mka-stamp" dateTime="2026-11-26">${expectedDateLabel}</time>`);
 
       const figureMatches = articleHtml.match(/<figure\b[^>]*>[\s\S]*?<\/figure>/g) ?? [];
       expect(figureMatches).toHaveLength(0);
@@ -73,11 +73,11 @@ describe('Self-host Tracky with Docker blog routes markup', () => {
         expect(articleHtml.includes(command) || articleHtml.includes(escaped)).toBe(true);
       }
 
-      // The final CTA panel and marquee band sit outside <article>.
-      expect(articleHtml).not.toContain('mk-final');
-      expect(html).toContain('mk-final');
-      expect(articleHtml).not.toContain('mk-band');
-      expect(html).toContain('mk-band');
+      // The final CTA poster and related links band sit outside <article>.
+      expect(articleHtml).not.toContain('mka-poster-cta');
+      expect(html).toContain('mka-poster-cta');
+      expect(articleHtml).not.toContain('mka-b1-related');
+      expect(html).toContain('mka-b1-related');
     },
   );
 });

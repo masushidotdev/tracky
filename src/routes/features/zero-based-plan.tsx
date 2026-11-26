@@ -1,65 +1,66 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  Breadcrumb,
+  Chip,
+  FaqSection,
+  FinalCta,
+  FitCheck,
+  ScopePill,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import {
+  B2AppCta,
+  B2AvailabilityBand,
+  B2PillarGrid,
+  B2RelatedSection,
+} from '@/components/marketing/atelier/b2-sections';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const seoIntro: Array<string> = [
-  "You want every euro to have a job before you spend it. The Tracky Plan is a zero based budgeting app that works only with money already observed in your cash accounts. You assign each euro to a bucket until Ready to Assign reaches zero.",
-  "You see Assigned, Activity, and Available for every bucket. Assigned is what you allocate this month. Activity is booked spending and refunds in the bucket categories. Available is what remains, and positive Available carries into next month.",
-  "You fund the month from real inflows, not from leftovers. Income appears in Ready to Assign and its breakdown, never as negative spending inside a bucket. Unexplained movement should stay at zero, because a different value means some movement still needs correct attribution.",
-  "Cards stay outside cash liquidity and get their own payment buckets. Neither a positive card balance nor its available limit counts as money you can assign. Cash you draw from a card can be assigned, but the matching card debt still waits to be paid.",
-  "You close the month when every euro has a job and Ready to Assign sits at zero. If income arrives later, you give that new money a job too. Try it in the demo and open the Plan to practise the flow.",
-];
-
-const seoBlocks: Array<{ h: string; paras: Array<string> }> = [
-  { h: "What this zero based budgeting app does with your cash", paras: [
-    "The Plan organises your transaction categories into buckets grouped by purpose. You assign observed cash to each bucket for the month. Activity then tracks booked spending and refunds through those categories.",
-    "Available shows what you still hold, with positive amounts carrying forward. Unmapped categories land in Unplanned, so real spending never disappears. You place each one into an existing bucket or give it a new home.",
-    "Linked money boxes count as Already set aside toward a bucket target, because those virtual reserves support the goal without becoming a new assignment. You always see Ready to Assign and its breakdown before you decide.",
-  ] },
-  { h: "How you close the month at zero, step by step", paras: [
-    "Start from the day your Plan becomes real, because earlier movements stay in balances without creating bucket activity. Give every euro a job until Ready to Assign reaches zero, moving money between buckets when priorities change.",
-    "Add targets to buckets with a monthly, yearly, weekly, or custom rhythm, then let underfunded guidance order the queue. Use Auto-Assign to preview Underfunded, last month, or average strategies before anything is written.",
-    "Cover cash overspending by moving Available money from another bucket. Fund card payment buckets for credit overspending, so cash waits ready when you pay the statement.",
-  ] },
-  { h: "Honest limits: Works in demo, single currency, no double counting", paras: [
-    "This page carries the Works in demo badge, so you can practise the full Plan flow in the demo. Each Plan uses one currency, and you cannot combine mixed currencies into shared totals.",
-    "Card debt stays separate from cash, and you never count the same euro twice. Overdraft facilities inform you but never count as money to assign, and you need no separate payoff bucket.",
-    "Subscription suggestions remain suggestions, so you confirm merchant, amount, and cadence yourself. Targets and Cost to Be Me guide decisions without moving money on their own.",
-  ] },
-  { h: "Who the Plan is for", paras: [
-    "You like deciding before spending and you want annual bills to stop feeling like surprises. You carry card balances and want payment buckets that keep cash ready for statements.",
-    "You manage installment plans and want each month's need visible in one row. You use virtual money boxes alongside goals and want Already set aside to reduce each target fairly. If you prefer firm caps you never revisit, this method will feel hands-on, because you return each month, assign again, and keep Ready to Assign at zero.",
-  ] },
-];
-
-const seoFaq: Array<{ q: string; a: string }> = [
-  { q: "Do I have to assign down to zero in this zero based budgeting app?", a: "No, but that is the goal you work toward. A positive Ready to Assign means some money still waits for a job, and unassigned money tends to leave on its own. You can pause, move money between buckets, or use Auto-Assign previews. Each month you return, assign again, and watch the number settle at zero." },
-  { q: "Why doesn't my income appear as activity in a bucket?", a: "Income funds the Plan instead of counting as negative spending. You find it in Ready to Assign and its breakdown, alongside carry, inflows, assignments, and reserves. Buckets track only booked spending and refunds in their categories. That split keeps your pay visible as fuel, never hidden inside grocery or transport rows." },
-  { q: "What is the difference between cash overspending and credit overspending?", a: "Cash overspending means money already left a cash account, so you move Available money from another bucket to cover it. Credit overspending means a card purchase lacked coverage, so you fund that card's payment bucket instead. No cash moves yet, but debt grew. Both clear when you act, and neither carries as a negative bucket balance." },
-  { q: "How do targets handle annual bills?", a: "You put a yearly target with its due date on the bucket and choose Refill up to. Each month Tracky derives the need from what you already set aside and the time left. Skipped months raise the later ask automatically. Monthly spending uses Monthly plus Refill up to as a cap, while scattered instalments suit Monthly plus Set aside another." },
-  { q: "Are subscription detections certain, and are money boxes real cash?", a: "No to both, and the distinction matters. Subscription matches stay suggestions, so you confirm merchant, amount, and cadence before trusting a renewal. Linked money boxes stay virtual reserves shown as Already set aside, read fresh each month. They reduce a bucket's target without becoming a new assignment or spendable cash." },
+export const zeroBasedPlanEnFaq: Array<FaqItem> = [
+  {
+    q: 'Do I have to assign Ready to Assign all the way down to zero?',
+    a: 'No, though zero is the goal you work toward. A positive Ready to Assign means some observed cash does not have a job yet, and unassigned cash tends to drift into unchosen spending. You can pause, move money between buckets, or preview Auto-Assign before confirming.',
+  },
+  {
+    q: 'Why does income not appear as Activity inside a bucket?',
+    a: 'Income funds the Plan instead of counting as negative spending. You see it in Ready to Assign and its breakdown alongside carry, inflows, assignments, money-box reserves, and cash overspending. Buckets track only booked spending and refunds in their categories.',
+  },
+  {
+    q: 'What is the difference between cash overspending and credit overspending?',
+    a: 'Cash overspending means money already left a cash account, so you cover it by moving Available funds from another bucket; otherwise Ready to Assign is reduced next month. Credit overspending means a card purchase lacked bucket coverage: no cash left yet, so you fund that card’s payment bucket before paying the statement.',
+  },
+  {
+    q: 'How do bucket targets handle annual bills?',
+    a: 'Add a yearly target with its due date and choose Refill up to. Each month Tracky computes the remaining need from what is already available and the time left, adjusting automatically if you skip a month. Monthly spending fits Monthly with Refill up to, while accumulating funds fit Set aside another.',
+  },
+  {
+    q: 'Are linked money boxes real bank transfers, and are subscription detections certain?',
+    a: 'No to both. A linked money box is a virtual reserve displayed as Already set aside, read fresh each month so it reduces a bucket target without becoming a new assignment or moving bank cash. Subscription detections remain suggestions until you confirm merchant, amount, and cadence.',
+  },
 ];
 
 export const Route = createFileRoute('/features/zero-based-plan')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'Zero-based plan: give every euro a job · Tracky',
+      title: 'Zero-based Plan: give every euro a job · Tracky',
       description:
-        'Tracky’s zero-based plan assigns observed cash to buckets before you spend it. Ready to Assign at zero — single currency, no double counting.',
+        'Assign observed cash to Plan buckets until Ready to Assign hits zero. Targets, Auto-Assign, card payment buckets, and single-currency math.',
       locale: 'en',
       path: '/features/zero-based-plan',
       ogImage: ogImageFor('feature-plan'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/features/zero-based-plan', inLanguage: ['en', 'it'] }),
-        faqJsonLd(seoFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(zeroBasedPlanEnFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/' },
-          { name: 'Zero-based plan', path: '/features/zero-based-plan' },
+          { name: 'Zero-based Plan', path: '/features/zero-based-plan' },
         ]),
       ],
     }),
@@ -67,115 +68,378 @@ export const Route = createFileRoute('/features/zero-based-plan')({
 });
 
 function PlanEn() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <ZeroBasedPlanEnView auth={auth} />;
+}
+
+export function ZeroBasedPlanEnView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="en" auth={{ user, signInUrl, signUpUrl }} currentPath="/features/zero-based-plan">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Works in the demo</span>
-            <span className="mk-badge">Free</span>
-          </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            Every euro,
-            <br />
-            <span className="hl">employed.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            The Plan gives money <b>already observed</b> in your cash accounts a job before you spend it. Assigned,
-            Activity and Available per bucket; <b>Ready to Assign at zero</b> means the month is locked. Single
-            currency, card debt kept out of liquidity, no double counting.
-          </p>
-        </Reveal>
-        <Reveal>
-          <MagnetCta href={user ? '/app/plan' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Open the plan →' : 'Try the demo →'}
-            </MagnetCta>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {seoIntro.map((para, i) => (
-          <Reveal key={i}>
-            <p className="mk-sub" style={{ maxWidth: 720 }}>{para}</p>
-          </Reveal>
-        ))}
-      </section>
-      <MarqueeBand items={['READY TO ASSIGN = 0', 'ASSIGNED · ACTIVITY · AVAILABLE', 'ONE CURRENCY', 'NO DOUBLE COUNT']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2">
-            How the month <span className="u">closes.</span>
-          </h2>
-        </Reveal>
-        <Reveal>
-          <div className="mk-duel">
-            <div className="mk-d bad">
-              <h3>😵 MONTHLY CAPS</h3>
-              <ul>
-                <li>Limits nobody updates</li>
-                <li>Leftovers nobody explains</li>
-                <li>Cards mixed with cash</li>
-                <li>December surprise</li>
-              </ul>
+    <AtelierSite locale="en" auth={auth} currentPath="/features/zero-based-plan">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb
+              ariaLabel="Breadcrumb"
+              items={[{ label: 'Home', href: '/' }, { label: 'Zero-based Plan' }]}
+            />
+
+            <div className="mka-b2-hero-badges">
+              <ScopePill scope="both" label="Demo + Self-host" />
+              <Chip tone="marigold">€0 today</Chip>
+              <Chip>Single currency per Plan</Chip>
+              <Chip>No double counting</Chip>
             </div>
-            <div className="mk-d good">
-              <h3>😎 ZERO-BASED</h3>
-              <ul>
-                <li>Observed balances, dated</li>
-                <li>Unexplained must be zero</li>
-                <li>Cards get payment buckets</li>
-                <li>Positive Available carries over</li>
-              </ul>
+
+            <h1 className="mka-hero-headline">
+              Give every euro already in your accounts <span className="mka-accent-ink">a job before you spend it.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Tracky’s zero-based Plan works strictly with money already observed in your cash accounts—never future
+              paychecks or credit card limits. Assign funds across purpose-built buckets until{' '}
+              <strong>Ready to Assign</strong> reaches zero, with protected card payment buckets and transparent monthly
+              carry.
+            </p>
+
+            <div className="mka-hero-actions">
+              <B2AppCta
+                auth={auth}
+                locale="en"
+                loggedInHref="/app/plan"
+                loggedInLabel="Open the Plan →"
+                loggedOutLabel="Try the Plan in the demo →"
+              />
+              <a className="mka-btn-secondary" href="/guides/zero-based-budgeting">
+                Read the 5-step guide →
+              </a>
+            </div>
+
+            <p className="mka-hero-meta">
+              <span>Works in the hosted demo</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>Manual accounts &amp; browser-parsed CSV</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>No credit card required</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. AVAILABILITY & THE THREE COLUMNS */}
+      <Section id="overview" tone="parchment">
+        <SectionHead
+          kicker="Availability & structure"
+          title="Three columns per bucket—available in both the hosted demo and self-host."
+          subtitle="Every Plan uses one currency and organizes global transaction categories into ordered groups and buckets."
+        />
+
+        <B2AvailabilityBand
+          demoTone="sage"
+          demoBadge="Included at €0"
+          demoTitle="Hosted demo (trytracky.app)"
+          demoBody="The full zero-based Plan—buckets, targets, Auto-Assign previews, card payment buckets, and linked money boxes—works out of the box with manual accounts and CSV import. Free includes one Plan; additional Plans are reserved for Pro (not for sale)."
+          selfHostTone="sage"
+          selfHostBadge="Included · MIT"
+          selfHostTitle="Self-hosted Docker"
+          selfHostBody="Runs the identical Plan engine on your local Convex volume with zero telemetry, plus optional PSD2 bank sync if you configure your own Enable Banking keys."
+        />
+
+        <div style={{ marginTop: '1.75rem' }}>
+          <B2PillarGrid
+            items={[
+              {
+                tag: 'Column 01',
+                title: 'Assigned',
+                body: 'The observed cash you allocate to a bucket during the selected month. Edit inline or move funds between buckets without changing total Assigned.',
+                footer: (
+                  <>
+                    <strong>Rule:</strong> Funded from <strong>Ready to Assign</strong>, never from credit limits or
+                    arranged overdrafts.
+                  </>
+                ),
+              },
+              {
+                tag: 'Column 02',
+                title: 'Activity',
+                body: 'Net booked spending and refunds in the categories mapped to that bucket. Click any Activity figure to inspect the underlying transactions.',
+                footer: (
+                  <>
+                    <strong>Excluded:</strong> Income, transfers, internal movements, non-booked items, and other
+                    currencies never distort Activity.
+                  </>
+                ),
+              },
+              {
+                tag: 'Column 03',
+                title: 'Available',
+                body: (
+                  <>
+                    What remains in the bucket: <code>positive carry + Assigned + Activity</code>. Positive Available
+                    carries into next month so annual funds accumulate naturally.
+                  </>
+                ),
+                footer: (
+                  <>
+                    <strong>No silent rollover debt:</strong> Negative cash balances do not carry forward—they reduce
+                    next month’s Ready to Assign until covered.
+                  </>
+                ),
+              },
+            ]}
+          />
+        </div>
+      </Section>
+
+      {/* 3. ACCOUNTING GUARDRAILS */}
+      <Section id="accounting">
+        <SectionHead
+          kicker="Accounting rules"
+          title="Observed liquidity, clean card debt, and zero unexplained euros."
+          subtitle="Zero-based budgeting breaks down when card limits look like cash or transfers count twice. Tracky enforces clear boundaries in code."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Ready to Assign &amp; clean starting dates</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Real inflows, never leftovers</strong>
+                  <span>
+                    Open Ready to Assign to inspect carry, income, card borrowing, pre-origin movements, perimeter
+                    transfers, assignments, reserves, and cash overspending. <strong>Unexplained movement</strong>{' '}
+                    should stay at zero—any non-zero value signals a movement that still needs attribution.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Plan origin &amp; Restart from here</strong>
+                  <span>
+                    A Plan starts on the day you create it: earlier transactions stay inside account balances without
+                    creating bucket Activity or overspending. Need a cleaner cutoff after importing history? Use{' '}
+                    <strong>Restart from here</strong> while keeping groups, buckets, targets, and assignments intact.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Overdrafts without double counting</strong>
+                  <span>
+                    When a current account is overdrawn, a notice tracks the deficit and recovery pace. An arranged
+                    overdraft is never money to assign, and you do not need a payoff bucket—unassigned future income
+                    reduces the negative balance automatically.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--vermilion" aria-hidden="true">
+                  04
+                </span>
+                <div>
+                  <strong>Unplanned catches unmapped categories</strong>
+                  <span>
+                    Categories not yet placed in a bucket appear in the system <strong>Unplanned</strong> row whenever
+                    they have Activity, so real spending never vanishes. Assign each one to an existing or new bucket.
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Cards, instalments &amp; virtual money boxes</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  CARD
+                </span>
+                <div>
+                  <strong>Protected card payment buckets</strong>
+                  <span>
+                    Card balances and limits stay outside cash liquidity. Covered card purchases move cash into the
+                    card’s payment bucket automatically, waiting for the statement. Recording the statement transfer
+                    settles the cycle without counting the purchase twice.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  RATE
+                </span>
+                <div>
+                  <strong>Active instalment buckets</strong>
+                  <span>
+                    Each ordinary active instalment plan gets a protected bucket for the month’s due amount. If a loan
+                    is paired with one of your categories, Tracky uses that category instead of creating a duplicate
+                    row.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  BOX
+                </span>
+                <div>
+                  <strong>Linked money boxes as Already set aside</strong>
+                  <span>
+                    Link an eligible virtual money box to an ordinary bucket to show its saved balance as{' '}
+                    <strong>Already set aside</strong>. It lowers the bucket target fairly without becoming a new
+                    assignment, and is read fresh each month so savings are never counted twice.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <div className="mka-disclosure-box">
+              <strong>One currency per Plan:</strong> Tracky never mixes EUR, USD, or other currencies inside the same
+              Plan or invents exchange rates. Confirmed transfers between two cash accounts in the same Plan stay
+              neutral even if booked in different months.
             </div>
           </div>
-        </Reveal>
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {seoBlocks.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            {block.paras.map((para, i) => (
-              <p key={i} className="mk-sub" style={{ maxWidth: 700 }}>{para}</p>
-            ))}
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {seoFaq.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Assign it all. Sleep well.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Free demo · plan included · no card</p>
-            <MagnetCta href={user ? '/app/plan' : signUpUrl} onClick={() =>
-                user
-                  ? undefined
-                  : trackEvent(analyticsEvents.signupStarted, { cta_location: 'marketing' }, { sendBeacon: true })
-              }
-            >
-              {user ? 'Open the plan →' : 'Start free →'}
-            </MagnetCta>
-          </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+        </div>
+      </Section>
+
+      {/* 4. TARGETS & AUTO-ASSIGN */}
+      <Section id="workflow" tone="parchment">
+        <SectionHead
+          kicker="Monthly workflow"
+          title="Targets, Auto-Assign previews, and focused views."
+          subtitle="Close the month faster without handing over control—every guidance tool previews its math before anything is written."
+        />
+
+        <div className="mka-editorial-grid">
+          <article className="mka-editorial-card">
+            <h3>Targets &amp; Cost to Be Me</h3>
+            <p>
+              Attach <strong>Weekly</strong>, <strong>Monthly</strong>, <strong>Yearly</strong>, or{' '}
+              <strong>Custom</strong> targets to any bucket. Choose <em>Set aside another</em> to accumulate toward
+              lumpy bills, <em>Refill up to</em> to cap routine spending, or <em>Reach a balance by due date</em> for
+              one-off custom targets. Snoozing pauses a target for the current month without deleting it.
+            </p>
+            <p>
+              <strong>Cost to Be Me</strong> totals the month’s target requirements and compares them with the expected
+              income saved on your Plan, surfacing any shortfall before you commit—without ever moving money on its own.
+            </p>
+          </article>
+
+          <article className="mka-editorial-card">
+            <h3>Auto-Assign &amp; focused views</h3>
+            <p>
+              <strong>Auto-Assign</strong> prepares funding proposals using <em>Underfunded</em>,{' '}
+              <em>Assigned last month</em>, <em>Spent last month</em>, <em>Average assigned</em>,{' '}
+              <em>Reset assigned</em>, or <em>Reset available</em>—on selected buckets or all eligible visible rows.
+              Tracky always displays the proposed rows, total amount, and resulting Ready to Assign before you confirm.
+            </p>
+            <p>
+              Narrow the grid with focused views—<strong>Underfunded</strong>, <strong>Overspent</strong>,{' '}
+              <strong>Snoozed</strong>, <strong>Money available</strong>, and <strong>Hidden</strong>—or reorder groups
+              and buckets with pointer or keyboard controls in <strong>Edit Plan</strong>.
+            </p>
+          </article>
+        </div>
+      </Section>
+
+      {/* 5. FIT CHECK */}
+      <Section id="fit">
+        <SectionHead
+          kicker="Candid fit check"
+          title="When a zero-based Plan helps—and when it feels hands-on."
+        />
+
+        <FitCheck
+          yesTitle="A strong fit if you…"
+          yesItems={[
+            'Prefer deciding where observed cash goes before spending, rather than auditing surprises after the fact.',
+            'Want annual bills, instalments, and credit card statements funded steadily every month.',
+            'Use virtual money boxes alongside category targets and want Already set aside reflected automatically.',
+            'Need strict single-currency totals where transfers and card limits never blur real cash.',
+          ]}
+          noTitle="Probably not for you if you…"
+          noItems={[
+            'Want passive monthly spending caps you set once and never revisit.',
+            'Expect to budget future paychecks before the money arrives in your account.',
+            'Need one combined budget merging multiple currencies via automatic FX conversion.',
+            'Want multiple separate Plans on Free today (additional Plans are reserved for Pro, which is not for sale yet).',
+          ]}
+        />
+      </Section>
+
+      {/* 6. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="parchment"
+        kicker="Zero-based Plan FAQ"
+        title="Common questions about buckets, cards, and targets."
+        subtitle="Answers match the shipped Plan accounting rules in v0.1.0."
+        moreLink={{ href: '/faq', label: 'Read the full FAQ →' }}
+        items={zeroBasedPlanEnFaq}
+      />
+
+      {/* 7. RELATED LINKS */}
+      <B2RelatedSection
+        tone="cotton"
+        kicker="Continue exploring"
+        title="Next steps around the Plan."
+        items={[
+          {
+            kicker: 'Step-by-step guide',
+            title: 'How to build a zero-based budget',
+            description: 'A practical five-step walkthrough from manual checking account and CSV import to closing your first month at zero.',
+            href: '/guides/zero-based-budgeting',
+            linkLabel: 'Read the guide →',
+          },
+          {
+            kicker: 'Feature · Demo + Self-host',
+            title: 'Cash Flow projection calendar',
+            description: 'Pair your funded Plan with dated bills, paydays, subscriptions, and card statements to spot the first negative date.',
+            href: '/features/cash-flow',
+            linkLabel: 'Explore Cash Flow →',
+          },
+          {
+            kicker: 'Feature · Demo + Self-host',
+            title: 'Reports & per-currency CSV export',
+            description: 'Review Cash Flow Sankey, Spending, and Income breakdowns across months, quarters, and years.',
+            href: '/features/reports',
+            linkLabel: 'Explore Reports →',
+          },
+        ]}
+      />
+
+      {/* 8. FINAL CTA */}
+      <FinalCta
+        headline="Give every euro a job before the month starts."
+        meta="€0 hosted demo · Zero-based Plan included · No credit card required"
+        primaryCta={
+          <B2AppCta
+            auth={auth}
+            locale="en"
+            loggedInHref="/app/plan"
+            loggedInLabel="Open the Plan →"
+            loggedOutLabel="Try the demo free →"
+            variant="marigold"
+          />
+        }
+        secondaryCta={
+          <a className="mka-btn-outline-light" href="/pricing">
+            Compare Demo vs. Self-host →
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }

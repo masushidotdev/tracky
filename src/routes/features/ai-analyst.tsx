@@ -1,53 +1,63 @@
+import * as React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+
+import type { FaqItem, MarketingAuth } from '@/components/marketing/atelier';
+import {
+  AtelierSite,
+  Breadcrumb,
+  Chip,
+  CodePlate,
+  FaqSection,
+  FinalCta,
+  FitCheck,
+  GITHUB_REPO_URL,
+  ScopePill,
+  Section,
+  SectionHead,
+} from '@/components/marketing/atelier';
+import { B2AppCta, B2AvailabilityBand, B2RelatedSection } from '@/components/marketing/atelier/b2-sections';
 import { loadMarketingAuth } from '@/lib/marketing/auth';
-
-import { MarketingSite } from '@/components/marketing/site';
-import { Confetti, MagnetCta, MarqueeBand, Reveal } from '@/components/marketing/vivi';
 import { breadcrumbJsonLd, buildMarketingHead, faqJsonLd, ogImageFor, softwareAppJsonLd } from '@/lib/marketing/seo';
-import { analyticsEvents, trackEvent } from '@/lib/analytics/events';
 
-const INTRO = "You want answers from your money without handing over control. Tracky's AI spending analyst reads the data you authorize and turns it into what-if scenarios, charts, and flags you can act on. You ask in plain language, you check the preview, and nothing sensitive changes until you approve it.\n\nIt proposes. You sign. That is the whole deal: the analyst suggests Plan assignments, virtual money-box moves, and recategorizations, while you verify every detail before anything lands. Deny a proposal and your data stays exactly as it was.\n\nBehind the chat, automated checks keep watch. Every six hours Tracky evaluates Plan buckets near their limits, upcoming subscription and installment payments, the first projected negative cashflow date, and sync issues. Daily jobs score account health, flag anomalies and duplicates, and close due card cycles. Bill reminders come from your planned expenses with lead times you choose in Settings.\n\nOne thing matters most: this AI spending analyst is an exploration aid, not financial advice. Projections are nominal estimates you compare across scenarios, never guarantees. Email and Telegram reports stay off until you opt in. And the analyst is environment-gated — self-host and roadmap territory, disabled on the hosted demo, hidden where not enabled.";
-
-const BLOCKS = [
-  { h: "What your AI spending analyst actually does",
-    p: "You bring the questions, the analyst brings the reading. It scans the accounts, transactions, spending, Plan progress, cashflow, virtual money boxes, subscriptions, and planned items you authorize, then explains patterns in plain words with charts and tables. Ask what-if questions like moving a Plan target or shifting a planned expense, and compare scenarios side by side.\n\nIt also keeps an eye out while you do other things. Daily checks flag duplicate entries, spending spikes, and account health dips. Bill reminders surface from your planned expenses, and notifications warn you about buckets near their limits, payments due within seven days, or a first projected negative cashflow date. Subscription suggestions stay suggestions: you confirm before anything changes.", },
-  { h: "How it works, step by step",
-    p: "First you open the analyst where it is enabled and start a conversation in plain language. You can keep several conversations, rename them, and pick an available model and reasoning level. The analyst reads only the data you authorize for that environment.\n\nThen you ask and inspect. It answers with explanations, tables, or charts, and every sensitive change arrives as a preview: Plan assignments or targets, virtual money-box moves, planned items, memory updates, or bulk recategorizations. You check amount, currency, account, category, date, and recurrence, then approve or deny. Denial leaves everything untouched.\n\nMeanwhile automations run on schedule. Sync and notification checks run every six hours, anomaly checks daily, and the monthly report and subscription review land on fixed days. Reminders dedupe by occurrence and threshold, so the same bill does not spam you.", },
-  { h: "Honest limits: self-host, gated, never advice",
-    p: "The badge says Self-host / Roadmap, and the demo says disabled. The analyst section appears only where it is enabled; elsewhere its sidebar and command entries hide and the page shows feature disabled. Backend automations and Telegram keep their own schedule regardless.\n\nThe analyst never gives financial advice and never writes to your ledger on its own. Long-term projections are nominal estimates built from tracked balances and recent cashflow, with assumptions you can override in chat — read them every time and compare scenarios, because nothing is guaranteed. Email and Telegram delivery stay off by default and need your explicit opt-in, with Telegram linked first. You stay the approver on every sensitive change.", },
-  { h: "Who it is for",
-    p: "You like control and curiosity in equal measure. You track accounts and planned expenses in Tracky, you enjoy testing what-if scenarios, and you want flags for duplicates, spikes, and upcoming payments before they bite. You read assumptions, compare estimates, and approve each change yourself.\n\nIt fits self-hosters best. You run your own instance, enable the analyst where you choose, and link Telegram or email only if you want them. If you need hands-off money management or certified financial advice, this is not that — and it says so upfront. You get an assistant that proposes, a ledger that waits, and a final call that stays yours.", },
-];
-
-const PAGE_FAQ = [
-  { q: "What can the AI spending analyst change without asking me?",
-    a: "Nothing sensitive. Every Plan assignment, virtual money-box move, planned item, memory update, or bulk recategorization arrives as a preview and waits for your approval. You see the full details up front, and if you deny, your data stays unchanged. Read-only explanations, charts, and what-if scenarios need no approval because they change nothing.", },
-  { q: "Why is the analyst disabled on the hosted demo?",
-    a: "The analyst is environment-gated and carries a Self-host / Roadmap badge. On the hosted demo the section hides from the sidebar and command palette, and opening it shows feature disabled. Backend automations continue on their own schedule. To try the analyst, you self-host Tracky and enable it in your own environment.", },
-  { q: "Are the analyst's projections guaranteed?",
-    a: "No. Every projection is a nominal estimate built from tracked balances, recent cashflow, and stated assumptions you can override in chat. Results show their assumptions so you can compare scenarios side by side. Treat them as exploration aids, not financial advice, and always verify decisions against your contract data.", },
-  { q: "How do bill reminders and notifications reach me?",
-    a: "Bill reminders grow from planned expenses with lead times you pick in Settings, up to four thresholds per bill, with dedupe per occurrence. Plan, subscription, cashflow, and sync notifications evaluate every six hours. Everything lands in your in-app inbox first; email and Telegram deliver only selected types after your explicit opt-in.", },
-  { q: "Can I link Telegram to the analyst?",
-    a: "Yes, where the analyst is enabled. You generate a one-time command in Settings and send it privately to the configured bot; it expires after ten minutes and works once. You can unlink anytime. Requests needing approval keep saying so, and Telegram reports stay off until you opt in.", },
+export const aiAnalystEnFaq: Array<FaqItem> = [
+  {
+    q: 'Can the AI Analyst change my ledger without asking me first?',
+    a: 'No. Every sensitive write—Plan assignments or targets, virtual money-box moves, planned items, memory updates, or bulk recategorizations—arrives as a preview showing amount, currency, account, category, date, and recurrence, and waits for your explicit approval. Advisory risk badges (safe, confirm, block) never skip approval, and denying leaves your data untouched.',
+  },
+  {
+    q: 'Why is the AI Analyst disabled on the hosted demo?',
+    a: 'AI Analyst is environment-gated and requires your own AI gateway credentials on a self-hosted instance. On the hosted demo its sidebar and command-palette entries are hidden and opening /app/analyst displays Feature disabled. Core budgeting, Cash Flow, Reports, and in-app bill reminders still work on the demo.',
+  },
+  {
+    q: 'Are Analyst projections financial advice or guaranteed outcomes?',
+    a: 'No. Analyst is an exploration aid, never financial advice. Long-term FIRE and retirement projections (reserved for the Pro tier, not for sale today) are nominal estimates built from tracked balances, recent Cash Flow, and stated assumptions you can override in chat—compare scenarios and verify decisions against your actual contracts.',
+  },
+  {
+    q: 'How do bill reminders, financial notifications, and external channels work?',
+    a: 'Bill reminders derive from planned expenses in planned or funding status with up to four lead-time thresholds (default three days, 0 to 30 days) and dedupe per occurrence. Plan, subscription, cash-flow, and sync notifications are evaluated every six hours and land in your in-app inbox first. Email (Resend) and Telegram stay off until you explicitly opt in and configure keys.',
+  },
+  {
+    q: 'How do I link Telegram to my self-hosted instance?',
+    a: 'Generate a one-time link command in Settings and send it privately to your configured bot. The code expires after ten minutes and works once; never share it. You can unlink Telegram anytime, and any request that requires approval continues to say so explicitly.',
+  },
 ];
 
 export const Route = createFileRoute('/features/ai-analyst')({
   loader: loadMarketingAuth,
   head: () =>
     buildMarketingHead({
-      title: 'AI analyst: exploration aid, you approve · Tracky',
+      title: 'AI Analyst: self-hosted, approval-gated exploration aid · Tracky',
       description:
-        'Tracky’s analyst reads your data for what-ifs and anomaly flags. Approval-gated writes, email/Telegram optional. Disabled on the hosted demo.',
+        'Query your ledger in plain language with approval-gated writes and optional email or Telegram alerts. Self-host only with your own keys; disabled on demo.',
       locale: 'en',
       path: '/features/ai-analyst',
       ogImage: ogImageFor('feature-analyst'),
       jsonLd: [
         softwareAppJsonLd({ url: 'https://www.trytracky.app/features/ai-analyst', inLanguage: ['en', 'it'] }),
-        faqJsonLd(PAGE_FAQ.map((entry) => ({ question: entry.q, answer: entry.a }))),
+        faqJsonLd(aiAnalystEnFaq.map((entry) => ({ question: entry.q, answer: entry.a }))),
         breadcrumbJsonLd([
           { name: 'Home', path: '/' },
-          { name: 'AI analyst', path: '/features/ai-analyst' },
+          { name: 'AI Analyst', path: '/features/ai-analyst' },
         ]),
       ],
     }),
@@ -55,97 +65,283 @@ export const Route = createFileRoute('/features/ai-analyst')({
 });
 
 function AnalystEn() {
-  const { user, signInUrl, signUpUrl } = Route.useLoaderData();
+  const auth = Route.useLoaderData();
+  return <AiAnalystEnView auth={auth} />;
+}
+
+export function AiAnalystEnView({ auth }: { auth: MarketingAuth }) {
   return (
-    <MarketingSite locale="en" auth={{ user, signInUrl, signUpUrl }} currentPath="/features/ai-analyst">
-      <header className="mk-hero">
-        <Reveal>
-          <div className="mk-badges">
-            <span className="mk-badge solid">Self-host / Roadmap</span>
-            <span className="mk-badge">Disabled on the demo</span>
-          </div>
-        </Reveal>
-        <Reveal>
-          <h1>
-            It proposes.
-            <br />
-            <span className="hl">You sign.</span>
-          </h1>
-        </Reveal>
-        <Reveal>
-          <p className="mk-dek">
-            The analyst is an <b>exploration aid, not financial advice</b>: what-ifs, charts, anomaly and duplicate
-            flags on data you authorize. Sensitive writes need preview + your approval; email and Telegram reports are
-            off by default. Environment-gated — hidden where not enabled, including the hosted demo.
-          </p>
-        </Reveal>
-        <Reveal>
-          <MagnetCta href="https://github.com/masushidotdev/tracky" variant="pill">
-            Enable it self-hosted →
-          </MagnetCta>
-        </Reveal>
-      </header>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <p className="mk-sub" style={{ maxWidth: 720 }}>{INTRO}</p>
-        </Reveal>
-      </section>
-      <MarqueeBand items={['WHAT-IFS', 'ANOMALY FLAGS', 'APPROVAL-GATED', 'OFF BY DEFAULT', 'NOT ADVICE']} />
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-duel">
-            <div className="mk-d good">
-              <h3>✅ IT DOES</h3>
-              <ul>
-                <li>What-if scenarios on your data</li>
-                <li>Duplicate + spike flags</li>
-                <li>Bill reminders, sync alerts</li>
-                <li>Proposes — you approve</li>
-              </ul>
+    <AtelierSite locale="en" auth={auth} currentPath="/features/ai-analyst">
+      {/* 1. HERO */}
+      <section className="mka-hero mka-hero--page">
+        <div className="mka-container">
+          <div className="mka-hero-single">
+            <Breadcrumb ariaLabel="Breadcrumb" items={[{ label: 'Home', href: '/' }, { label: 'AI Analyst' }]} />
+
+            <div className="mka-b2-hero-badges">
+              <ScopePill scope="selfhost" label="Self-host only" />
+              <Chip>Disabled on hosted demo</Chip>
+              <Chip tone="cobalt">Approval-gated writes</Chip>
+              <Chip>Not financial advice</Chip>
             </div>
-            <div className="mk-d bad">
-              <h3>🚫 IT NEVER</h3>
-              <ul>
-                <li>Financial advice</li>
-                <li>Autonomous ledger writes</li>
-                <li>Spam channels by default</li>
-                <li>Promises or guarantees</li>
-              </ul>
+
+            <h1 className="mka-hero-headline">
+              It proposes changes. <span className="mka-accent-ink">You review and sign every one.</span>
+            </h1>
+
+            <p className="mka-hero-dek">
+              Tracky’s AI Analyst is an environment-gated exploration aid for self-hosted instances: ask plain-language
+              questions over your authorized ledger, compare what-if scenarios, and inspect anomaly flags. Every
+              sensitive write shows a full preview and waits for your approval—never autonomous, never financial advice.
+            </p>
+
+            <div className="mka-hero-actions">
+              <a className="mka-btn-primary mka-btn-primary--lg" href="/blog/self-hosting-tracky-docker">
+                Self-host with Docker →
+              </a>
+              <B2AppCta
+                auth={auth}
+                locale="en"
+                loggedInHref="/app"
+                loggedInLabel="Open the demo →"
+                loggedOutLabel="Try core budgeting in the demo →"
+                variant="primary"
+              />
+            </div>
+
+            <p className="mka-hero-meta">
+              <span>Bring your own AI gateway key</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>Free tier: 20 messages/day when enabled</span>
+              <span className="mka-hero-meta-dot" aria-hidden="true">
+                ·
+              </span>
+              <span>Email &amp; Telegram off by default</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. EXPLICIT AVAILABILITY */}
+      <Section id="availability" tone="parchment">
+        <SectionHead
+          kicker="Where it runs"
+          title="Environment-gated: off on the hosted demo, opt-in on self-host."
+          subtitle="Running AI models and external messaging channels requires instance-level API keys that stay strictly under your control."
+        />
+
+        <B2AvailabilityBand
+          demoTone="default"
+          demoBadge="Disabled on hosted demo"
+          demoTitle="Hosted demo (trytracky.app)"
+          demoBody={
+            <>
+              AI Analyst is disabled on the hosted demo: its sidebar and command-palette entries are hidden and{' '}
+              <code>/app/analyst</code> shows Feature disabled. In-app bill reminders and subscription suggestions still
+              work on the demo.
+            </>
+          }
+          selfHostTone="cobalt"
+          selfHostBadge="Optional · Your keys"
+          selfHostTitle="Self-hosted Docker (MIT)"
+          selfHostBody={
+            <>
+              Rebuild the app image with <code>VITE_ANALYST_ENABLED=true</code> and supply{' '}
+              <code>AI_GATEWAY_API_KEY</code> or <code>OPENROUTER_API_KEY</code> (plus optional <code>RESEND_*</code>{' '}
+              and <code>TELEGRAM_*</code> keys). Free includes 20 Analyst messages/day; Pro (100/day &amp; FIRE
+              projections) is reserved in code and not for sale.
+            </>
+          }
+        />
+      </Section>
+
+      {/* 3. WHAT IT DOES VS NEVER DOES */}
+      <Section id="boundaries">
+        <SectionHead
+          kicker="Clear boundaries"
+          title="Human-in-the-loop assistance, never autopilot."
+          subtitle="Read-only exploration is immediate; any change to your Plan, money boxes, planned items, memory, or categories waits for your confirmation."
+        />
+
+        <FitCheck
+          yesTitle="What AI Analyst does when enabled"
+          yesItems={[
+            'Reads authorized accounts, transactions, spending, Plan progress, Cash Flow, money boxes, credit, subscriptions, and planned items.',
+            'Explains spending patterns with charts and tables, and simulates what-if changes across multiple named conversations.',
+            'Prepares previewed proposals for Plan assignments, targets, money-box moves, planned items, memory updates, or bulk recategorization—tagged with an advisory risk badge (safe, confirm, block).',
+            'Pairs with scheduled background checks for spending anomalies, possible duplicates, bill reminders, and low projected balances.',
+          ]}
+          noTitle="What AI Analyst never does"
+          noItems={[
+            'Never gives certified financial, tax, or investment advice—every output is an exploration aid.',
+            'Never writes a sensitive change to your ledger autonomously or skips your explicit approval.',
+            'Never cancels a subscription or initiates a bank payment on your behalf.',
+            'Never emails or messages Telegram without your explicit opt-in and verified bot link.',
+          ]}
+        />
+      </Section>
+
+      {/* 4. AUTOMATIONS, NOTIFICATIONS & SETUP */}
+      <Section id="automations" tone="parchment">
+        <SectionHead
+          kicker="Automations & self-host setup"
+          title="Background checks on a clear schedule—and how to enable them."
+          subtitle="Notification checks dedupe per occurrence and threshold, landing in your in-app inbox first before any optional external channel."
+        />
+
+        <div className="mka-trust-grid">
+          <div className="mka-ledger-sheet">
+            <h3 className="mka-sheet-title">Scheduled evaluations &amp; reminders</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  6H
+                </span>
+                <div>
+                  <strong>Evaluated every six hours</strong>
+                  <span>
+                    Automatic sync and financial notification checks evaluate Plan buckets at or above 90%
+                    funded-and-spent (warning) or in the red (critical), active subscriptions and instalments due within
+                    seven days, the first projected negative cash-flow date, and sync/consent issues.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  1D
+                </span>
+                <div>
+                  <strong>Daily baseline &amp; cycle checks</strong>
+                  <span>
+                    Daily jobs close due card cycles and compute account health scores and statistical baseline
+                    anomalies. Only actionable deviations push; quieter findings stay in your inbox digest. Subscription
+                    price-increase or forgotten-charge flags always show their evidence.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--marigold" aria-hidden="true">
+                  BILL
+                </span>
+                <div>
+                  <strong>Configurable bill reminders</strong>
+                  <span>
+                    Built from planned expenses in <code>planned</code> or <code>funding</code> status (default three
+                    days ahead; up to four thresholds from 0 to 30 days in Settings), with deduplication per occurrence
+                    and threshold. Monthly reports generate on day 2 and subscription reviews on day 3.
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mka-ledger-sheet mka-ledger-sheet--tinted">
+            <h3 className="mka-sheet-title">Enabling Analyst &amp; optional channels on Docker</h3>
+            <ul className="mka-rule-list">
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--cobalt" aria-hidden="true">
+                  AI
+                </span>
+                <div>
+                  <strong>Build flag + AI gateway key</strong>
+                  <span>
+                    Set <code>VITE_ANALYST_ENABLED=true</code> before rebuilding <code>app</code> and provide{' '}
+                    <code>AI_GATEWAY_API_KEY</code> or <code>OPENROUTER_API_KEY</code> in <code>.env</code>.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className="mka-rule-dot mka-rule-dot--sage" aria-hidden="true">
+                  MSG
+                </span>
+                <div>
+                  <strong>Opt-in Resend email &amp; two-way Telegram</strong>
+                  <span>
+                    Configure <code>RESEND_*</code> for email delivery or <code>TELEGRAM_*</code> for two-way Telegram
+                    (linked via a single-use Settings command expiring after 10 minutes). External delivery covers bill
+                    reminders, upcoming subscriptions/instalments, and low projected-balance warnings once opted in.
+                  </span>
+                </div>
+              </li>
+            </ul>
+
+            <CodePlate
+              ariaLabel="AI Analyst self-host environment variables"
+              lines={[
+                { text: '# Add to .env on your self-hosted instance, then rebuild app', comment: true },
+                { text: 'VITE_ANALYST_ENABLED=true' },
+                { text: 'AI_GATEWAY_API_KEY=...   # or OPENROUTER_API_KEY' },
+                { text: 'docker compose up -d --build' },
+              ]}
+            />
+
+            <div className="mka-disclosure-box">
+              <strong>Reserved Pro tools:</strong> Long-term FIRE and retirement projections (default 30-year horizon,
+              2% inflation, 5% return, 4% withdrawal rate—all overridable in chat as nominal estimates) and the
+              100-message/day limit belong to the reserved Pro tier, which is not for sale today.
             </div>
           </div>
-        </Reveal>
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        {BLOCKS.map((block) => (
-          <Reveal key={block.h}>
-            <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>{block.h}</h2>
-            <p className="mk-sub" style={{ maxWidth: 700 }}>{block.p}</p>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <h2 className="mk-h2" style={{ fontSize: 'clamp(28px,4vw,48px)' }}>Questions, answered.</h2>
-        </Reveal>
-        {PAGE_FAQ.map((entry) => (
-          <Reveal key={entry.q}>
-            <details>
-              <summary>{entry.q}</summary>
-              <p style={{ marginTop: 8 }}>{entry.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </section>
-      <section className="mk-section" style={{ paddingTop: 0 }}>
-        <Reveal>
-          <div className="mk-final">
-            <Confetti />
-            <h2 className="mk-h2">Assistance, not autopilot.</h2>
-            <p style={{ margin: '16px 0 30px', fontSize: 18 }}>Self-hosted · gated · approval-first</p>
-            <MagnetCta href="https://github.com/masushidotdev/tracky">Read the code →</MagnetCta>
-          </div>
-        </Reveal>
-      </section>
-    </MarketingSite>
+        </div>
+      </Section>
+
+      {/* 5. FAQ */}
+      <FaqSection
+        id="faq"
+        tone="cotton"
+        kicker="AI Analyst FAQ"
+        title="Questions about approvals, demo availability, and notifications."
+        subtitle="Verified against docs/self-hosting.md and Tracky’s Analyst documentation."
+        moreLink={{ href: '/faq', label: 'Read the full FAQ →' }}
+        items={aiAnalystEnFaq}
+      />
+
+      {/* 6. RELATED LINKS */}
+      <B2RelatedSection
+        tone="parchment"
+        kicker="Continue exploring"
+        title="Self-hosting and core planning pages."
+        items={[
+          {
+            kicker: 'Self-hosting guide',
+            title: 'Self-hosting Tracky with Docker',
+            description: 'Configure Docker Compose, WorkOS AuthKit, TLS reverse proxy, and optional integration keys.',
+            href: '/blog/self-hosting-tracky-docker',
+            linkLabel: 'Read Docker guide →',
+          },
+          {
+            kicker: 'Feature · Self-host only',
+            title: 'PSD2 bank connections',
+            description: 'Pair self-hosted AI Analyst with read-only Enable Banking connections using your own keys.',
+            href: '/features/bank-connections',
+            linkLabel: 'Explore bank sync →',
+          },
+          {
+            kicker: 'Overview',
+            title: 'Pricing & tier transparency',
+            description: 'See Free (20 messages/day) vs. reserved Pro (not for sale) and full Demo vs. Self-host comparison.',
+            href: '/pricing',
+            linkLabel: 'View pricing →',
+          },
+        ]}
+      />
+
+      {/* 7. FINAL CTA */}
+      <FinalCta
+        headline="Assistance you audit, never autopilot."
+        meta="Self-hosted · Approval-gated writes · Bring your own keys · MIT open source"
+        primaryCta={
+          <a className="mka-btn-marigold" href="/blog/self-hosting-tracky-docker">
+            Read the Docker self-host guide →
+          </a>
+        }
+        secondaryCta={
+          <a className="mka-btn-outline-light" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+            Inspect MIT repo ↗
+          </a>
+        }
+      />
+    </AtelierSite>
   );
 }
