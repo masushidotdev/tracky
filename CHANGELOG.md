@@ -7,11 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-27
+
 ### Added
 
-- **Self-hosting guide article (EN/IT)**: Added a bilingual blog article on running Tracky with Docker Compose (setup script, WorkOS requirement, first sign-up backfill, reverse proxy, upgrade, backup, no telemetry), with its own OG image and sitemap entries.
-- **One-time `signup_completed` onboarding milestone**: Added idempotent `signupAtMs` tracking on `userSettings.onboardingMilestones` (`userSettings.claimSignupMilestone`) and consent-gated, self-host-silent emission in `OnboardingMilestoneFlusher` (`{ surface: 'app_bootstrap' }`) to complete the `signup -> first import -> first budget` funnel without emitting false signups for pre-existing accounts with data.
-- **README status badges**: Added CI, MIT license, latest release, and GitHub stars badges to `README.md`.
+- **One-command Docker Compose self-hosting**: Added `Dockerfile`, `docker-compose.yml`, `.env.selfhost.example`, a `selfhost` Wrangler environment, and EN/IT self-hosting guides (`docs/self-hosting.md`, `docs/self-hosting.it.md`) running a digest-pinned self-hosted Convex backend (SQLite volume), one-shot key/deploy containers, a non-root app runtime behind a Node edge proxy blocking `/cdn-cgi/*`, telemetry disabled by default, and a CI Docker build job. ([#73](https://github.com/masushidotdev/tracky/pull/73))
+- **Simplified WorkOS onboarding**: Added `scripts/dev-auth-env.mjs` (`predev`) to auto-generate a missing `WORKOS_COOKIE_PASSWORD` in `.env.local` (and warn on `.dev.vars` precedence) plus dependency-free `npm run selfhost:setup` (`scripts/selfhost-setup.mjs`) to configure WorkOS AuthKit URLs/optional webhook and atomically write a `0600` `.env` file for Docker self-hosting, with updated setup docs. ([#74](https://github.com/masushidotdev/tracky/pull/74))
+- **One-time `signup_completed` onboarding milestone**: Added idempotent `signupAtMs` tracking on `userSettings.onboardingMilestones` (`userSettings.claimSignupMilestone`) and consent-gated, self-host-silent emission in `OnboardingMilestoneFlusher` (`{ surface: 'app_bootstrap' }`) to complete the `signup -> first import -> first budget` funnel without emitting false signups for pre-existing accounts with data. ([#75](https://github.com/masushidotdev/tracky/pull/75))
+- **README status badges**: Added CI, MIT license, latest release, and GitHub stars badges to `README.md`. ([#75](https://github.com/masushidotdev/tracky/pull/75))
+- **Self-hosting guide article (EN/IT)**: Added bilingual blog posts (`/blog/self-hosting-tracky-docker` and `/it/blog/self-hosting-tracky-docker`) on running Tracky with Docker Compose (setup script, WorkOS requirement, first sign-up backfill, reverse proxy, upgrade, backup, no telemetry), with a dedicated OG image and sitemap entries. ([#76](https://github.com/masushidotdev/tracky/pull/76))
+- **Blog indexes, Blog navigation & Italian consent banner**: Added `/blog` and `/it/blog` index pages in Atelier style, a Blog item in the Atelier header (desktop and mobile) and footer with EN↔IT switching and sitemap entries, and localized Italian copy for the analytics consent banner on `/it` routes (consent logic, PostHog, and event names untouched). ([#78](https://github.com/masushidotdev/tracky/pull/78))
+
+### Changed
+
+- **Atelier redesign of all public marketing pages (EN/IT)**: Rebuilt all 34 public pages (17 EN and 17 IT) under the scoped `.mka` Atelier design system with self-hosted Bricolage Grotesque and Plus Jakarta Sans variable fonts, shared shell and primitives, verified product copy, and removal of the legacy Vivi shell; `/app`, auth, and Convex were left untouched. ([#77](https://github.com/masushidotdev/tracky/pull/77))
+
+### Fixed
+
+- **Medium import OG card & README Node version**: Added a dedicated `og-blog-v0-1-0.png` OG image, semantic `<article>` markup, three in-article `<figure>` screenshots, and absolute internal links on the EN/IT v0.1.0 release posts so Medium imports stop repeating the `/open-source` preview card, and updated `README.md` to specify Node.js `>=22.23.4 <23`. ([#72](https://github.com/masushidotdev/tracky/pull/72))
+
+### Dependencies
+
+- Bumped `@shikijs/rehype` from `4.5.0` to `4.6.0`. ([#67](https://github.com/masushidotdev/tracky/pull/67))
+- Bumped `@tanstack/react-query` from `5.104.5` to `5.108.2`. ([#68](https://github.com/masushidotdev/tracky/pull/68))
+- Bumped `@langfuse/otel` from `6.0.2` to `6.1.1`. ([#69](https://github.com/masushidotdev/tracky/pull/69))
+- Bumped `vite` from `8.3.5` to `8.3.8`. ([#71](https://github.com/masushidotdev/tracky/pull/71))
 
 ## [0.1.0] - 2026-11-24
 
@@ -106,5 +126,6 @@ First public tagged release of Tracky, covering the initial public release (`654
 
 - Added weekly Dependabot updates and updated dependency families across Node 22-compatible releases, including `streamdown` `2.5.0` → `2.6.0` (#11), `vite` `8.1.5` → `8.3.0` (#9), broad Node 22 updates (#26), security and major framework upgrades including AI SDK 7, Convex components, TanStack, and React (#55), `@cloudflare/vite-plugin`, `wrangler`, `hono`, and ESLint/minimatch security updates (#62), and `svix` `2.8.0` → `2.10.0` (#57).
 
-[Unreleased]: https://github.com/masushidotdev/tracky/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/masushidotdev/tracky/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/masushidotdev/tracky/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/masushidotdev/tracky/releases/tag/v0.1.0

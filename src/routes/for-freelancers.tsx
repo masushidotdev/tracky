@@ -251,7 +251,7 @@ export function FreelancersEnView({ auth }: { auth: MarketingAuth }) {
         id="faq"
         kicker="Freelancer FAQ"
         title="Questions about irregular income, taxes, and exports."
-        subtitle="Straight answers matching the shipped v0.1.0 capabilities."
+        subtitle="Straight answers matching the shipped v0.2.0 capabilities."
         items={freelancersEnFaq}
       />
 

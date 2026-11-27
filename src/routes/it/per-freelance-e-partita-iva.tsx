@@ -252,7 +252,7 @@ export function FreelancersItView({ auth }: { auth: MarketingAuth }) {
         id="faq"
         kicker="FAQ per freelance"
         title="Domande su entrate irregolari, tasse ed export."
-        subtitle="Risposte dirette allineate alle funzioni rilasciate in v0.1.0."
+        subtitle="Risposte dirette allineate alle funzioni rilasciate in v0.2.0."
         items={freelancersItFaq}
       />
 
