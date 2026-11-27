@@ -394,7 +394,7 @@ export function PricingItView({ auth }: { auth: MarketingAuth }) {
         tone="parchment"
         kicker="FAQ sui prezzi"
         title="Domande su costi, piano Pro e self-hosting."
-        subtitle="Risposte dirette allineate al codice v0.1.0 rilasciato — senza asterischi né promesse non verificabili."
+        subtitle="Risposte dirette allineate al codice v0.2.0 rilasciato — senza asterischi né promesse non verificabili."
         moreLink={{ href: '/it/domande-frequenti', label: 'Leggi tutte le FAQ →' }}
         items={pricingItFaq}
       />
@@ -402,7 +402,7 @@ export function PricingItView({ auth }: { auth: MarketingAuth }) {
       {/* 7. FINAL CTA */}
       <FinalCta
         headline="€0 oggi. Senza carta, senza timer di prova, senza checkout."
-        meta="Demo ospitata gratuita · Self-host MIT con Docker · Rilascio pubblico v0.1.0"
+        meta="Demo ospitata gratuita · Self-host MIT con Docker · Rilascio pubblico v0.2.0"
         primaryCta={<AuthCta auth={auth} locale="it" ctaLocation="marketing" variant="marigold" />}
         secondaryCta={
           <a className="mka-btn-outline-light" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">

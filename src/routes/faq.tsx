@@ -103,7 +103,7 @@ export function FaqEnView({ auth }: { auth: MarketingAuth }) {
             <p className="mka-hero-dek">
               No marketing fog: what costs money (nothing today), what requires a bank connection (nothing), what stays
               switched off on the hosted demo (PSD2 bank sync and AI Analyst), and how your data stays portable and
-              erasable. Every answer below matches the shipped v0.1.0 codebase and documentation.
+              erasable. Every answer below matches the shipped v0.2.0 codebase and documentation.
             </p>
 
             <div className="mka-hero-actions">

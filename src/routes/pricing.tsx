@@ -393,7 +393,7 @@ export function PricingEnView({ auth }: { auth: MarketingAuth }) {
         tone="parchment"
         kicker="Pricing FAQ"
         title="Questions about cost, Pro, and self-hosting."
-        subtitle="Direct answers matching the shipped v0.1.0 codebase—no asterisks and no unverified promises."
+        subtitle="Direct answers matching the shipped v0.2.0 codebase—no asterisks and no unverified promises."
         moreLink={{ href: '/faq', label: 'Read the full FAQ page →' }}
         items={pricingEnFaq}
       />
@@ -401,7 +401,7 @@ export function PricingEnView({ auth }: { auth: MarketingAuth }) {
       {/* 7. FINAL CTA */}
       <FinalCta
         headline="€0 today. No card, no trial clock, no checkout."
-        meta="Free hosted demo · MIT self-host with Docker · Public release v0.1.0"
+        meta="Free hosted demo · MIT self-host with Docker · Public release v0.2.0"
         primaryCta={<AuthCta auth={auth} locale="en" ctaLocation="marketing" variant="marigold" />}
         secondaryCta={
           <a className="mka-btn-outline-light" href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
